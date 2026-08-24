@@ -1,7 +1,6 @@
-# AGENTS.md — Agent Instructions & Styling Migration Status for small-web-tools
+# AGENTS.md — Agent Instructions for small-web-tools
 
 > This file governs how AI agents should behave in this repository.
-> It also tracks the styling migration status (Tailwind CSS).
 > Read `CONTRIBUTING.md` for canonical engineering rules and `ARCHITECTURE.md` for
 > canonical architecture, routes, runtime topology, and project structure.
 > Do not modify this file unless explicitly asked.
@@ -179,80 +178,3 @@ will appear in TODO.md. Before finishing a documentation task, check README,
 CONTRIBUTING, ARCHITECTURE, PRIVACY, font manifests, and test-harness guides
 for paired updates; exclude this agent guide and TODO.md from the bilingual
 document set.
-
-## 10. Styling Migration Status (Tailwind CSS)
-
-This section tracks the Tailwind CSS migration.
-
-### Current state (Phase 6 — complete)
-
-- Tailwind is configured (`tailwind.config.js`), theme values map to the existing
-  CSS custom properties in `src/styles.css` (`:root` / `html[data-theme="dark"]`).
-  Colors, radii, and shadows are NOT duplicated — Tailwind reads the same variables.
-- Shared primitives live in `src/components/ui/`: `Card`, `Button`, `FieldInput`,
-  `ToolHeader`, `ToggleSwitch`, `Spinner`, `ResultDisplay`.
-  Use these for any new tool or when touching an existing one.
-- `src/styles.css` now contains **only** the following:
-  - repository-owned `@font-face` declarations for the fonts in `public/fonts/`
-  - `@tailwind base/components/utilities` directives
-  - `:root` and `html[data-theme="dark"]` CSS custom property definitions
-  - Global resets (`*`, `html/body`, `body`)
-  - Global element styles (`h1–h6`, `label`, `textarea`, `input`, `select`)
-  - Remaining shared patterns still in use by tool components:
-    `.btn-secondary`, `.tab-btn`, `.search-input-group`, `.iplookup-results-layout`
-  - Tool-specific styles (CodonTable `ct-*`, HomeGrid, ColorConverter, etc.)
-  - Scrollbar styles and remaining `@keyframes`
-
-### Migration status by tool
-
-| Tool | Status |
-|---|---|
-| **App.jsx (shell layout)** | **done** |
-| PasswordGenerator | done |
-| ColorConverter | done |
-| SlashesConverter | done |
-| CasingSwitcher | done |
-| WordCounter | done |
-| DateCounter | done |
-| CurrencyCounter | done |
-| AsciiConverter | done |
-| UnicodeConverter | done |
-| BaseConverter | done |
-| DnaConverter | done |
-| CodonTable | done |
-| IpLookup | done |
-| ImgMeta | done |
-| DocMeta | done |
-| AudioMeta | done |
-| VideoMeta | done |
-| RandomWheel | done |
-| TypingSpeedTest | done |
-| NetworkSpeedTest | done |
-| QrBarcodeGenerator | done |
-| QrBarcodeScanner | done |
-| WebsiteFontExtractor | done |
-| FolderAnalyzer | done |
-| MediaSeparator | done |
-| MediaSeparatorQueueItem | done |
-| MediaSeparatorWaveform | done |
-| MediaSeparatorFormatSelect | done |
-| HomeGrid | done |
-| BioinfoIcon | done |
-| DnaRnaIcon | done |
-
-### Rules for new work
-
-- New tools: build with Tailwind + `src/components/ui/` primitives from the start.
-  Add `styles.css` rules only when shared behavior or component-specific styling
-  cannot be expressed clearly with existing utilities.
-- Touching an existing tool for an unrelated bug fix: no obligation to migrate it,
-  but if you do touch its styling anyway, prefer migrating that one component fully
-  over patching the legacy CSS further.
-- If a reusable control pattern is missing, extend the relevant shared primitive
-  with a variant or prop so the pattern stays reusable.
-
-### Still open
-
-1. `Button variant="danger"` is a placeholder — needs a real parity pass
-   against `.btn-danger-custom` / `.btn-danger-confirm` before use.
-   Do not use `variant="danger"` in any tool component until this is resolved.

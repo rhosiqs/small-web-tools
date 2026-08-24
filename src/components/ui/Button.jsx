@@ -16,7 +16,7 @@ import React from 'react';
  *
  *   variant="danger"    -> `.btn-danger-custom` (line 2449) / `.btn-danger-confirm`
  *                          (2691) — these two were NOT compared in this draft pass;
- *                          this variant is a placeholder. See AGENTS.md "Still open" item 1.
+ *                          this variant is a placeholder pending a real parity pass.
  */
 
 const base =
