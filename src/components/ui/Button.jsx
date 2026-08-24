@@ -36,12 +36,19 @@ import React from 'react';
  * rules disagreed: 8px for primary/secondary/dangerConfirm (`rounded`) but 10px
  * for `.btn-danger-custom` (`rounded-md`). Stacking `rounded-md` on top of a
  * `rounded` in `base` would leave the winner up to stylesheet order.
+ *
+ * Known limitation — `size="sm"` does not fully override a variant: both set
+ * padding, and Tailwind emits `.px-6`/`.py-3` after `.px-3`/`.py-1.5`, so the
+ * variant's padding wins while `text-xs` still shrinks the label. This predates
+ * the parity pass and is most visible on `danger`, whose 12px 24px padding is
+ * the largest of the four. Until sizing is restructured, prefer the default
+ * size for `danger`.
  */
 
 const base =
   'inline-flex items-center justify-center gap-1.5 font-semibold cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
 
-const variants = {
+export const variants = {
   primary:
     'rounded bg-accent-gradient text-white px-5 py-2.5 text-[0.88rem] shadow-[0_4px_10px_var(--accent-light)] hover:-translate-y-px hover:shadow-[0_6px_14px_var(--accent-light)] active:translate-y-0',
   secondary:

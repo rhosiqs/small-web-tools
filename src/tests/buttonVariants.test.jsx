@@ -1,7 +1,7 @@
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import Button from '../components/ui/Button.jsx';
+import Button, { variants } from '../components/ui/Button.jsx';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -68,8 +68,12 @@ describe('Button danger variants', () => {
     expect(classes).toContain('text-[0.9rem]');
   });
 
+  // Enumerated from the map rather than a literal list: `base` no longer carries
+  // a radius, so a variant added later without one would render square.
   it('keeps a single border-radius utility per variant', async () => {
-    for (const variant of ['primary', 'secondary', 'danger', 'dangerConfirm']) {
+    expect(Object.keys(variants).length).toBeGreaterThan(0);
+
+    for (const variant of Object.keys(variants)) {
       const button = await renderButton({ variant });
       const radii = button.className
         .split(' ')
