@@ -15,18 +15,6 @@ export const TOOL_ICONS = {
         <circle cx="17.5" cy="15.5" r="3.5" />
         <path d="M21 12v7" />
       </svg>,
-  "tool-typing": <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
-        <line x1="6" y1="8" x2="6.01" y2="8"></line>
-        <line x1="10" y1="8" x2="10.01" y2="8"></line>
-        <line x1="14" y1="8" x2="14.01" y2="8"></line>
-        <line x1="18" y1="8" x2="18.01" y2="8"></line>
-        <line x1="6" y1="12" x2="6.01" y2="12"></line>
-        <line x1="10" y1="12" x2="10.01" y2="12"></line>
-        <line x1="14" y1="12" x2="14.01" y2="12"></line>
-        <line x1="18" y1="12" x2="18.01" y2="12"></line>
-        <line x1="7" y1="16" x2="17" y2="16"></line>
-      </svg>,
   "tool-color": <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 14.7255 3.09032 17.1962 4.85857 19C5.03347 19.1749 5.2751 19.2612 5.51862 19.2319C6.27318 19.141 7.00947 19.4674 7.48528 20.0827L7.91508 20.6384C8.42392 21.2963 9.17646 21.7371 10.0152 21.8906C10.6698 22.0104 11.3343 22.0469 12 22Z"></path>
         <circle cx="7.5" cy="10.5" r="1.5" fill="currentColor"></circle>

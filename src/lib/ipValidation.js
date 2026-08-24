@@ -27,7 +27,3 @@ export function parseIpInput(value, { allowEmpty = true } = {}) {
     return { value: null, kind: null, error: 'Invalid IPv4 or IPv6 address', errorCode: 'invalidAddress' };
   }
 }
-
-export function isValidIp(value, options) {
-  return parseIpInput(value, options).error === null;
-}

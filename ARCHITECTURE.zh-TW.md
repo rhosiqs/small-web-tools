@@ -22,7 +22,7 @@ small-web-tools 是一個使用 React 18 與 Vite 的單頁應用程式，提供
 
 本專案維護成對的英文與繁體中文說明文件。英文檔名搭配 `.zh-TW.md` 結尾的繁中檔案；
 修改文件描述的行為或結構時，請同步維護兩個版本。只供 AI agent 使用的
-`.agents/AGENTS.md` 與 `TODO.md` 刻意維持英文單一版本。
+`AGENTS.md`、`.agents/AGENTS.md` 與 `TODO.md` 刻意維持英文單一版本。
 
 ## 快速資訊
 
@@ -55,6 +55,10 @@ VITE_APP_VERSION 是最後的明確 fallback。npm manifest 使用固定的非 r
 - PRIVACY.md／PRIVACY.zh-TW.md：隱私權政策與資料流揭露。
 - TODO.md：英文待辦事項、已完成工作與更新流程。
 - ARCHITECTURE.md／ARCHITECTURE.zh-TW.md：英文與繁中架構參考。
+- Dockerfile.dev：供容器化 Vite 開發使用的 Node.js 22 image。
+- compose.yaml：使用 bind mount 的 Vite 開發服務與具名相依套件 volume。
+- .dockerignore：Docker 建置 context 與本機秘密的排除規則。
+- AGENTS.md：工程 skills 的設定與 `docs/agents/` 指引入口；不建立繁中版本。
 - .agents/AGENTS.md：只供 AI agent 使用的英文規則；不建立繁中版本。
 - package.json：指令、相依套件與 pipeline 命令。
 - jsconfig.json：JavaScript 的 TypeScript checkJs 設定。
@@ -73,6 +77,8 @@ VITE_APP_VERSION 是最後的明確 fallback。npm manifest 使用固定的非 r
 - .github/：Dependabot 設定與 GitHub Actions CI pipeline。
 - public/：Cloudflare Pages 回應標頭、內建 WOFF2 UI 字型、授權與字型清單，以及 favicon。
 - scripts/：版本、i18n、硬編碼 UI 與文件一致性檢查腳本。
+- docs/：包含 `docs/agents/` 的 issue tracker、triage label 與 domain docs 規則，
+  以及 Docker 開發流程與其他成對的操作文件。
 - src/：React 應用程式、工具登錄表、樣式、共用 UI、工具元件與測試。
 - src/components/LanguageSwitcher.jsx：桌面與行動 header 共用的地區設定選單、鍵盤導覽與焦點生命週期。
 - src/components/MobileDrawer.jsx：行動導覽的焦點、inert、關閉與捲動生命週期。
@@ -88,8 +94,10 @@ dist/ 是 npm run build 產生的目錄，刻意被忽略。
 
 JavaScript 遷移使用三個明確的 TypeScript checkJs 專案。`jsconfig.json` 是廣泛的
 非 strict baseline；`jsconfig.domain.json` 保留既有的狹窄領域／共用 helper 邊界；
-`jsconfig.ui.json` 是漸進式共用 UI 邊界，啟用 `strictNullChecks`，初始涵蓋
-`LanguageSwitcher.jsx` 與其 i18n 相依項。CI 中的 `npm run typecheck` 會執行三個
+`jsconfig.ui.json` 是漸進式共用 UI 邊界，啟用 `strictNullChecks`，涵蓋
+`LanguageSwitcher.jsx`、桌面 header／分類／footer 元件、`MobileDrawer`、路由／標題／
+持久化 hooks、共用分類定義、抽離後的音訊／影片中繼資料領域，以及其純 route／mode
+相依項。CI 中的 `npm run typecheck` 會執行三個
 專案。新增排除必須維持最少並加以記錄；擴大 UI 邊界時必須在同一變更修正所有
 新揭露的錯誤。
 
@@ -101,14 +109,17 @@ src/main.jsx 掛載 App 並匯入 src/styles.css。
 
 src/App.jsx 負責應用程式 shell：
 
-- src/toolRegistry.js 是唯一的路由中繼資料來源。側邊欄、桌面導覽、儀表板卡片、
-  active title、footer links、靜態 layout、lazy component 與路由測試都從此登錄表衍生。
+- src/toolRouteMetadata.js 是唯一的路由中繼資料來源。側邊欄、桌面導覽、儀表板卡片、
+  active title、footer links、靜態 layout 與路由測試都從此衍生；src/toolRegistry.js
+  只把這些中繼資料與 lazy component loader 結合。
 - 登錄表 aliases 保留舊書籤；tool-officemeta 會解析為 tool-docmeta。
-- categories 定義六個呈現群組：Text、Developer、Network、Media、Bioinfo 與 Utilities。
+- src/categoryDefinitions.jsx 定義六個共用呈現群組與圖示：Text、Developer、Network、
+  Media、Bioinfo 與 Utilities。
 - activeTool 從 /home[/&lt;audience&gt;]/&lt;tool-slug&gt; 或 /simple/&lt;tool-slug&gt; 初始化，並同步回路徑。
 - toolMode 從經驗證的 /home 或 /simple 路徑初始化。工作區路徑會留在 URL 中，
   路徑導覽則改變工具。
-- theme 與 sidebarCollapsed 儲存在 localStorage。
+- useShellPersistence 集中管理 active-tool session state、theme 與 sidebar 持久化；
+  useDocumentTitle 在儲存空間不可用時仍獨立管理頁面標題。
 - renderActiveTool() 解析目前的登錄表項目並渲染其 lazy component。privacy 路由已登錄，
   但不列入工具目錄。
 
@@ -159,6 +170,10 @@ AudienceSwitcher.jsx 為完整首頁與五個使用者群組渲染分段控制�
 位址會重新導向至 /simple。重點測試位於 toolModes.test.js、homeGrid.test.jsx、
 audienceSwitcher.test.jsx 與 simpleHome.test.jsx。
 
+Mermaid 屬於 developer audience。其他可導覽工具都必須出現在至少一個精選工作區，
+或在 `INTENTIONAL_CURATED_EXCLUSIONS` 中保留明確理由；`toolModes.test.js` 會執行此規則。
+App shell、lazy route、持久化、工作區導覽與語言切換的整合覆蓋位於 `App.test.jsx`。
+
 ### 共用工具頁面契約
 
 每個路由工具頁面都使用由 Image Metadata 建立的共用視覺契約：
@@ -193,7 +208,6 @@ public/fonts/MANIFEST.zh-TW.md。應用程式不會自動要求 Google Fonts。
 | tool-home | 儀表板 | HomeGrid.jsx | 儀表板 |
 | tool-wc | 文字計數器 | WordCounter.jsx | 文字 |
 | tool-casing | 大小寫切換器 | CasingSwitcher.jsx | 文字 |
-| tool-typing | 打字速度測試 | TypingSpeedTest.jsx | 文字 |
 | tool-slash | 斜線轉換器 | SlashesConverter.jsx | 開發 |
 | tool-ascii | ASCII 轉換器 | AsciiConverter.jsx | 開發 |
 | tool-unicode | Unicode 轉換器 | UnicodeConverter.jsx | 開發 |
@@ -272,15 +286,20 @@ mediaSeparatorEngine.js 只會在需要時下載固定的 FFmpeg 0.12.6 JavaScri
 ImgMeta.jsx、DocMeta.jsx、AudioMeta.jsx 與 VideoMeta.jsx 在瀏覽器中解析使用者選取的
 檔案。它們支援工具專用的檢查、比較、匯出或中繼資料移除流程，不會將檔案送過此應用程式。
 
-純文件格式化／解析 helper 位於 src/components/DocMeta/lib/。QR／barcode 編碼規則、
-打字範本／指標轉換，以及 codon 輸入／篩選／呈現規則位於各自的
-src/components/&lt;Tool&gt;/lib/ 目錄。聚焦覆蓋率包含 documentMetadataDomain.test.js、
-qrBarcodeDomain.test.js、typingTemplateDomain.test.js、typingMetricsDomain.test.js 與
-codonDomain.test.js；DNA/RNA 複製格式位於 dnaCopy.test.js，時間差位於 timeDomain.test.js，
-羅馬數字位於 romanDomain.test.js，Phred 轉換位於 phredDomain.test.js，消毒 SVG 解析／
-匯出大小位於 svgDomain.test.js，URL 百分比編碼位於 urlDomain.test.js。明確的開始打字
-流程由 typingStart.test.jsx 覆蓋；轉換器模式、資料夾選擇器、Color Sync 與圖片剝離
-說明回歸由 converterClipboard.test.jsx 與 enhancementUi.test.jsx 覆蓋。
+音訊解析、格式偵測、中繼資料剝除、tag label 與 URL ownership 位於
+`src/components/AudioMeta/lib/`。MP4／MOV 解析、codec／色彩映射、timecode 轉換、
+瀏覽器 probing，以及序列化 FFmpeg 音軌抽取服務位於 `src/components/VideoMeta/lib/`。
+抽取服務負責唯一虛擬檔名、progress listener 移除、虛擬檔案刪除、取消檢查與引擎終止；
+`useObjectUrlRegistry` 則負責 preview、衍生輸出與下載 Blob URL。聚焦測試位於
+`audioMetadataDomain.test.js` 與 `videoMetadataDomain.test.js`。
+
+純文件格式化／解析 helper 位於 src/components/DocMeta/lib/。QR／barcode 編碼規則與
+codon 輸入／篩選／呈現規則位於各自的 src/components/&lt;Tool&gt;/lib/ 目錄。聚焦覆蓋率
+包含 documentMetadataDomain.test.js、qrBarcodeDomain.test.js 與 codonDomain.test.js；
+DNA/RNA 複製格式位於 dnaCopy.test.js，時間差位於 timeDomain.test.js，羅馬數字位於
+romanDomain.test.js，Phred 轉換位於 phredDomain.test.js，消毒 SVG 解析／匯出大小位於
+svgDomain.test.js，URL 百分比編碼位於 urlDomain.test.js。轉換器模式、資料夾選擇器、
+Color Sync 與圖片剝離說明回歸由 converterClipboard.test.jsx 與 enhancementUi.test.jsx 覆蓋。
 
 ## API 與開發中介軟體
 
@@ -339,6 +358,8 @@ Wrangler 設定檔（wrangler.jsonc、workers/rate-limiter/wrangler.jsonc 與整
   作為安全範本。
 - dist/、coverage/、.playwright-cli/、test-results/ 與 playwright-report/ 是本機產生
   且已忽略的檔案。
+- `.scratch/security/` 保存本機私人安全性 issue 紀錄並已忽略；安全性相關工作不得發布
+  到 GitHub Issues。
 - code_reviews/ 包含被忽略的本機審查工作紀錄。它們是有日期的歷史快照，不受版本控制，
   也不是目前狀態或正式指引。
 
@@ -351,7 +372,8 @@ Wrangler 設定檔（wrangler.jsonc、workers/rate-limiter/wrangler.jsonc 與整
 - package.json、package-lock.json、.nvmrc、index.html，以及 ESLint、JavaScript、Knip、
   Playwright、PostCSS、Tailwind、Vite、Vitest 與 Wrangler 設定檔定義可重現的本機開發
   與驗證。
-- .github/ 包含 CI 與相依套件維護設定；.agents/AGENTS.md 包含儲存庫範圍的開發指引。
+- .github/ 包含 CI 與相依套件維護設定；.agents/AGENTS.md 包含儲存庫範圍的開發指引，
+  根目錄 AGENTS.md 則將工程 skills 指向 `docs/agents/` 中的規則。
 - README、CONTRIBUTING、ARCHITECTURE 與 PRIVACY 的英文／繁中說明檔，以及 TODO.md、
   LICENSE，是維護中的專案文件或法律資料。
 - .dev.vars.example 是安全、非秘密的本機執行環境文件；實際 .dev.vars* 仍維持忽略。
@@ -375,9 +397,6 @@ Color Converter 提供高對比的 Color Sync pressed toggle。
 會檢查每次輸入：CJK 字元以每分鐘 500 字估算，非 CJK 文字以每分鐘 200 字估算；混合
 內容會合併兩種估算。環境支援時使用 `Intl.Segmenter` 判定字素與句子邊界，並以
 `Intl.NumberFormat` 格式化顯示結果。
-
-打字速度測試的範本文字是與介面語系分離的測試內容。正確率與 WPM 依實際字素／按鍵
-計算，不會把目前介面語系默認為內容語言；切換語系只翻譯控制項、指標、狀態與歷史紀錄。
 
 此 beta 的密碼分析仍使用隨附的英文 `zxcvbn` 字典進行模式偵測。介面會依數值分數映射
 為在地化的標籤、通用回饋與破解時間區間，因此介面翻譯與分析字典彼此獨立。未來可加入
@@ -416,6 +435,11 @@ verify 中的 scripts/check-external-hosts.mjs 會在正式來源主機名稱未
 
 ## 本機開發
 
+支援下方的主機流程，以及
+[`docs/docker-development.zh-TW.md`](docs/docker-development.zh-TW.md) 中的容器化 Vite
+流程。Docker 流程使用 `Dockerfile.dev` 與 `compose.yaml`，並刻意與 `npm run dev`
+相同，只模擬 `/api/iplookup` Function。
+
 ```bash
 npm install --global npm@10.9.2
 npm ci
@@ -423,6 +447,7 @@ npm run dev
 npm run build
 npm run i18n:check
 npm run i18n:audit
+npm run deadcode:check
 npm run verify
 npm run test:e2e
 npm run docs:check
@@ -434,6 +459,10 @@ npm@10.9.2；CI 會安裝並驗證該精確版本。npm run verify 是基本門�
 不增加的 ESLint 警告預算、一般與 strict checkJs、覆蓋率門檻、正式建置、套件大小、
 靜態標頭政策、外部主機清單、Cloudflare 拓撲與文件一致性。CI 另外執行相依套件檢查、
 Playwright 流程與 npm audit。
+
+覆蓋率 gate 納入 `App.jsx`、共用分類定義與抽離後的音訊／影片領域，並設定各邊界門檻。
+Knip 會以 dependency-only 與完整 dead-code 模式執行，明確列出應用程式、Functions、
+Worker、script、test、integration 與瀏覽器流程入口。
 
 ## 新增或修改工具
 

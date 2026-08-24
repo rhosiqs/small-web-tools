@@ -79,3 +79,6 @@ _incoming/
 # Local code-review artifacts
 code_reviews/
 .codex-remote-attachments/
+
+# Local private security issue records
+.scratch/security/

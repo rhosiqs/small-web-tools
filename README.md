@@ -72,7 +72,6 @@ essentials. Tools opened there remain in the reduced shell at addresses such as
 
 - **Word Counter** — count words, characters, lines, and reading time.
 - **Casing Switcher** — change text to upper, lower, sentence, title, or custom-term casing.
-- **Typing Speed Test** — run a free or template-based typing test.
 
 ### Developer
 

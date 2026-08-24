@@ -30,6 +30,7 @@ const modeDefinitions = [
       'tool-unicode',
       'tool-url',
       'tool-markdown',
+      'tool-mermaid',
       'tool-code-preview',
       'tool-fontextractor',
       'tool-base',
@@ -70,7 +71,6 @@ const modeDefinitions = [
     toolIds: [
       'tool-wc',
       'tool-casing',
-      'tool-typing',
       'tool-markdown',
       'tool-code-preview',
       'tool-base',
@@ -104,6 +104,14 @@ export const SIMPLE_WORKSPACE = {
   ],
   simplified: true,
 };
+
+export const INTENTIONAL_CURATED_EXCLUSIONS = Object.freeze({
+  'tool-speedtest': 'Network diagnostics are situational rather than audience-specific.',
+  'tool-docmeta': 'Document metadata inspection is retained in the complete toolkit for specialist use.',
+  'tool-audiometa': 'Audio metadata inspection is retained in the complete toolkit for specialist use.',
+  'tool-videometa': 'Video metadata inspection is retained in the complete toolkit for specialist use.',
+  'tool-mediasplit': 'Media stream extraction is retained in the complete toolkit for specialist use.',
+});
 
 const modesById = new Map(TOOL_MODES.map((mode) => [mode.id, mode]));
 

@@ -8,6 +8,7 @@ import ToolHeader from './ui/ToolHeader';
 import { FILE_RESOURCE_POLICIES, validateResourceAddition } from '../lib/resourceLimits';
 import ExternalMapPreview from './ExternalMapPreview';
 import useObjectUrlRegistry from '../hooks/useObjectUrlRegistry';
+import { createEphemeralId } from '../lib/ephemeralId.js';
 
 // Jpeg Metadata Stripping Logic
 function stripJpegMetadata(arrayBuffer, mode) {
@@ -649,7 +650,7 @@ function getDecimalCoords(tags, expandedTags) {
 }
 
 const COMPARE_FIELDS = [
-  { label: 'Preview', fn: (img) => (
+  { labelKey: 'metadata-fields.preview', fn: (img) => (
       <div className="compare-preview-thumb">
         {img.previewSrc ? (
           <img src={img.previewSrc} alt={img.name} />
@@ -659,11 +660,11 @@ const COMPARE_FIELDS = [
       </div>
     )
   },
-  { label: 'Format', fn: (img) => img.type },
-  { label: 'File Size', fn: (img) => img.strippedInfo ? img.strippedInfo.formattedSize : img.formattedSize },
-  { label: 'Resolution', fn: (img) => fmtResolution(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
-  { label: 'Aspect Ratio', fn: (img) => fmtAspectRatio(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
-  { label: 'Camera', fn: (img) => {
+  { labelKey: 'metadata-fields.format', fn: (img) => img.type },
+  { labelKey: 'metadata-fields.fileSize', fn: (img) => img.strippedInfo ? img.strippedInfo.formattedSize : img.formattedSize },
+  { labelKey: 'metadata-fields.resolution', fn: (img) => fmtResolution(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
+  { labelKey: 'metadata-fields.aspectRatio', fn: (img) => fmtAspectRatio(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
+  { labelKey: 'metadata-fields.camera', fn: (img) => {
       const tags = img.strippedInfo ? img.strippedInfo.tags : img.tags;
       const make = fmtVal(exifGet(tags, 'Make'));
       const model = fmtVal(exifGet(tags, 'Model'));
@@ -671,19 +672,19 @@ const COMPARE_FIELDS = [
       return make || model || null;
     }
   },
-  { label: 'Lens', fn: (img) => fmtVal(exifGet(img.strippedInfo ? img.strippedInfo.tags : img.tags, 'LensModel', 'LensType')) },
-  { label: 'Date Taken', fn: (img) => fmtDateTime(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
-  { label: 'Shutter Speed', fn: (img) => fmtShutterSpeed(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
-  { label: 'Aperture', fn: (img) => fmtAperture(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
+  { labelKey: 'metadata-fields.lens', fn: (img) => fmtVal(exifGet(img.strippedInfo ? img.strippedInfo.tags : img.tags, 'LensModel', 'LensType')) },
+  { labelKey: 'metadata-fields.dateTaken', fn: (img) => fmtDateTime(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
+  { labelKey: 'metadata-fields.shutterSpeed', fn: (img) => fmtShutterSpeed(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
+  { labelKey: 'metadata-fields.aperture', fn: (img) => fmtAperture(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
   { label: 'ISO', fn: (img) => fmtISO(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
-  { label: 'Exp. Bias', fn: (img) => fmtVal(exifGet(img.strippedInfo ? img.strippedInfo.tags : img.tags, 'ExposureBiasValue', 'ExposureCompensation')) },
-  { label: 'Exposure Mode', fn: (img) => fmtExposureMode(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
-  { label: 'Metering Mode', fn: (img) => fmtMeteringMode(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
-  { label: 'Focal Length', fn: (img) => fmtFocalLength(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
-  { label: 'Color Space', fn: (img) => fmtColorSpace(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
-  { label: 'Color Depth', fn: (img) => fmtColorDepth(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
+  { labelKey: 'metadata-fields.exposureBias', fn: (img) => fmtVal(exifGet(img.strippedInfo ? img.strippedInfo.tags : img.tags, 'ExposureBiasValue', 'ExposureCompensation')) },
+  { labelKey: 'metadata-fields.exposureMode', fn: (img) => fmtExposureMode(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
+  { labelKey: 'metadata-fields.meteringMode', fn: (img) => fmtMeteringMode(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
+  { labelKey: 'metadata-fields.focalLength', fn: (img) => fmtFocalLength(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
+  { labelKey: 'metadata-fields.colorSpace', fn: (img) => fmtColorSpace(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
+  { labelKey: 'metadata-fields.colorDepth', fn: (img) => fmtColorDepth(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
   { label: 'GPS', fn: (img) => fmtGPS(img.strippedInfo ? img.strippedInfo.tags : img.tags) },
-  { label: 'Software', fn: (img) => fmtVal(exifGet(img.strippedInfo ? img.strippedInfo.tags : img.tags, 'Software')) },
+  { labelKey: 'metadata-fields.software', fn: (img) => fmtVal(exifGet(img.strippedInfo ? img.strippedInfo.tags : img.tags, 'Software')) },
 ];
 
 function downloadJson(tags, filename) {
@@ -825,7 +826,7 @@ export default function ImgMeta() {
             }
             
             resolve({
-              id: Date.now() + Math.random().toString(36).substr(2, 9),
+              id: createEphemeralId('image'),
               file: file,
               name: file.name,
               type: type,
@@ -1352,7 +1353,7 @@ export default function ImgMeta() {
               <tbody className="divide-y divide-border font-mono">
                 {COMPARE_FIELDS.map((field, fIdx) => (
                   <tr key={fIdx} className="hover:bg-app/10 transition-colors">
-                    <td className="p-3.5 pl-4 font-bold text-text-muted bg-app/20 text-xs font-sans">{field.label}</td>
+                    <td className="p-3.5 pl-4 font-bold text-text-muted bg-app/20 text-xs font-sans">{t(field.labelKey)}</td>
                     {comparedImages.map(img => {
                       const val = field.fn(img);
                       return (

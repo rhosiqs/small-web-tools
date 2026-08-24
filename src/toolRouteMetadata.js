@@ -9,7 +9,7 @@ function route(id, category, options = {}) {
 export const ROUTE_DEFINITIONS = [
   route('tool-home', 'home', { navigationVisible: false }),
   route('tool-slash', 'developer'), route('tool-wc', 'text'),
-  route('tool-casing', 'text', { staticLayout: true }), route('tool-typing', 'text'),
+  route('tool-casing', 'text', { staticLayout: true }),
   route('tool-color', 'media', { staticLayout: true }),
   route('tool-ascii', 'developer', { staticLayout: true }), route('tool-unicode', 'developer', { staticLayout: true }),
   route('tool-url', 'developer'), route('tool-markdown', 'developer'),

@@ -1,9 +1,9 @@
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAppRouting } from '../hooks/useAppRouting.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
-import { useShellPersistence } from '../hooks/useShellPersistence.js';
+import { readShellPreferences, useShellPersistence } from '../hooks/useShellPersistence.js';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -43,6 +43,8 @@ afterEach(async () => {
   await act(async () => root.unmount());
   container.remove();
   window.history.replaceState(null, '', '/');
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe('application shell hooks', () => {
@@ -74,5 +76,25 @@ describe('application shell hooks', () => {
     expect(localStorage.getItem('sidebarCollapsed')).toBe('true');
     expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
     expect(document.title).toBe('Small Web Tools');
+  });
+
+  it('reads stored shell preferences before the operating-system theme', () => {
+    localStorage.setItem('theme', 'light');
+    localStorage.setItem('sidebarCollapsed', 'true');
+    const matchMedia = vi.fn(() => ({ matches: true }));
+    vi.stubGlobal('matchMedia', matchMedia);
+
+    expect(readShellPreferences()).toEqual({ theme: 'light', isSidebarCollapsed: true });
+    expect(matchMedia).toHaveBeenCalledWith('(prefers-color-scheme: dark)');
+  });
+
+  it('falls back safely when Web Storage is unavailable', () => {
+    const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new DOMException('blocked', 'SecurityError');
+    });
+    vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: true })));
+
+    expect(readShellPreferences()).toEqual({ theme: 'dark', isSidebarCollapsed: false });
+    getItem.mockRestore();
   });
 });

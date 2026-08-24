@@ -51,5 +51,5 @@ export class ErrorBoundaryBase extends React.Component {
   }
 }
 
-export const ErrorBoundary = withTranslation('errors')(ErrorBoundaryBase);
+const ErrorBoundary = withTranslation('errors')(ErrorBoundaryBase);
 export default ErrorBoundary;

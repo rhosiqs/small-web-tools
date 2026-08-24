@@ -501,37 +501,37 @@ const FIELD_DESCRIPTIONS = {
 
 // Fields to compare side-by-side
 const COMPARE_FIELDS = [
-  { label: 'File Type', fn: (f) => f.type.toUpperCase() },
-  { label: 'File Size', fn: (f) => f.formattedSize },
-  { label: 'Title', fn: (f) => f.core.title },
-  { label: 'Creator (Author)', fn: (f) => f.core.creator },
-  { label: 'Subject', fn: (f) => f.core.subject },
-  { label: 'Description', fn: (f) => f.core.description },
-  { label: 'Keywords', fn: (f) => f.core.keywords },
-  { label: 'Category', fn: (f) => f.core.category },
-  { label: 'Content Status', fn: (f) => f.core.contentStatus },
-  { label: 'Revision Count', fn: (f) => f.core.revision },
-  { label: 'Created Time', fn: (f) => formatDate(f.core.created) },
-  { label: 'Last Modified By', fn: (f) => f.core.lastModifiedBy },
-  { label: 'Modified Time', fn: (f) => formatDate(f.core.modified) },
-  { label: 'Last Printed', fn: (f) => formatDate(f.core.lastPrinted) },
+  { labelKey: 'metadata-fields.fileType', fn: (f) => f.type.toUpperCase() },
+  { labelKey: 'metadata-fields.fileSize', fn: (f) => f.formattedSize },
+  { labelKey: 'metadata-fields.title', fn: (f) => f.core.title },
+  { labelKey: 'metadata-fields-extra.creator', fn: (f) => f.core.creator },
+  { labelKey: 'metadata-fields.subject', fn: (f) => f.core.subject },
+  { labelKey: 'metadata-fields.description', fn: (f) => f.core.description },
+  { labelKey: 'metadata-fields.keywords', fn: (f) => f.core.keywords },
+  { labelKey: 'metadata-fields.category', fn: (f) => f.core.category },
+  { labelKey: 'metadata-fields.contentStatus', fn: (f) => f.core.contentStatus },
+  { labelKey: 'metadata-fields.revisionCount', fn: (f) => f.core.revision },
+  { labelKey: 'metadata-fields.createdTime', fn: (f) => formatDate(f.core.created) },
+  { labelKey: 'metadata-fields.lastModifiedBy', fn: (f) => f.core.lastModifiedBy },
+  { labelKey: 'metadata-fields.modifiedTime', fn: (f) => formatDate(f.core.modified) },
+  { labelKey: 'metadata-fields.lastPrinted', fn: (f) => formatDate(f.core.lastPrinted) },
 
-  { label: 'Application', fn: (f) => f.app.Application },
-  { label: 'App Version', fn: (f) => f.app.AppVersion },
-  { label: 'PDF Specification', fn: (f) => f.app.PdfVersion },
-  { label: 'PDF Producer', fn: (f) => f.app.Producer },
-  { label: 'Encrypted', fn: (f) => f.app.Encrypted },
-  { label: 'Fast Web View', fn: (f) => f.app.Linearized },
-  { label: 'Page Dimensions', fn: (f) => f.app.PageDimensions },
-  { label: 'Company', fn: (f) => f.app.Company },
-  { label: 'Manager', fn: (f) => f.app.Manager },
-  { label: 'Template', fn: (f) => f.app.Template },
+  { labelKey: 'metadata-fields.application', fn: (f) => f.app.Application },
+  { labelKey: 'metadata-fields.appVersion', fn: (f) => f.app.AppVersion },
+  { labelKey: 'metadata-fields.pdfSpecification', fn: (f) => f.app.PdfVersion },
+  { labelKey: 'metadata-fields.pdfProducer', fn: (f) => f.app.Producer },
+  { labelKey: 'metadata-fields.encrypted', fn: (f) => f.app.Encrypted },
+  { labelKey: 'metadata-fields.fastWebView', fn: (f) => f.app.Linearized },
+  { labelKey: 'metadata-fields.pageDimensions', fn: (f) => f.app.PageDimensions },
+  { labelKey: 'metadata-fields.company', fn: (f) => f.app.Company },
+  { labelKey: 'metadata-fields.manager', fn: (f) => f.app.Manager },
+  { labelKey: 'metadata-fields.template', fn: (f) => f.app.Template },
   {
-    label: 'Total Editing Time',
+    labelKey: 'metadata-fields.totalEditingTime',
     fn: (f) => formatMinutes(f.app.TotalTime) || f.app.TotalTime
   },
   {
-    label: 'Format-Specific Details',
+    labelKey: 'metadata-fields.formatSpecificDetails',
     fn: (f) => {
       if (['docx', 'odt', 'pdf'].includes(f.type)) {
         return `Pages: ${f.app.Pages || '—'} | Words: ${f.app.Words || '—'} | Chars: ${f.app.Characters || '—'}`;
@@ -838,8 +838,8 @@ export default function DocMeta() {
         const xmlDoc = parser.parseFromString(metaText, "application/xml");
 
         const removeTags = mode === 'private'
-          ? ["creator", "initial-creator", "creation-date", "date"]
-          : ["creator", "initial-creator", "creation-date", "date", "generator", "title", "subject", "description", "keyword"];
+          ? ["creator", "initial-creator", "creation-date", "date", "editing-duration"]
+          : ["creator", "initial-creator", "creation-date", "date", "editing-duration", "generator", "title", "subject", "description", "keyword"];
 
         const els = xmlDoc.getElementsByTagName("*");
         for (let i = els.length - 1; i >= 0; i--) {
@@ -881,6 +881,21 @@ export default function DocMeta() {
       }
       zip.file("docProps/core.xml", new XMLSerializer().serializeToString(xmlDoc));
     }
+    const appFile = zip.file("docProps/app.xml");
+    if (appFile) {
+      const appText = await appFile.async("string");
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(appText, "application/xml");
+      const elements = xmlDoc.getElementsByTagName("*");
+      for (let i = elements.length - 1; i >= 0; i--) {
+        const el = elements[i];
+        const localName = el.localName || el.tagName.split(':').pop();
+        if (localName === "TotalTime") {
+          el.textContent = "";
+        }
+      }
+      zip.file("docProps/app.xml", new XMLSerializer().serializeToString(xmlDoc));
+    }
     if (zip.file("docProps/custom.xml") && mode === 'all') {
       zip.remove("docProps/custom.xml");
     }
@@ -903,7 +918,7 @@ export default function DocMeta() {
               size: strippedBlob.size,
               formattedSize: formatBytes(strippedBlob.size),
               core: mode === 'all' ? {} : { ...f.core, creator: '', lastModifiedBy: '', created: '', modified: '' },
-              app: mode === 'all' ? {} : f.app,
+              app: mode === 'all' ? {} : { ...f.app, TotalTime: '' },
               custom: mode === 'all' ? {} : f.custom,
               sheets: f.sheets,
               thumbnail: f.thumbnail
@@ -1167,7 +1182,7 @@ export default function DocMeta() {
               <tbody>
                 {COMPARE_FIELDS.map((field, idx) => (
                   <tr key={idx} className="border-b border-border last:border-0 hover:bg-hover-bg/30">
-                    <td className="p-2.5 px-4 text-xs font-semibold text-text-muted">{field.label}</td>
+                    <td className="p-2.5 px-4 text-xs font-semibold text-text-muted">{t(field.labelKey)}</td>
                     {comparedFiles.map(f => {
                       const val = field.fn(f);
                       return (

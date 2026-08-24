@@ -2,9 +2,23 @@
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "entry": [
     "src/main.jsx",
-    "functions/api/*.js"
+    "functions/api/*.js",
+    "functions/**/*.test.js",
+    "workers/*/src/index.js",
+    "scripts/*.mjs",
+    "src/tests/**/*.test.{js,jsx}",
+    "e2e/*.spec.js",
+    "test/integration/*/src/index.js"
   ],
-  "project": ["src/**/*.{js,jsx}", "functions/**/*.js", "*.js"],
-  "ignore": ["public/ffmpeg/**"],
+  "project": [
+    "src/**/*.{js,jsx}",
+    "functions/**/*.js",
+    "workers/**/*.js",
+    "scripts/*.mjs",
+    "e2e/*.js",
+    "test/**/*.js",
+    "*.js"
+  ],
+  "ignoreDependencies": ["wrangler"],
   "ignoreExportsUsedInFile": true
 }

@@ -16,11 +16,14 @@
     "types": ["vite/client"]
   },
   "include": [
+    "src/categoryDefinitions.jsx",
     "src/components/AppFooter.jsx",
     "src/components/AppHeader.jsx",
     "src/components/DesktopCategoryNav.jsx",
     "src/components/LanguageSwitcher.jsx",
     "src/components/MobileDrawer.jsx",
+    "src/components/AudioMeta/lib/**/*.js",
+    "src/components/VideoMeta/lib/**/*.js",
     "src/hooks/useAppRouting.js",
     "src/hooks/useDocumentTitle.js",
     "src/hooks/useShellPersistence.js",

@@ -39,7 +39,7 @@ export default defineConfig({
             if (id.includes('react') || id.includes('react-dom')) {
               return 'vendor-react';
             }
-            if (id.includes('exifreader') || id.includes('jszip') || id.includes('pdf-lib') || id.includes('docx') || id.includes('xlsx')) {
+            if (id.includes('exifreader') || id.includes('jszip')) {
               return 'vendor-meta';
             }
             if (id.includes('ffmpeg')) {

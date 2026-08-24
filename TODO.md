@@ -44,6 +44,10 @@ Use this sequence for each meaningful update:
 
 ## Completed
 
+### 2026-08-09
+
+- [x] `chore` Complete the v0.10.1-beta implementation runbook: remove stale code and configuration, strengthen Knip and i18n audits, centralize shell metadata and preferences, extract audio/video metadata domains with explicit Blob URL and FFmpeg lifecycles, expand strict checks and coverage, reconcile audience curation, and enable Dependabot major-version updates.
+
 ### 2026-08-03
 
 - [x] `feat 31` Complete the bilingual `en-US`/`zh-TW` refactor with persisted locale selection, localized shell and tool behavior, synchronized resources, and bilingual validation; released as `v0.8.0-beta`.
@@ -55,8 +59,6 @@ Use this sequence for each meaningful update:
 - [x] `feat` Add an accessible icon-only fullscreen preview for SVG, QR code, barcode, and VS Code image exports.
 - [x] `feat 2` Add a selectable audience mode for daily users, developers, bioinformatics researchers, designers, and students.
 - [x] `feat 3` Consider a simplified mode that surfaces only high-frequency tools and reduces advanced controls.
-- [x] `feat 4` Word & Character Counter中，在首行加入行數
-- [x] `fix 1` Typing speed test 現在不知道要從哪裡開始
 - [x] `fix 2` Slashes Converter的encode/decode作用是什麼？好像可以移除? ASCII Converter也是一樣。留auto 就好。另外，格線要對齊
 - [x] `fix 3` Folder Structure Analyzer部分，我上傳了一個資料夾後，一樣還是可以輸入新的path
 - [x] `fix 4` Color Code Converter & HSL Selector中的COLOR SYNC: ON/OFF按鈕要明顯一點

@@ -22,6 +22,20 @@ const SHELL_BASELINE = {
   statements: 50,
 };
 
+const APP_BASELINE = {
+  lines: 35,
+  functions: 35,
+  branches: 25,
+  statements: 35,
+};
+
+const MEDIA_DOMAIN_BASELINE = {
+  lines: 45,
+  functions: 50,
+  branches: 35,
+  statements: 45,
+};
+
 export default defineConfig({
   plugins: [react()],
   test: {
@@ -38,6 +52,10 @@ export default defineConfig({
         'functions/api/**',
         'src/toolRegistry.js',
         'src/toolModes.js',
+        'src/App.jsx',
+        'src/categoryDefinitions.jsx',
+        'src/components/AudioMeta/lib/**',
+        'src/components/VideoMeta/lib/**',
         'src/components/LanguageSwitcher.jsx',
         'src/components/{AppFooter,AppHeader,DesktopCategoryNav,MobileDrawer}.jsx',
         'src/hooks/{useAppRouting,useDocumentTitle,useShellPersistence}.js',
@@ -53,6 +71,9 @@ export default defineConfig({
         'functions/api/**': DOMAIN_BASELINE,
         'src/toolRegistry.js': UI_BASELINE,
         'src/toolModes.js': UI_BASELINE,
+        'src/App.jsx': APP_BASELINE,
+        'src/categoryDefinitions.jsx': DOMAIN_BASELINE,
+        'src/components/{AudioMeta,VideoMeta}/lib/**': MEDIA_DOMAIN_BASELINE,
         'src/components/LanguageSwitcher.jsx': UI_BASELINE,
         'src/components/{AppFooter,AppHeader,DesktopCategoryNav,MobileDrawer}.jsx': SHELL_BASELINE,
         'src/hooks/**': SHELL_BASELINE,

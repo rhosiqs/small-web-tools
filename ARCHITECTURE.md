@@ -48,7 +48,9 @@ CONTRIBUTING.md/CONTRIBUTING.zh-TW.md, ARCHITECTURE.md/ARCHITECTURE.zh-TW.md,
 and PRIVACY.md/PRIVACY.zh-TW.md. TODO.md is intentionally English-only.
 Supporting explanatory documents are public/fonts/MANIFEST.md with its
 Traditional Chinese companion, the two SSRF harness READMEs, and the
-English-only AI agent instructions in .agents/.
+English-only AI agent instructions in `AGENTS.md` and `.agents/`. The engineering
+skills read their issue-tracker, triage-label, and domain-document conventions
+from `docs/agents/`.
 
 ```text
 small-web-tools/
@@ -61,6 +63,10 @@ small-web-tools/
 ├── TODO.md                   Backlog, completed work, and update process
 ├── ARCHITECTURE.md           Architecture and maintenance reference
 ├── ARCHITECTURE.zh-TW.md     Traditional Chinese architecture reference
+├── AGENTS.md                 Engineering-skill configuration and pointers
+├── Dockerfile.dev            Node 22 image for containerized Vite development
+├── compose.yaml              Bind-mounted Vite development service and dependency volume
+├── .dockerignore             Docker build-context and local-secret exclusions
 ├── package.json              Scripts, dependencies, and pipeline commands
 ├── jsconfig.json             TypeScript checkJs configuration for JavaScript
 ├── eslint.config.js          ESLint flat config for React, hooks, and Cloudflare functions
@@ -77,8 +83,12 @@ small-web-tools/
 │   ├── check-i18n.mjs         Locale-pair structure and interpolation checks
 │   ├── check-hardcoded-ui.mjs User-facing string audit
 │   └── check-doc-consistency.mjs Documentation/link consistency checks
+├── docs/
+│   ├── agents/               Issue-tracker, triage-label, and domain-doc rules
+│   ├── docker-development.md Docker development workflow
+│   └── docker-development.zh-TW.md Traditional Chinese Docker workflow
 ├── .github/
-│   ├── dependabot.yml        Weekly dependency update configuration
+│   ├── dependabot.yml        Monthly dependency updates, including major versions
 │   └── workflows/ci.yml      GitHub Actions CI pipeline workflow
 ├── public/
 │   ├── _headers              Cloudflare Pages security response headers
@@ -87,6 +97,7 @@ small-web-tools/
 ├── src/
 │   ├── main.jsx              React mount and global stylesheet import
 │   ├── App.jsx               Application-shell composition and registry renderer
+│   ├── categoryDefinitions.jsx Shared category IDs, labels, and icons
 │   ├── toolRouteMetadata.js  Canonical routes, aliases, metadata, and layout flags
 │   ├── toolRegistry.js       Lazy component loaders joined to canonical route metadata
 │   ├── toolModes.js          Audience and Simple workspace profiles, filtering, and URL helpers
@@ -132,7 +143,8 @@ The JavaScript migration uses three explicit TypeScript checkJs projects.
 the existing narrow domain/shared-helper boundary. `jsconfig.ui.json` is the
 incremental shared-UI boundary; it enables `strictNullChecks` for `LanguageSwitcher`,
 the desktop header/category/footer components, `MobileDrawer`, the routing/title/
-persistence hooks, and their pure route/mode dependencies. `npm run typecheck` executes all
+persistence hooks, shared category definitions, the extracted audio/video metadata
+domains, and their pure route/mode dependencies. `npm run typecheck` executes all
 three projects in CI. New exclusions must remain minimal and documented, and an
 expanded UI boundary must fix every newly exposed error in the same change.
 
@@ -146,7 +158,7 @@ expanded UI boundary must fix every newly exposed error in the same change.
 
 - `src/toolRouteMetadata.js` is the only route metadata source. Sidebar, desktop navigation, dashboard cards, active titles, footer links, static layouts, lazy components, and route tests derive from it; `src/toolRegistry.js` only joins that metadata to lazy component loaders.
 - Registry aliases preserve old bookmarks; `tool-officemeta` resolves to `tool-docmeta`.
-- `categories` define the six presentation groups: Text, Developer, Network, Media, Bioinfo, and Utilities.
+- `src/categoryDefinitions.jsx` defines the six presentation groups and shared icons: Text, Developer, Network, Media, Bioinfo, and Utilities.
 - `useAppRouting` initializes `activeTool` from `/home[/<audience>]/<tool-slug>` or `/simple/<tool-slug>` and synchronizes navigation and browser history with the path.
 - `useAppRouting` initializes `toolMode` from the validated `/home` or `/simple` path. The workspace path
   remains in the URL while path navigation changes tools.
@@ -208,7 +220,10 @@ provides an all-tool search and eight compact shortcuts inside the reduced shell
 Routing uses `/home[/<audience>][/<tool-slug>]` and
 `/simple[/<tool-slug>]`; legacy `/home/simple` addresses redirect to `/simple`.
 Focused coverage lives in `toolModes.test.js`, `homeGrid.test.jsx`,
-`audienceSwitcher.test.jsx`, and `simpleHome.test.jsx`.
+`audienceSwitcher.test.jsx`, `simpleHome.test.jsx`, and `App.test.jsx`. Mermaid is
+part of the developer audience. Every other navigable tool must appear in at least
+one curated workspace or have a maintained rationale in
+`INTENTIONAL_CURATED_EXCLUSIONS`; `toolModes.test.js` enforces that invariant.
 
 ### Shared tool-page contract
 
@@ -239,7 +254,6 @@ Prefer the shared primitives and existing design tokens. Add global CSS only for
 | `tool-home` | Dashboard | `HomeGrid.jsx` | Dashboard |
 | `tool-wc` | Word Counter | `WordCounter.jsx` | Text |
 | `tool-casing` | Casing Switcher | `CasingSwitcher.jsx` | Text |
-| `tool-typing` | Typing Speed Test | `TypingSpeedTest.jsx` | Text |
 | `tool-slash` | Slashes Converter | `SlashesConverter.jsx` | Developer |
 | `tool-ascii` | ASCII Converter | `AsciiConverter.jsx` | Developer |
 | `tool-unicode` | Unicode Converter | `UnicodeConverter.jsx` | Developer |
@@ -319,18 +333,24 @@ filename inference, contrast selection, and highlighting helpers live under
 
 `ImgMeta.jsx`, `DocMeta.jsx`, `AudioMeta.jsx`, and `VideoMeta.jsx` parse user-selected files in the browser. They support tool-specific inspection, comparison, export, or metadata-removal workflows without routing files through this application.
 
+Audio parsing, format detection, metadata stripping, tag labels, and URL ownership
+live under `src/components/AudioMeta/lib/`. MP4/MOV parsing, codec/color mappings,
+timecode conversion, browser probing, and the serialized FFmpeg audio-extraction
+service live under `src/components/VideoMeta/lib/`. The extraction service owns
+unique virtual filenames, progress-listener removal, virtual-file deletion,
+cancellation checks, and engine termination. `useObjectUrlRegistry` remains the
+component-level owner of preview, derived-output, and download Blob URLs. Focused
+coverage lives in `audioMetadataDomain.test.js` and `videoMetadataDomain.test.js`.
+
 Pure document formatting/parsing helpers live under `src/components/DocMeta/lib/`.
-QR/barcode encoding rules, typing-template/metrics transformations, and codon
-input/filter/presentation rules live in their corresponding
+QR/barcode encoding rules and codon input/filter/presentation rules live in their corresponding
 `src/components/<Tool>/lib/` directories. Focused coverage is in
-`documentMetadataDomain.test.js`, `qrBarcodeDomain.test.js`,
-`typingTemplateDomain.test.js`, `typingMetricsDomain.test.js`, and
+`documentMetadataDomain.test.js`, `qrBarcodeDomain.test.js`, and
 `codonDomain.test.js`; DNA/RNA copy formatting coverage is in `dnaCopy.test.js`,
 time-difference coverage is in `timeDomain.test.js`, Roman numeral coverage is
 in `romanDomain.test.js`, Phred conversion coverage is in `phredDomain.test.js`,
 sanitized SVG parsing/export-size coverage is in `svgDomain.test.js`, and URL
-percent-encoding coverage is in `urlDomain.test.js`. The explicit typing-start
-flow is covered by `typingStart.test.jsx`; the converter-mode, folder-picker,
+percent-encoding coverage is in `urlDomain.test.js`. The converter-mode, folder-picker,
 Color Sync, and image-stripping guidance regressions are covered by
 `converterClipboard.test.jsx` and `enhancementUi.test.jsx`.
 
@@ -392,6 +412,8 @@ are version-controlled. Local Wrangler state and credentials are not:
   `.dev.vars.example` remains tracked as the safe template.
 - `dist/`, `coverage/`, `.playwright-cli/`, `test-results/`, and
   `playwright-report/` are generated locally and ignored.
+- `.scratch/security/` contains local private security issue records and is
+  ignored; security-related work must not be published to GitHub Issues.
 - `code_reviews/` contains ignored, local review working records. They are dated
   historical snapshots, are not version-controlled, and are not current project
   status or canonical instructions.
@@ -407,8 +429,9 @@ build, test, operate, or maintain the project:
 - `package.json`, `package-lock.json`, `.nvmrc`, `index.html`, and the ESLint,
   JavaScript, Knip, Playwright, PostCSS, Tailwind, Vite, Vitest, and Wrangler
   configuration files define reproducible local development and verification.
-- `.github/` contains CI and dependency-maintenance configuration, while
-  `.agents/AGENTS.md` contains repository-scoped development instructions.
+- `.github/` contains CI and dependency-maintenance configuration;
+  `.agents/AGENTS.md` contains repository-scoped development instructions, while
+  root `AGENTS.md` points engineering skills to the rules in `docs/agents/`.
 - `README.md`, `README.zh-TW.md`, `CONTRIBUTING.md`, `ARCHITECTURE.md`, `PRIVACY.md`, `TODO.md`, and
   `LICENSE` are maintained project documentation or legal material.
 - `.dev.vars.example` is safe, non-secret local-runtime documentation. Actual
@@ -438,11 +461,6 @@ CJK characters use a character-based reading pace (500 characters per minute),
 while non-CJK text uses a word-based pace (200 words per minute); mixed content
 combines both estimates. `Intl.Segmenter` supplies grapheme and sentence
 boundaries when available, and `Intl.NumberFormat` formats the displayed result.
-
-Typing Speed Test fixtures remain language-neutral test content. Its correctness
-and WPM metrics operate on the supplied graphemes/keystrokes rather than silently
-assuming that the active UI locale is the content language. Locale changes only
-translate the surrounding controls, metrics, status, and history presentation.
 
 Password analysis continues to use the bundled English `zxcvbn` dictionary for
 pattern detection in this beta. The UI deliberately maps the numeric score to
@@ -481,6 +499,11 @@ pluralized messages use platform `Intl` APIs or i18next interpolation.
 
 ## Local development
 
+The host workflow below and the containerized Vite workflow in
+[`docs/docker-development.md`](docs/docker-development.md) are both supported.
+The Docker workflow uses `Dockerfile.dev` and `compose.yaml`, and intentionally
+has the same `/api/iplookup`-only function mirror as `npm run dev`.
+
 ```bash
 npm install --global npm@10.9.2
 npm ci
@@ -488,6 +511,7 @@ npm run dev
 npm run build
 npm run i18n:check
 npm run i18n:audit
+npm run deadcode:check
 npm run verify
 npm run test:e2e
 npm run docs:check
@@ -502,6 +526,11 @@ normal and strict checkJs, coverage thresholds, production build, bundle budgets
 static header policy, the external-host inventory, Cloudflare topology, and
 documentation consistency. CI additionally runs dependency checks, Playwright
 journeys, and `npm audit`.
+
+The coverage gate includes `App.jsx`, shared category definitions, and the extracted
+audio/video domains with per-boundary thresholds. Knip runs in dependency-only and
+full dead-code modes with explicit application, Functions, Worker, script, test,
+integration, and browser-journey entry points.
 
 ## Adding or changing a tool
 

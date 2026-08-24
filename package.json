@@ -38,6 +38,7 @@
     "test:e2e:deployed": "playwright test e2e/deployed-headers.spec.js",
     "test:ssrf-runtime": "node scripts/verify-ssrf-cloudflare-runtime.mjs",
     "deps:check": "knip --dependencies --no-progress",
+    "deadcode:check": "knip --no-progress",
     "audit": "npm audit --audit-level=moderate",
     "verify": "npm run version:check && npm run i18n:check && npm run i18n:audit && npm run lint && npm run lint:changed && npm run typecheck && npm run test:coverage && npm run build && npm run bundle:check && npm run headers:check && npm run external-hosts:check && npm run platform:check && npm run docs:check"
   },
@@ -71,11 +72,6 @@
     "esbuild": "^0.25.0",
     "minimatch": "10.2.5",
     "undici": "7.29.0"
-  },
-  "knip": {
-    "ignoreDependencies": [
-      "wrangler"
-    ]
   },
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.12.15",

@@ -1,439 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ensureFFmpegLoaded, guessMime, terminateFFmpeg } from './mediaSeparatorEngine';
 import MediaSeparatorWaveform from './MediaSeparatorWaveform';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import ToolHeader from './ui/ToolHeader';
 import { FILE_RESOURCE_POLICIES, validateResourceAddition } from '../lib/resourceLimits';
+import { formatDuration } from '../lib/mediaMetadataFormatters';
 import useObjectUrlRegistry from '../hooks/useObjectUrlRegistry';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Helper utilities
-// ─────────────────────────────────────────────────────────────────────────────
-
-const formatBytes = (bytes) => {
-  if (!bytes || bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-};
-
-const formatDuration = (seconds) => {
-  if (!seconds || isNaN(seconds) || !isFinite(seconds)) return '—';
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-  return `${m}:${String(s).padStart(2, '0')}`;
-};
-
-function readUint32BE(buf, offset) {
-  return ((buf[offset] << 24) | (buf[offset + 1] << 16) | (buf[offset + 2] << 8) | buf[offset + 3]) >>> 0;
-}
-
-function readUint16BE(buf, offset) {
-  return ((buf[offset] << 8) | buf[offset + 1]) >>> 0;
-}
-
-function latin1ToString(bytes) {
-  return Array.from(bytes).map(b => String.fromCharCode(b)).join('');
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ITU-T H.273 Color parameter mappings
-// ─────────────────────────────────────────────────────────────────────────────
-
-const COLOR_PRIMARIES = {
-  1: 'BT.709 (sRGB)', 2: 'Unspecified', 4: 'BT.470M', 5: 'BT.601 (PAL)',
-  6: 'BT.601 (NTSC)', 7: 'SMPTE 240M', 8: 'Generic Film', 9: 'BT.2020',
-  10: 'SMPTE ST 428', 11: 'SMPTE RP 431', 12: 'Display P3 (D65)', 22: 'EBU Tech 3213-E',
-};
-
-const TRANSFER_CHARACTERISTICS = {
-  1: 'BT.709 (SDR)', 2: 'Unspecified', 4: 'BT.470M (Gamma 2.2)', 5: 'BT.470BG (Gamma 2.8)',
-  6: 'BT.601 (SDR)', 7: 'SMPTE 240M', 8: 'Linear', 9: 'Log (100:1)', 10: 'Log (316:1)',
-  11: 'IEC 61966-2-4', 13: 'IEC 61966-2-1 (sRGB)', 14: 'BT.2020 (10-bit)',
-  15: 'BT.2020 (12-bit)', 16: 'SMPTE ST 2084 (PQ / HDR10)', 17: 'SMPTE ST 428',
-  18: 'ARIB STD-B67 (HLG)',
-};
-
-const MATRIX_COEFFICIENTS = {
-  0: 'Identity (RGB)', 1: 'BT.709', 2: 'Unspecified', 4: 'FCC', 5: 'BT.601 (PAL)',
-  6: 'BT.601 (NTSC)', 7: 'SMPTE 240M', 8: 'YCgCo', 9: 'BT.2020 (NCL)',
-  10: 'BT.2020 (CL)', 11: 'SMPTE ST 2085', 14: 'ICtCp (BT.2100)',
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Codec FourCC mapping
-// ─────────────────────────────────────────────────────────────────────────────
-
-const VIDEO_CODEC_MAP = {
-  'avc1': 'H.264 (AVC)', 'avc2': 'H.264 (AVC)', 'avc3': 'H.264 (AVC)', 'avc4': 'H.264 (AVC)',
-  'hev1': 'H.265 (HEVC)', 'hvc1': 'H.265 (HEVC)',
-  'vp08': 'VP8', 'vp09': 'VP9', 'av01': 'AV1', 'mp4v': 'MPEG-4 Part 2', 's263': 'H.263',
-  'dvhe': 'Dolby Vision HEVC', 'dvh1': 'Dolby Vision HEVC',
-  'dva1': 'Dolby Vision AVC', 'dvav': 'Dolby Vision AVC',
-  'ap4h': 'Apple ProRes 4444', 'ap4x': 'Apple ProRes 4444 XQ',
-  'apch': 'Apple ProRes 422 HQ', 'apcn': 'Apple ProRes 422',
-  'apcs': 'Apple ProRes 422 LT', 'apco': 'Apple ProRes 422 Proxy',
-  'aprh': 'Apple ProRes RAW HQ', 'aprn': 'Apple ProRes RAW',
-};
-
-const AUDIO_CODEC_MAP = {
-  'mp4a': 'AAC', 'ac-3': 'Dolby Digital (AC-3)', 'ec-3': 'Dolby Digital Plus (E-AC-3)',
-  'alac': 'Apple Lossless (ALAC)', 'fLaC': 'FLAC', 'Opus': 'Opus', 'vorbis': 'Vorbis',
-  'lpcm': 'Linear PCM', 'sowt': 'PCM (Little-Endian)', 'twos': 'PCM (Big-Endian)',
-  'alaw': 'A-law PCM', 'ulaw': '\u00b5-law PCM',
-  'dtsc': 'DTS Core', 'dtse': 'DTS-HD LBR', 'dtsh': 'DTS-HD', 'dtsl': 'DTS-HD Lossless',
-};
-
-const SUBTITLE_HANDLER_TYPES = ['sbtl', 'text', 'subt', 'clcp', 'subp'];
-
-const getAudioExtension = (codecFourCC, codecName) => {
-  const codecc = (codecFourCC || '').toLowerCase();
-  const name = (codecName || '').toLowerCase();
-  if (codecc === 'mp4a' || name.includes('aac')) return 'm4a';
-  if (codecc === 'ac-3' || name.includes('ac-3') || name.includes('dolby digital')) return 'ac3';
-  if (codecc === 'ec-3' || name.includes('e-ac-3')) return 'eac3';
-  if (codecc === 'flac' || name.includes('flac')) return 'flac';
-  if (codecc === 'opus' || name.includes('opus')) return 'opus';
-  if (codecc === 'vorbis' || name.includes('vorbis')) return 'ogg';
-  if (codecc === 'mp3' || name.includes('mp3')) return 'mp3';
-  if (codecc === 'alac' || name.includes('alac')) return 'm4a';
-  return 'mka';
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SMPTE Timecode conversion
-// ─────────────────────────────────────────────────────────────────────────────
-
-function frameCountToTimecode(frameCount, fps, isDropFrame) {
-  if (!fps || fps <= 0) return null;
-  const roundedFps = Math.round(fps);
-  const pad = (n) => n.toString().padStart(2, '0');
-
-  if (isDropFrame && (roundedFps === 30 || roundedFps === 60)) {
-    const dropFrames = roundedFps === 60 ? 4 : 2;
-    const framesPerMinute = roundedFps * 60 - dropFrames;
-    const framesPerTenMinutes = framesPerMinute * 10 + dropFrames;
-    const d = Math.floor(frameCount / framesPerTenMinutes);
-    let m = frameCount % framesPerTenMinutes;
-    let adj = frameCount;
-    if (m >= dropFrames) {
-      adj += (18 * d) + (dropFrames * Math.floor((m - dropFrames) / framesPerMinute));
-    } else {
-      adj += 18 * d;
-    }
-    return `${pad(Math.floor(adj / (roundedFps * 3600)) % 24)}:${pad(Math.floor(adj / (roundedFps * 60)) % 60)}:${pad(Math.floor(adj / roundedFps) % 60)};${pad(adj % roundedFps)}`;
-  }
-
-  return `${pad(Math.floor(frameCount / (roundedFps * 3600)) % 24)}:${pad(Math.floor(frameCount / (roundedFps * 60)) % 60)}:${pad(Math.floor(frameCount / roundedFps) % 60)}:${pad(frameCount % roundedFps)}`;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MP4/MOV Parser
-// ─────────────────────────────────────────────────────────────────────────────
-
-function parseMP4(uint8) {
-  const result = { brand: null, compatibleBrands: [], duration: null, timescale: null, creationTime: null, tracks: [], metadata: {} };
-
-  function rs(start, len) { return latin1ToString(uint8.slice(start, start + len)); }
-
-  const CONTAINER_ATOMS = ['moov', 'trak', 'mdia', 'minf', 'stbl', 'udta', 'meta', 'ilst', 'edts'];
-  let currentTrack = null;
-  const trackStack = [];
-
-  function parseAtoms(start, end) {
-    let pos = start;
-    while (pos + 8 <= end) {
-      let atomSize = readUint32BE(uint8, pos);
-      const atomType = rs(pos + 4, 4).trim();
-      let headerSize = 8;
-      if (atomSize === 1 && pos + 16 <= end) {
-        atomSize = readUint32BE(uint8, pos + 8) * 4294967296 + readUint32BE(uint8, pos + 12);
-        headerSize = 16;
-      } else if (atomSize === 0) { atomSize = end - pos; }
-      if (atomSize < 8 || pos + atomSize > end) break;
-      try { handleAtom(atomType, pos + headerSize, pos + atomSize); } catch { /* skip */ }
-      pos += atomSize;
-    }
-  }
-
-  function handleAtom(type, start, end) {
-    if (type === 'ftyp') {
-      result.brand = rs(start, 4).trim();
-      const brands = [];
-      for (let i = start + 8; i + 4 <= end; i += 4) { const b = rs(i, 4).trim(); if (b) brands.push(b); }
-      result.compatibleBrands = brands;
-    }
-    if (type === 'mvhd') {
-      const v = uint8[start];
-      if (v === 0) {
-        result.creationTime = readUint32BE(uint8, start + 4);
-        result.timescale = readUint32BE(uint8, start + 12);
-        result.duration = result.timescale > 0 ? readUint32BE(uint8, start + 16) / result.timescale : null;
-      } else {
-        result.timescale = readUint32BE(uint8, start + 20);
-        const dur = readUint32BE(uint8, start + 24) * 4294967296 + readUint32BE(uint8, start + 28);
-        result.duration = result.timescale > 0 ? dur / result.timescale : null;
-      }
-    }
-    if (type === 'trak') {
-      currentTrack = { type: null, handlerType: null, handlerName: '', codec: null, codecFourCC: null, width: null, height: null, sampleRate: null, channels: null, bitsPerSample: null, timescale: null, duration: null, sampleCount: null, colorPrimaries: null, transferCharacteristics: null, matrixCoefficients: null, fullRange: null, colorInfo: null, timecodeFlags: null, timecodeFrameDuration: null, timecodeTimescale: null, timecodeNumFrames: null, timecodeStartFrame: null, language: null, bitDepth: null, compressorName: null };
-      trackStack.push(currentTrack);
-      parseAtoms(start, end);
-      result.tracks.push(currentTrack);
-      trackStack.pop();
-      currentTrack = trackStack.length > 0 ? trackStack[trackStack.length - 1] : null;
-      return;
-    }
-    if (type === 'hdlr' && currentTrack) {
-      const ht = rs(start + 8, 4).trim();
-      currentTrack.handlerType = ht;
-      const ns = start + 24;
-      if (ns < end) { let ne = ns; while (ne < end && uint8[ne] !== 0) ne++; if (ne > ns) currentTrack.handlerName = rs(ns, ne - ns); }
-      if (ht === 'vide') currentTrack.type = 'video';
-      else if (ht === 'soun') currentTrack.type = 'audio';
-      else if (ht === 'tmcd') currentTrack.type = 'timecode';
-      else if (SUBTITLE_HANDLER_TYPES.includes(ht)) currentTrack.type = 'subtitle';
-      else currentTrack.type = 'other';
-    }
-    if (type === 'mdhd' && currentTrack) {
-      const v = uint8[start];
-      if (v === 0) {
-        currentTrack.timescale = readUint32BE(uint8, start + 12);
-        const dur = readUint32BE(uint8, start + 16);
-        currentTrack.duration = currentTrack.timescale > 0 ? dur / currentTrack.timescale : null;
-        const lc = readUint16BE(uint8, start + 20);
-        if (lc > 0) currentTrack.language = String.fromCharCode(((lc >> 10) & 0x1F) + 0x60, ((lc >> 5) & 0x1F) + 0x60, (lc & 0x1F) + 0x60);
-      } else {
-        currentTrack.timescale = readUint32BE(uint8, start + 20);
-        const dur = readUint32BE(uint8, start + 24) * 4294967296 + readUint32BE(uint8, start + 28);
-        currentTrack.duration = currentTrack.timescale > 0 ? dur / currentTrack.timescale : null;
-        const lc = readUint16BE(uint8, start + 32);
-        if (lc > 0) currentTrack.language = String.fromCharCode(((lc >> 10) & 0x1F) + 0x60, ((lc >> 5) & 0x1F) + 0x60, (lc & 0x1F) + 0x60);
-      }
-    }
-    if (type === 'stsd' && currentTrack) {
-      let ePos = start + 8;
-      const eCount = readUint32BE(uint8, start + 4);
-      for (let i = 0; i < eCount && ePos + 8 <= end; i++) {
-        const eSize = readUint32BE(uint8, ePos);
-        const eType = rs(ePos + 4, 4).trim();
-        const eEnd = ePos + eSize;
-        if (eSize < 8 || eEnd > end) break;
-        if (currentTrack.type === 'video') {
-          currentTrack.codecFourCC = eType;
-          currentTrack.codec = VIDEO_CODEC_MAP[eType] || eType;
-          if (eSize >= 78) {
-            const bo = ePos + 8;
-            currentTrack.width = readUint16BE(uint8, bo + 24);
-            currentTrack.height = readUint16BE(uint8, bo + 26);
-            const cl = uint8[bo + 42];
-            if (cl > 0 && cl <= 31) currentTrack.compressorName = rs(bo + 43, cl).trim();
-            currentTrack.bitDepth = readUint16BE(uint8, bo + 74);
-          }
-          const cs = ePos + 86;
-          if (cs < eEnd) scanChildBoxes(cs, eEnd);
-        } else if (currentTrack.type === 'audio') {
-          currentTrack.codecFourCC = eType;
-          currentTrack.codec = AUDIO_CODEC_MAP[eType] || eType;
-          if (eSize >= 36) {
-            const bo = ePos + 8;
-            currentTrack.channels = readUint16BE(uint8, bo + 16);
-            currentTrack.bitsPerSample = readUint16BE(uint8, bo + 18);
-            currentTrack.sampleRate = readUint32BE(uint8, bo + 24) >> 16;
-          }
-        } else if (currentTrack.type === 'timecode') {
-          if (eSize >= 34) {
-            const bo = ePos + 8;
-            currentTrack.timecodeFlags = readUint32BE(uint8, bo + 12);
-            currentTrack.timecodeTimescale = readUint32BE(uint8, bo + 16);
-            currentTrack.timecodeFrameDuration = readUint32BE(uint8, bo + 20);
-            currentTrack.timecodeNumFrames = uint8[bo + 24];
-          }
-        } else if (currentTrack.type === 'subtitle') {
-          currentTrack.codecFourCC = eType;
-          currentTrack.codec = eType === 'tx3g' ? 'MPEG-4 Timed Text' : eType === 'c608' ? 'CEA-608' : eType === 'c708' ? 'CEA-708' : eType === 'wvtt' ? 'WebVTT' : eType === 'stpp' ? 'TTML' : eType;
-        }
-        ePos += eSize;
-      }
-    }
-    if (type === 'stsz' && currentTrack) { currentTrack.sampleCount = readUint32BE(uint8, start + 8); }
-    if (type === 'stco' && currentTrack && currentTrack.type === 'timecode') {
-      const cnt = readUint32BE(uint8, start + 4);
-      if (cnt > 0) { const off = readUint32BE(uint8, start + 8); if (off + 4 <= uint8.length) currentTrack.timecodeStartFrame = readUint32BE(uint8, off); }
-    }
-    if (type === 'co64' && currentTrack && currentTrack.type === 'timecode') {
-      const cnt = readUint32BE(uint8, start + 4);
-      if (cnt > 0) { const off = readUint32BE(uint8, start + 8) * 4294967296 + readUint32BE(uint8, start + 12); if (off + 4 <= uint8.length) currentTrack.timecodeStartFrame = readUint32BE(uint8, off); }
-    }
-    // ilst metadata
-    const tagMap = { '\u00a9nam': 'Title', '\u00a9ART': 'Artist', '\u00a9alb': 'Album', '\u00a9day': 'Year', '\u00a9gen': 'Genre', '\u00a9cmt': 'Comment', '\u00a9too': 'Encoder', 'cprt': 'Copyright', 'desc': 'Description', '\u00a9wrt': 'Composer', '\u00a9lyr': 'Lyrics' };
-    if (tagMap[type] !== undefined) {
-      let dPos = start;
-      while (dPos + 8 <= end) {
-        const dSize = readUint32BE(uint8, dPos); const dType = rs(dPos + 4, 4);
-        if (dType === 'data' && dSize > 16) {
-          const dt = readUint32BE(uint8, dPos + 8);
-          if (dt === 1) { const td = new TextDecoder('utf-8'); result.metadata[tagMap[type]] = td.decode(uint8.slice(dPos + 16, dPos + dSize)).trim(); }
-        }
-        if (dSize === 0) break; dPos += dSize;
-      }
-    }
-    if (CONTAINER_ATOMS.includes(type) && type !== 'trak') {
-      let cs = start; if (type === 'meta') cs += 4;
-      parseAtoms(cs, end);
-    }
-  }
-
-  function scanChildBoxes(start, end) {
-    let pos = start;
-    while (pos + 8 <= end) {
-      const sz = readUint32BE(uint8, pos); const tp = rs(pos + 4, 4).trim();
-      if (sz < 8 || pos + sz > end) break;
-      if (tp === 'colr' && currentTrack) {
-        const ct = rs(pos + 8, 4).trim();
-        if ((ct === 'nclx' || ct === 'nclc') && sz >= 18) {
-          currentTrack.colorPrimaries = readUint16BE(uint8, pos + 12);
-          currentTrack.transferCharacteristics = readUint16BE(uint8, pos + 14);
-          currentTrack.matrixCoefficients = readUint16BE(uint8, pos + 16);
-          if (ct === 'nclx' && sz >= 19) currentTrack.fullRange = (uint8[pos + 18] & 0x80) !== 0;
-          currentTrack.colorInfo = ct;
-        }
-      }
-      pos += sz;
-    }
-  }
-
-  try { parseAtoms(0, uint8.length); } catch { /* skip */ }
-  return result;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Log File Parser
-// ─────────────────────────────────────────────────────────────────────────────
-
-function parseLogFile(text) {
-  const lines = text.split(/\r?\n/);
-  const params = {};
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('//')) continue;
-    const match = trimmed.match(/^([^:=\t]+)\s*[:=\t]\s*(.+)$/);
-    if (match) { const key = match[1].trim(); const val = match[2].trim(); if (key && val) params[key] = val; }
-  }
-  return { params, rawText: text };
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Master file parser dispatcher
-// ─────────────────────────────────────────────────────────────────────────────
-
-async function parseMediaFile(file) {
-  const ext = file.name.split('.').pop().toLowerCase();
-  const arrayBuffer = await file.arrayBuffer();
-  const uint8 = new Uint8Array(arrayBuffer);
-
-  const fr = {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-    name: file.name, size: file.size, formattedSize: formatBytes(file.size), ext, format: ext.toUpperCase(), type: 'video',
-    videoTracks: [], audioTracks: [], subtitleTracks: [], timecodeTracks: [], otherTracks: [],
-    brand: null, compatibleBrands: [], containerDuration: null, containerTimescale: null, creationTime: null, metadata: {},
-    logParams: null, logRawText: null, thumbnailUrl: null, objectUrl: null,
-  };
-
-  if (['log', 'txt'].includes(ext)) {
-    fr.type = 'log'; fr.format = ext.toUpperCase();
-    const text = new TextDecoder('utf-8').decode(uint8);
-    const lr = parseLogFile(text); fr.logParams = lr.params; fr.logRawText = lr.rawText;
-    return fr;
-  }
-
-  if (['mp4', 'mov', 'm4v', 'f4v', '3gp', '3g2'].includes(ext)) {
-    const r = parseMP4(uint8);
-    fr.brand = r.brand; fr.compatibleBrands = r.compatibleBrands; fr.containerDuration = r.duration;
-    fr.containerTimescale = r.timescale; fr.creationTime = r.creationTime; fr.metadata = r.metadata;
-    for (const t of r.tracks) {
-      if (t.type === 'video') fr.videoTracks.push(t);
-      else if (t.type === 'audio') fr.audioTracks.push(t);
-      else if (t.type === 'subtitle') fr.subtitleTracks.push(t);
-      else if (t.type === 'timecode') fr.timecodeTracks.push(t);
-      else if (t.type === 'other') fr.otherTracks.push(t);
-    }
-    if (ext === 'mov') fr.format = 'MOV';
-    else if (ext === 'm4v') fr.format = 'M4V';
-    else if (ext === '3gp' || ext === '3g2') fr.format = ext.toUpperCase();
-    else fr.format = 'MP4';
-  } else if (['avi', 'mkv', 'webm', 'wmv', 'flv', 'ts', 'mts', 'm2ts', 'mxf'].includes(ext)) {
-    fr.format = ext.toUpperCase(); fr.type = 'video';
-  } else {
-    // Try ftyp detection
-    if (uint8.length >= 12 && latin1ToString(uint8.slice(4, 8)) === 'ftyp') {
-      const r = parseMP4(uint8);
-      fr.brand = r.brand; fr.compatibleBrands = r.compatibleBrands; fr.containerDuration = r.duration; fr.metadata = r.metadata;
-      for (const t of r.tracks) {
-        if (t.type === 'video') fr.videoTracks.push(t);
-        else if (t.type === 'audio') fr.audioTracks.push(t);
-        else if (t.type === 'subtitle') fr.subtitleTracks.push(t);
-        else if (t.type === 'timecode') fr.timecodeTracks.push(t);
-      }
-    }
-  }
-
-  if (fr.type === 'video') {
-    const hi = await getVideoInfo(file);
-    if (hi) {
-      if (!fr.containerDuration && hi.duration) fr.containerDuration = hi.duration;
-      if (hi.videoWidth && fr.videoTracks.length > 0 && !fr.videoTracks[0].width) { fr.videoTracks[0].width = hi.videoWidth; fr.videoTracks[0].height = hi.videoHeight; }
-      fr.thumbnailUrl = hi.thumbnail;
-    }
-  }
-  return fr;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// HTML5 Video info extraction (duration + thumbnail)
-// ─────────────────────────────────────────────────────────────────────────────
-
-async function getVideoInfo(file) {
-  return new Promise((resolve) => {
-    const url = URL.createObjectURL(file);
-    const video = document.createElement('video');
-    video.preload = 'metadata'; video.muted = true;
-    let resolved = false;
-
-    video.onloadeddata = () => { video.currentTime = Math.min(1, video.duration * 0.1); };
-
-    video.onseeked = () => {
-      if (resolved) return; resolved = true;
-      let thumbnail = null;
-      try {
-        const c = document.createElement('canvas'); c.width = video.videoWidth; c.height = video.videoHeight;
-        c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
-        thumbnail = c.toDataURL('image/jpeg', 0.7);
-      } catch { /* skip */ }
-      URL.revokeObjectURL(url);
-      resolve({ duration: isFinite(video.duration) ? video.duration : null, videoWidth: video.videoWidth || null, videoHeight: video.videoHeight || null, thumbnail });
-    };
-
-    video.onerror = () => { if (resolved) return; resolved = true; URL.revokeObjectURL(url); resolve(null); };
-    video.src = url;
-    setTimeout(() => {
-      if (!resolved) {
-        resolved = true;
-        URL.revokeObjectURL(url);
-        resolve({ duration: isFinite(video.duration) ? video.duration : null, videoWidth: video.videoWidth || null, videoHeight: video.videoHeight || null, thumbnail: null });
-      }
-    }, 8000);
-  });
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Default Thumbnail Placeholder
-// ─────────────────────────────────────────────────────────────────────────────
+import {
+  COLOR_PRIMARIES,
+  MATRIX_COEFFICIENTS,
+  TRANSFER_CHARACTERISTICS,
+  frameCountToTimecode,
+  parseMediaFile,
+} from './VideoMeta/lib/videoMetadata';
+import { createVideoAudioExtractionService } from './VideoMeta/lib/videoAudioExtraction';
 
 function DefaultThumbnail({ format, width = 120, height = 80 }) {
   const colors = { MP4: ['#6366f1', '#4338ca'], MOV: ['#a855f7', '#7c3aed'], M4V: ['#8b5cf6', '#6d28d9'], AVI: ['#0ea5e9', '#0369a1'], MKV: ['#ec4899', '#be185d'], WEBM: ['#eab308', '#a16207'], WMV: ['#14b8a6', '#0d9488'], FLV: ['#f97316', '#c2410c'], LOG: ['#94a3b8', '#475569'], TXT: ['#94a3b8', '#475569'], DEFAULT: ['#64748b', '#334155'] };
@@ -485,18 +66,18 @@ function FormatBadge({ format }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const COMPARE_FIELDS = [
-  { label: 'Format', fn: (f) => f.format },
-  { label: 'File Size', fn: (f) => f.formattedSize },
-  { label: 'Duration', fn: (f) => formatDuration(f.containerDuration) },
-  { label: 'Video Codec', fn: (f) => f.videoTracks[0]?.codec || '\u2014' },
-  { label: 'Resolution', fn: (f) => { const v = f.videoTracks[0]; return v?.width ? `${v.width} \u00d7 ${v.height}` : '\u2014'; } },
-  { label: 'FPS', fn: (f) => { const v = f.videoTracks[0]; return (v?.sampleCount && v?.duration) ? (v.sampleCount / v.duration).toFixed(2) : '\u2014'; } },
-  { label: 'Audio Codec', fn: (f) => f.audioTracks[0]?.codec || '\u2014' },
-  { label: 'Audio Channels', fn: (f) => { const a = f.audioTracks[0]; if (!a?.channels) return '\u2014'; if (a.channels === 1) return 'Mono'; if (a.channels === 2) return 'Stereo'; if (a.channels === 6) return '5.1'; if (a.channels === 8) return '7.1'; return `${a.channels} ch`; } },
-  { label: 'Sample Rate', fn: (f) => { const a = f.audioTracks[0]; return a?.sampleRate ? `${a.sampleRate.toLocaleString()} Hz` : '\u2014'; } },
-  { label: 'Color Primaries', fn: (f) => { const v = f.videoTracks[0]; return v?.colorPrimaries != null ? (COLOR_PRIMARIES[v.colorPrimaries] || `Code ${v.colorPrimaries}`) : '\u2014'; } },
-  { label: 'Subtitles', fn: (f) => f.subtitleTracks.length > 0 ? `${f.subtitleTracks.length} track(s)` : '\u2014' },
-  { label: 'Timecode', fn: (f) => { const tc = f.timecodeTracks[0]; if (!tc || tc.timecodeStartFrame == null) return '\u2014'; const fps = tc.timecodeTimescale && tc.timecodeFrameDuration ? tc.timecodeTimescale / tc.timecodeFrameDuration : tc.timecodeNumFrames || 30; return frameCountToTimecode(tc.timecodeStartFrame, fps, (tc.timecodeFlags & 0x01) !== 0) || '\u2014'; } },
+  { labelKey: 'metadata-fields.format', fn: (f) => f.format },
+  { labelKey: 'metadata-fields.fileSize', fn: (f) => f.formattedSize },
+  { labelKey: 'metadata-fields.duration', fn: (f) => formatDuration(f.containerDuration) },
+  { labelKey: 'metadata-fields.videoCodec', fn: (f) => f.videoTracks[0]?.codec || '\u2014' },
+  { labelKey: 'metadata-fields.resolution', fn: (f) => { const v = f.videoTracks[0]; return v?.width ? `${v.width} \u00d7 ${v.height}` : '\u2014'; } },
+  { labelKey: 'metadata-fields.frameRate', fn: (f) => { const v = f.videoTracks[0]; return (v?.sampleCount && v?.duration) ? (v.sampleCount / v.duration).toFixed(2) : '\u2014'; } },
+  { labelKey: 'metadata-fields.audioCodec', fn: (f) => f.audioTracks[0]?.codec || '\u2014' },
+  { labelKey: 'metadata-fields.audioChannels', fn: (f, t) => { const a = f.audioTracks[0]; if (!a?.channels) return '\u2014'; if (a.channels === 1) return t('tool-videometa.ui.mono'); if (a.channels === 2) return t('tool-videometa.ui.stereo'); if (a.channels === 6) return '5.1'; if (a.channels === 8) return '7.1'; return t('tool-videometa.ui.channelCount', { count: a.channels }); } },
+  { labelKey: 'metadata-fields.sampleRate', fn: (f) => { const a = f.audioTracks[0]; return a?.sampleRate ? `${a.sampleRate.toLocaleString()} Hz` : '\u2014'; } },
+  { labelKey: 'metadata-fields.colorPrimaries', fn: (f) => { const v = f.videoTracks[0]; return v?.colorPrimaries != null ? (COLOR_PRIMARIES[v.colorPrimaries] || `Code ${v.colorPrimaries}`) : '\u2014'; } },
+  { labelKey: 'metadata-fields.subtitles', fn: (f, t) => f.subtitleTracks.length > 0 ? t('video-units.trackCount', { count: f.subtitleTracks.length }) : '\u2014' },
+  { labelKey: 'metadata-fields.timecode', fn: (f) => { const tc = f.timecodeTracks[0]; if (!tc || tc.timecodeStartFrame == null) return '\u2014'; const fps = tc.timecodeTimescale && tc.timecodeFrameDuration ? tc.timecodeTimescale / tc.timecodeFrameDuration : tc.timecodeNumFrames || 30; return frameCountToTimecode(tc.timecodeStartFrame, fps, (tc.timecodeFlags & 0x01) !== 0) || '\u2014'; } },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -505,6 +86,7 @@ const COMPARE_FIELDS = [
 
 export default function VideoMeta() {
   const { t } = useTranslation('tools');
+  const translate = t;
   const {
     createObjectUrl,
     revokeObjectUrl,
@@ -513,7 +95,6 @@ export default function VideoMeta() {
   const [files, setFiles] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [dragOver, setDragOver] = useState(false);
-  const [, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
@@ -527,6 +108,11 @@ export default function VideoMeta() {
   const [audioURLs, setAudioURLs] = useState({}); // { 'fileId-trackIndex': blobUrl }
   const [loadingURLs, setLoadingURLs] = useState({}); // { 'fileId-trackIndex': boolean }
   const activeFile = files.find(f => f.id === selectedId) || null;
+  const extractionServiceRef = useRef(null);
+  if (!extractionServiceRef.current) {
+    extractionServiceRef.current = createVideoAudioExtractionService();
+  }
+  const extractionService = extractionServiceRef.current;
 
   const audioURLsRef = useRef({});
   useEffect(() => {
@@ -536,58 +122,34 @@ export default function VideoMeta() {
   useEffect(() => {
     if (!activeFile || activeFile.type !== 'video' || activeFile.audioTracks.length === 0) return;
 
-    let cancelled = false;
+    const abortController = new AbortController();
 
     const extractAll = async () => {
       for (let i = 0; i < activeFile.audioTracks.length; i++) {
         const key = `${activeFile.id}-${i}`;
-        
+
         if (audioURLsRef.current[key]) continue;
-        if (cancelled) break;
+        if (abortController.signal.aborted) break;
 
         setLoadingURLs(prev => ({ ...prev, [key]: true }));
 
-        let ffmpeg = null;
-        const trackInfo = activeFile.audioTracks[i];
-        const sourceExt = activeFile.ext || 'mp4';
-        const inputName = `input-wave-${activeFile.id}-${i}.${sourceExt}`;
-        const targetExt = getAudioExtension(trackInfo.codecFourCC, trackInfo.codec);
-        const outputName = `audio-wave-${activeFile.id}-${i}.${targetExt}`;
-
         try {
-          ffmpeg = await ensureFFmpegLoaded();
-          if (cancelled) break;
-
-          const fileBuffer = new Uint8Array(await activeFile.file.arrayBuffer());
-          await ffmpeg.writeFile(inputName, fileBuffer);
-
-          const exitCode = await ffmpeg.exec([
-            '-i', inputName,
-            '-map', `0:a:${i}`,
-            '-c:a', 'copy',
-            outputName
-          ]);
-
-          if (exitCode === 0 && !cancelled) {
-            const audioData = await ffmpeg.readFile(outputName);
-            const mimeType = guessMime(targetExt, 'audio');
-            const audioBlob = new Blob([audioData.buffer], { type: mimeType });
-            const url = createObjectUrl(audioBlob);
+          const { blob } = await extractionService.extract(
+            activeFile.file,
+            i,
+            activeFile.audioTracks[i],
+            { signal: abortController.signal },
+          );
+          if (!abortController.signal.aborted) {
+            const url = createObjectUrl(blob);
             setAudioURLs(prev => ({ ...prev, [key]: url }));
           }
-
         } catch (err) {
-          console.error(`Failed to extract audio track ${i} automatically:`, err);
-        } finally {
-          if (ffmpeg) {
-            try { await ffmpeg.deleteFile(inputName); } catch {
-              // The input may not have been written before cancellation or failure.
-            }
-            try { await ffmpeg.deleteFile(outputName); } catch {
-              // FFmpeg may not have produced an output for an unsupported track.
-            }
+          if (err.name !== 'AbortError') {
+            console.error(`Failed to extract audio track ${i} automatically:`, err);
           }
-          if (!cancelled) {
+        } finally {
+          if (!abortController.signal.aborted) {
             setLoadingURLs(prev => ({ ...prev, [key]: false }));
           }
         }
@@ -597,9 +159,9 @@ export default function VideoMeta() {
     extractAll();
 
     return () => {
-      cancelled = true;
+      abortController.abort();
     };
-  }, [activeFile, createObjectUrl, selectedId]);
+  }, [activeFile, createObjectUrl, extractionService]);
 
   const downloadAudioTrack = async (file, trackIndex, trackInfo) => {
     if (extractingTrack) return;
@@ -607,61 +169,23 @@ export default function VideoMeta() {
     setExtractProgress(0);
     setStatus(t('tool-videometa.ui.loadingEngine'));
 
-    let ffmpeg = null;
-    const sourceExt = file.ext || 'mp4';
-    const inputName = `input-${file.id}-${trackIndex}.${sourceExt}`;
-    const targetExt = getAudioExtension(trackInfo.codecFourCC, trackInfo.codec);
-    const outputName = `audio-${file.id}-${trackIndex}.${targetExt}`;
-
     try {
-      ffmpeg = await ensureFFmpegLoaded();
       setStatus(t('tool-videometa.ui.extractingAudio'));
+      const { blob, extension } = await extractionService.extract(file.file, trackIndex, trackInfo, {
+        onProgress: setExtractProgress,
+      });
 
-      const fileBuffer = new Uint8Array(await file.file.arrayBuffer());
-      await ffmpeg.writeFile(inputName, fileBuffer);
-
-      const onProgress = ({ progress }) => {
-        const clamped = Math.min(1, Math.max(0, progress || 0));
-        setExtractProgress(Math.round(clamped * 100));
-      };
-      ffmpeg.on('progress', onProgress);
-
-      try {
-        const exitCode = await ffmpeg.exec([
-          '-i', inputName,
-          '-map', `0:a:${trackIndex}`,
-          '-c:a', 'copy',
-          outputName
-        ]);
-
-        if (exitCode !== 0) {
-          throw new Error('FFmpeg execution failed');
-        }
-
-        const audioData = await ffmpeg.readFile(outputName);
-        const mimeType = guessMime(targetExt, 'audio');
-        const audioBlob = new Blob([audioData.buffer], { type: mimeType });
-
-        const downloadUrl = createObjectUrl(audioBlob);
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        const baseName = file.name.replace(/\.[^/.]+$/, '');
-        const codecLabel = (trackInfo.codec || 'audio').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-        a.download = `${baseName}_track_${trackIndex + 1}_${codecLabel}.${targetExt}`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        revokeObjectUrl(downloadUrl);
-        setStatus(t('tool-videometa.ui.audioDownloaded', { number: trackIndex + 1 }));
-      } finally {
-        ffmpeg.off('progress', onProgress);
-        try { await ffmpeg.deleteFile(inputName); } catch {
-          // The input may already have been removed after a failed execution.
-        }
-        try { await ffmpeg.deleteFile(outputName); } catch {
-          // No output exists when extraction fails before writing.
-        }
-      }
+      const downloadUrl = createObjectUrl(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      const baseName = file.name.replace(/\.[^/.]+$/, '');
+      const codecLabel = (trackInfo.codec || 'audio').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+      a.download = `${baseName}_track_${trackIndex + 1}_${codecLabel}.${extension}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      revokeObjectUrl(downloadUrl);
+      setStatus(t('tool-videometa.ui.audioDownloaded', { number: trackIndex + 1 }));
     } catch (err) {
       console.error(err);
       setStatus(t('tool-videometa.ui.audioFailed'));
@@ -673,16 +197,13 @@ export default function VideoMeta() {
 
   const ACCEPTED = '.mp4,.mov,.m4v,.f4v,.3gp,.3g2,.avi,.mkv,.webm,.wmv,.flv,.ts,.mts,.m2ts,.mxf,.log,.txt';
   useEffect(() => {
-    return () => {
-      revokeAllObjectUrls();
-      terminateFFmpeg();
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => extractionService.dispose();
+  }, [extractionService]);
 
   const processFiles = async (fileList) => {
     const resourceCheck = validateResourceAddition(files, fileList, FILE_RESOURCE_POLICIES.videoMetadata);
     if (!resourceCheck.valid) { setStatus(t('tool-videometa.ui.resourceRejected')); return; }
-    setLoading(true); setStatus(t('tool-videometa.ui.parsing'));
+    setStatus(t('tool-videometa.ui.parsing'));
     const newFiles = [];
     const supportedExts = ['mp4', 'mov', 'm4v', 'f4v', '3gp', '3g2', 'avi', 'mkv', 'webm', 'wmv', 'flv', 'ts', 'mts', 'm2ts', 'mxf', 'log', 'txt'];
     for (const file of fileList) {
@@ -691,7 +212,6 @@ export default function VideoMeta() {
       if (files.some(f => f.name === file.name && f.size === file.size)) { setStatus(t('tool-videometa.ui.alreadyLoaded', { name: file.name })); continue; }
       try {
         const parsed = await parseMediaFile(file);
-        parsed.file = file;
         if (parsed.type === 'video') parsed.objectUrl = createObjectUrl(file);
         newFiles.push(parsed);
       } catch (err) { console.error('Error parsing', file.name, err); setStatus(t('tool-videometa.ui.parseFailed', { name: file.name })); }
@@ -700,7 +220,6 @@ export default function VideoMeta() {
       setFiles(prev => { const updated = [...prev, ...newFiles]; setSelectedId(newFiles[0].id); setCompareSelectedIds(curr => [...curr, ...newFiles.map(f => f.id)]); return updated; });
       setStatus(t('tool-videometa.ui.loadedCount', { count: newFiles.length }));
     }
-    setLoading(false);
   };
 
   const handleDrop = (e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files) processFiles(Array.from(e.dataTransfer.files)); };
@@ -744,42 +263,42 @@ export default function VideoMeta() {
     if (!file) return [];
     const groups = [];
     if (file.type === 'log') {
-      groups.push({ key: 'log', label: 'Log File Parameters', icon: '\ud83d\udcc4', rows: Object.entries(file.logParams || {}).map(([k, v]) => [k, v]) });
-      groups.push({ key: 'file', label: 'File Information', icon: '\ud83d\udcc1', rows: [['Filename', file.name], ['File Size', file.formattedSize], ['Format', file.format]] });
+      groups.push({ key: 'log', label: t('metadata-fields.logFileParameters'), icon: '\ud83d\udcc4', rows: Object.entries(file.logParams || {}).map(([k, v]) => [k, v]) });
+      groups.push({ key: 'file', label: t('metadata-fields.fileInformation'), icon: '\ud83d\udcc1', rows: [[t('metadata-fields.filename'), file.name], [t('metadata-fields.fileSize'), file.formattedSize], [t('metadata-fields.format'), file.format]] });
       return groups;
     }
-    const cr = [['Format', file.format], ['Container Brand', file.brand], ['Compatible Brands', file.compatibleBrands.length > 0 ? file.compatibleBrands.join(', ') : null], ['Duration', formatDuration(file.containerDuration)], ['File Size', file.formattedSize], ['Filename', file.name]].filter(([, v]) => v != null && v !== '' && v !== '\u2014');
-    if (cr.length > 0) groups.push({ key: 'container', label: '\ud83d\udce6 Container', icon: '', rows: cr });
+    const cr = [[t('metadata-fields.format'), file.format], [t('metadata-fields.brand'), file.brand], [t('metadata-fields.compatibleBrands'), file.compatibleBrands.length > 0 ? file.compatibleBrands.join(', ') : null], [t('metadata-fields.duration'), formatDuration(file.containerDuration)], [t('metadata-fields.fileSize'), file.formattedSize], [t('metadata-fields.filename'), file.name]].filter(([, v]) => v != null && v !== '' && v !== '\u2014');
+    if (cr.length > 0) groups.push({ key: 'container', label: `\ud83d\udce6 ${t('metadata-fields.container')}`, icon: '', rows: cr });
 
-    file.videoTracks.forEach((t, i) => {
-      const pf = file.videoTracks.length > 1 ? `Video Track ${i + 1}` : 'Video';
-      const fps = t.sampleCount && t.duration ? (t.sampleCount / t.duration).toFixed(3) : null;
-      const rows = [['Codec', t.codec], ['Codec FourCC', t.codecFourCC], ['Resolution', t.width ? `${t.width} \u00d7 ${t.height}` : null], ['Frame Rate', fps ? `${fps} fps` : null], ['Duration', formatDuration(t.duration)], ['Sample Count', t.sampleCount ? t.sampleCount.toLocaleString() : null], ['Bit Depth', t.bitDepth ? `${t.bitDepth}-bit` : null], ['Compressor', t.compressorName], ['Language', t.language && t.language !== 'und' ? t.language : null], ['Color Primaries', t.colorPrimaries != null ? (COLOR_PRIMARIES[t.colorPrimaries] || `Code ${t.colorPrimaries}`) : null], ['Transfer', t.transferCharacteristics != null ? (TRANSFER_CHARACTERISTICS[t.transferCharacteristics] || `Code ${t.transferCharacteristics}`) : null], ['Matrix', t.matrixCoefficients != null ? (MATRIX_COEFFICIENTS[t.matrixCoefficients] || `Code ${t.matrixCoefficients}`) : null], ['Full Range', t.fullRange != null ? (t.fullRange ? 'Yes (Full)' : 'No (Limited)') : null], ['Color Info Type', t.colorInfo]].filter(([, v]) => v != null && v !== '' && v !== '\u2014');
+    file.videoTracks.forEach((track, i) => {
+      const pf = file.videoTracks.length > 1 ? t('tool-videometa.ui.videoTrack', { number: i + 1 }) : t('videometa-extra.video');
+      const fps = track.sampleCount && track.duration ? (track.sampleCount / track.duration).toFixed(3) : null;
+      const rows = [[t('metadata-fields.codec'), track.codec], [t('metadata-fields.codecFourCC'), track.codecFourCC], [t('metadata-fields.resolution'), track.width ? `${track.width} \u00d7 ${track.height}` : null], [t('metadata-fields.frameRate'), fps ? `${fps} fps` : null], [t('metadata-fields.duration'), formatDuration(track.duration)], [t('metadata-fields.sampleCount'), track.sampleCount ? track.sampleCount.toLocaleString() : null], [t('metadata-fields.bitDepth'), track.bitDepth ? `${track.bitDepth}-bit` : null], [t('metadata-fields.compressor'), track.compressorName], [t('metadata-fields.language'), track.language && track.language !== 'und' ? track.language : null], [t('metadata-fields.colorPrimaries'), track.colorPrimaries != null ? (COLOR_PRIMARIES[track.colorPrimaries] || `Code ${track.colorPrimaries}`) : null], [t('metadata-fields.transfer'), track.transferCharacteristics != null ? (TRANSFER_CHARACTERISTICS[track.transferCharacteristics] || `Code ${track.transferCharacteristics}`) : null], [t('metadata-fields.matrix'), track.matrixCoefficients != null ? (MATRIX_COEFFICIENTS[track.matrixCoefficients] || `Code ${track.matrixCoefficients}`) : null], [t('metadata-fields.fullRange'), track.fullRange != null ? (track.fullRange ? t('tool-videometa.ui.yesFull') : t('tool-videometa.ui.noLimited')) : null], [t('metadata-fields.colorInfoType'), track.colorInfo]].filter(([, v]) => v != null && v !== '' && v !== '\u2014');
       groups.push({ key: `video-${i}`, label: `\ud83c\udfac ${pf}`, icon: '', rows });
     });
 
-    file.audioTracks.forEach((t, i) => {
-      const pf = file.audioTracks.length > 1 ? `Audio Track ${i + 1}` : 'Audio';
-      const cl = t.channels === 1 ? 'Mono' : t.channels === 2 ? 'Stereo' : t.channels === 6 ? '5.1 Surround' : t.channels === 8 ? '7.1 Surround' : `${t.channels} ch`;
-      const rows = [['Codec', t.codec], ['Channels', t.channels ? cl : null], ['Sample Rate', t.sampleRate ? `${t.sampleRate.toLocaleString()} Hz` : null], ['Bit Depth', t.bitsPerSample ? `${t.bitsPerSample}-bit` : null], ['Duration', formatDuration(t.duration)], ['Language', t.language && t.language !== 'und' ? t.language : null]].filter(([, v]) => v != null && v !== '' && v !== '\u2014');
+    file.audioTracks.forEach((track, i) => {
+      const pf = file.audioTracks.length > 1 ? t('tool-videometa.ui.audioTrack', { number: i + 1 }) : t('videometa-extra.audio').replace(/:$/, '');
+      const cl = track.channels === 1 ? t('tool-videometa.ui.mono') : track.channels === 2 ? t('tool-videometa.ui.stereo') : track.channels === 6 ? '5.1 Surround' : track.channels === 8 ? '7.1 Surround' : t('tool-videometa.ui.channelCount', { count: track.channels });
+      const rows = [[t('metadata-fields.codec'), track.codec], [t('metadata-fields.channels'), track.channels ? cl : null], [t('metadata-fields.sampleRate'), track.sampleRate ? `${track.sampleRate.toLocaleString()} Hz` : null], [t('metadata-fields.bitDepth'), track.bitsPerSample ? `${track.bitsPerSample}-bit` : null], [t('metadata-fields.duration'), formatDuration(track.duration)], [t('metadata-fields.language'), track.language && track.language !== 'und' ? track.language : null]].filter(([, v]) => v != null && v !== '' && v !== '\u2014');
       groups.push({ key: `audio-${i}`, label: `\ud83d\udd0a ${pf}`, icon: '', rows });
     });
 
     if (file.subtitleTracks.length > 0) {
       const rows = file.subtitleTracks.map((t, i) => [`Track ${i + 1}`, [t.codec, t.language && t.language !== 'und' ? `(${t.language})` : ''].filter(Boolean).join(' ')]);
-      groups.push({ key: 'subtitles', label: '\ud83d\udcac Subtitles', icon: '', rows });
+      groups.push({ key: 'subtitles', label: `\ud83d\udcac ${t('metadata-fields.subtitles')}`, icon: '', rows });
     }
 
-    file.timecodeTracks.forEach((t, i) => {
-      const fps = t.timecodeTimescale && t.timecodeFrameDuration ? t.timecodeTimescale / t.timecodeFrameDuration : t.timecodeNumFrames || 30;
-      const isDF = (t.timecodeFlags & 0x01) !== 0;
-      const tc = t.timecodeStartFrame != null ? frameCountToTimecode(t.timecodeStartFrame, fps, isDF) : null;
-      const rows = [['Start Timecode', tc], ['Frame Rate', fps ? `${fps} fps` : null], ['Drop Frame', isDF ? 'Yes' : 'No'], ['Start Frame', t.timecodeStartFrame != null ? t.timecodeStartFrame.toString() : null]].filter(([, v]) => v != null);
-      groups.push({ key: `timecode-${i}`, label: '\u23f1\ufe0f Timecode', icon: '', rows });
+    file.timecodeTracks.forEach((track, i) => {
+      const fps = track.timecodeTimescale && track.timecodeFrameDuration ? track.timecodeTimescale / track.timecodeFrameDuration : track.timecodeNumFrames || 30;
+      const isDF = (track.timecodeFlags & 0x01) !== 0;
+      const tc = track.timecodeStartFrame != null ? frameCountToTimecode(track.timecodeStartFrame, fps, isDF) : null;
+      const rows = [[t('metadata-fields.startTimecode'), tc], [t('metadata-fields.frameRate'), fps ? `${fps} fps` : null], [t('metadata-fields.dropFrame'), isDF ? t('tool-videometa.ui.yes') : t('tool-videometa.ui.no')], [t('metadata-fields.startFrame'), track.timecodeStartFrame != null ? track.timecodeStartFrame.toString() : null]].filter(([, v]) => v != null);
+      groups.push({ key: `timecode-${i}`, label: `\u23f1\ufe0f ${t('metadata-fields.timecode')}`, icon: '', rows });
     });
 
     if (Object.keys(file.metadata).length > 0) {
-      groups.push({ key: 'metadata', label: '\ud83c\udff7\ufe0f Metadata Tags', icon: '', rows: Object.entries(file.metadata).map(([k, v]) => [k, String(v)]) });
+      groups.push({ key: 'metadata', label: `\ud83c\udff7\ufe0f ${t('metadata-fields.metadataTags')}`, icon: '', rows: Object.entries(file.metadata).map(([k, v]) => [k, String(v)]) });
     }
     return groups;
   };
@@ -867,7 +386,7 @@ export default function VideoMeta() {
                     <div className="flex items-center gap-1.5 mt-1 flex-wrap justify-center md:justify-start"><FormatBadge format={activeFile.format} />{activeFile.brand && <span className="inline-block px-1.5 py-0.5 rounded text-[0.68rem] font-bold uppercase tracking-wider bg-slate-500/15 text-slate-700 dark:bg-slate-500/12 dark:text-slate-400">{activeFile.brand}</span>}</div>
                     {activeFile.type === 'video' && activeFile.videoTracks.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-2 justify-center md:justify-start">
-                        {activeFile.videoTracks[0].codec && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[0.75rem] font-semibold bg-app text-text-muted border border-border"><span className="text-text-muted font-normal mr-0.5">Codec:</span>{activeFile.videoTracks[0].codec}</span>}
+                        {activeFile.videoTracks[0].codec && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[0.75rem] font-semibold bg-app text-text-muted border border-border"><span className="text-text-muted font-normal mr-0.5">{t('videometa-extra.codec')}</span>{activeFile.videoTracks[0].codec}</span>}
                         {activeFile.videoTracks[0].width && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[0.75rem] font-semibold bg-app text-text-muted border border-border"><span className="text-text-muted font-normal mr-0.5">Res:</span>{activeFile.videoTracks[0].width}{'\u00d7'}{activeFile.videoTracks[0].height}</span>}
                         {(() => { const v = activeFile.videoTracks[0]; return (v.sampleCount && v.duration) ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[0.75rem] font-semibold bg-app text-text-muted border border-border"><span className="text-text-muted font-normal mr-0.5">FPS:</span>{(v.sampleCount / v.duration).toFixed(2)}</span> : null; })()}
                         {activeFile.audioTracks.length > 0 && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[0.75rem] font-semibold bg-app text-text-muted border border-border"><span className="text-text-muted font-normal mr-0.5">Audio:</span>{t('video-units.trackCount', { count: activeFile.audioTracks.length })}</span>}
@@ -883,7 +402,7 @@ export default function VideoMeta() {
                       <div className="bg-card border border-border rounded-xl p-4">
                         <h3 className="text-[0.88rem] font-bold text-text-main m-0 mb-3 flex items-center gap-1.5 uppercase tracking-wider"><span className="text-base">{'\ud83c\udfac'}</span> {t('videometa-extra.video')}</h3>
                         {activeFile.videoTracks.map((t, i) => { const fps = t.sampleCount && t.duration ? (t.sampleCount / t.duration).toFixed(3) : null; return (
-                          <dl className="flex flex-col m-0" key={i}>{[['Codec', t.codec], ['Resolution', t.width ? `${t.width} \u00d7 ${t.height}` : null], ['Frame Rate', fps ? `${fps} fps` : null], ['Bit Depth', t.bitDepth ? `${t.bitDepth}-bit` : null], ['Language', t.language && t.language !== 'und' ? t.language : null], ['Color Primaries', t.colorPrimaries != null ? (COLOR_PRIMARIES[t.colorPrimaries] || `Code ${t.colorPrimaries}`) : null], ['Transfer', t.transferCharacteristics != null ? (TRANSFER_CHARACTERISTICS[t.transferCharacteristics] || `Code ${t.transferCharacteristics}`) : null], ['Matrix', t.matrixCoefficients != null ? (MATRIX_COEFFICIENTS[t.matrixCoefficients] || `Code ${t.matrixCoefficients}`) : null], ['Full Range', t.fullRange != null ? (t.fullRange ? 'Yes (Full)' : 'No (Limited)') : null]].filter(([, v]) => v != null).map(([k, v]) => <div className="flex gap-2 py-1.5 border-b border-border last:border-b-0 text-[0.84rem]" key={k}><dt className="w-[100px] sm:w-[130px] shrink-0 text-text-muted font-medium">{k}</dt><dd className="text-text-main m-0 break-all flex-1">{v}</dd></div>)}</dl>
+                          <dl className="flex flex-col m-0" key={i}>{[[translate('metadata-fields.codec'), t.codec], [translate('metadata-fields.resolution'), t.width ? `${t.width} \u00d7 ${t.height}` : null], [translate('metadata-fields.frameRate'), fps ? `${fps} fps` : null], [translate('metadata-fields.bitDepth'), t.bitDepth ? `${t.bitDepth}-bit` : null], [translate('metadata-fields.language'), t.language && t.language !== 'und' ? t.language : null], [translate('metadata-fields.colorPrimaries'), t.colorPrimaries != null ? (COLOR_PRIMARIES[t.colorPrimaries] || `Code ${t.colorPrimaries}`) : null], [translate('metadata-fields.transfer'), t.transferCharacteristics != null ? (TRANSFER_CHARACTERISTICS[t.transferCharacteristics] || `Code ${t.transferCharacteristics}`) : null], [translate('metadata-fields.matrix'), t.matrixCoefficients != null ? (MATRIX_COEFFICIENTS[t.matrixCoefficients] || `Code ${t.matrixCoefficients}`) : null], [translate('metadata-fields.fullRange'), t.fullRange != null ? (t.fullRange ? translate('tool-videometa.ui.yesFull') : translate('tool-videometa.ui.noLimited')) : null]].filter(([, v]) => v != null).map(([k, v]) => <div className="flex gap-2 py-1.5 border-b border-border last:border-b-0 text-[0.84rem]" key={k}><dt className="w-[100px] sm:w-[130px] shrink-0 text-text-muted font-medium">{k}</dt><dd className="text-text-main m-0 break-all flex-1">{v}</dd></div>)}</dl>
                         ); })}
                       </div>
                     )}
@@ -893,7 +412,7 @@ export default function VideoMeta() {
                         <h3 className="text-[0.88rem] font-bold text-text-main m-0 mb-3 flex items-center gap-1.5 uppercase tracking-wider"><span className="text-base">{'\ud83d\udd0a'}</span> {t('video-units.audioSection')}</h3>
                         <div className="flex flex-col gap-2">
                           {activeFile.audioTracks.map((t, i) => {
-                            const cl = t.channels === 1 ? 'Mono' : t.channels === 2 ? 'Stereo' : t.channels === 6 ? '5.1' : t.channels === 8 ? '7.1' : `${t.channels}ch`;
+                            const cl = t.channels === 1 ? translate('tool-videometa.ui.mono') : t.channels === 2 ? translate('tool-videometa.ui.stereo') : t.channels === 6 ? '5.1' : t.channels === 8 ? '7.1' : translate('tool-videometa.ui.channelCount', { count: t.channels });
                             const isExtracting = extractingTrack && extractingTrack.fileId === activeFile.id && extractingTrack.trackIndex === i;
                             const key = `${activeFile.id}-${i}`;
                             return (
@@ -957,7 +476,7 @@ export default function VideoMeta() {
                       <div className="bg-card border border-border rounded-xl p-4">
                         <h3 className="text-[0.88rem] font-bold text-text-main m-0 mb-3 flex items-center gap-1.5 uppercase tracking-wider"><span className="text-base">{'\u23f1\ufe0f'}</span> {t('videometa-extra.timecode')}</h3>
                         {activeFile.timecodeTracks.map((t, i) => { const fps = t.timecodeTimescale && t.timecodeFrameDuration ? t.timecodeTimescale / t.timecodeFrameDuration : t.timecodeNumFrames || 30; const isDF = (t.timecodeFlags & 0x01) !== 0; const tc = t.timecodeStartFrame != null ? frameCountToTimecode(t.timecodeStartFrame, fps, isDF) : null; return (
-                          <dl className="flex flex-col m-0" key={i}>{[['Start Timecode', tc], ['Frame Rate', fps ? `${fps} fps` : null], ['Type', isDF ? 'Drop Frame' : 'Non-Drop Frame']].filter(([, v]) => v != null).map(([k, v]) => <div className="flex gap-2 py-1.5 border-b border-border last:border-b-0 text-[0.84rem]" key={k}><dt className="w-[100px] sm:w-[130px] shrink-0 text-text-muted font-medium">{k}</dt><dd className="text-text-main m-0 break-all flex-1">{v}</dd></div>)}</dl>
+                          <dl className="flex flex-col m-0" key={i}>{[[translate('metadata-fields.startTimecode'), tc], [translate('metadata-fields.frameRate'), fps ? `${fps} fps` : null], [translate('metadata-fields.type'), isDF ? translate('tool-videometa.ui.dropFrame') : translate('tool-videometa.ui.nonDropFrame')]].filter(([, v]) => v != null).map(([k, v]) => <div className="flex gap-2 py-1.5 border-b border-border last:border-b-0 text-[0.84rem]" key={k}><dt className="w-[100px] sm:w-[130px] shrink-0 text-text-muted font-medium">{k}</dt><dd className="text-text-main m-0 break-all flex-1">{v}</dd></div>)}</dl>
                         ); })}
                       </div>
                     )}
@@ -971,7 +490,7 @@ export default function VideoMeta() {
 
                     <div className="bg-card border border-border rounded-xl p-4">
                       <h3 className="text-[0.88rem] font-bold text-text-main m-0 mb-3 flex items-center gap-1.5 uppercase tracking-wider"><span className="text-base">{'\ud83d\udce6'}</span> {t('videometa-extra.container')}</h3>
-                      <dl className="flex flex-col m-0">{[['Format', activeFile.format], ['Brand', activeFile.brand], ['Compatible Brands', activeFile.compatibleBrands.length > 0 ? activeFile.compatibleBrands.join(', ') : null], ['Duration', formatDuration(activeFile.containerDuration)], ['File Size', activeFile.formattedSize], ['Total Tracks', (activeFile.videoTracks.length + activeFile.audioTracks.length + activeFile.subtitleTracks.length + activeFile.timecodeTracks.length).toString()]].filter(([, v]) => v != null && v !== '\u2014').map(([k, v]) => <div className="flex gap-2 py-1.5 border-b border-border last:border-b-0 text-[0.84rem]" key={k}><dt className="w-[100px] sm:w-[130px] shrink-0 text-text-muted font-medium">{k}</dt><dd className="text-text-main m-0 break-all flex-1">{v}</dd></div>)}</dl>
+                      <dl className="flex flex-col m-0">{[[t('metadata-fields.format'), activeFile.format], [t('metadata-fields.brand'), activeFile.brand], [t('metadata-fields.compatibleBrands'), activeFile.compatibleBrands.length > 0 ? activeFile.compatibleBrands.join(', ') : null], [t('metadata-fields.duration'), formatDuration(activeFile.containerDuration)], [t('metadata-fields.fileSize'), activeFile.formattedSize], [t('metadata-fields.totalTracks'), (activeFile.videoTracks.length + activeFile.audioTracks.length + activeFile.subtitleTracks.length + activeFile.timecodeTracks.length).toString()]].filter(([, v]) => v != null && v !== '\u2014').map(([k, v]) => <div className="flex gap-2 py-1.5 border-b border-border last:border-b-0 text-[0.84rem]" key={k}><dt className="w-[100px] sm:w-[130px] shrink-0 text-text-muted font-medium">{k}</dt><dd className="text-text-main m-0 break-all flex-1">{v}</dd></div>)}</dl>
                     </div>
                   </div>
                 )}
@@ -1025,7 +544,7 @@ export default function VideoMeta() {
                   <div className="overflow-x-auto rounded-xl border border-border">
                     <table className="w-full border-collapse min-w-[400px]">
                       <thead><tr><th className="p-2.5 px-3.5 bg-app text-[0.8rem] font-semibold text-text-muted text-left border-b border-border whitespace-nowrap">{t('video-units.parameter')}</th>{compareFiles.map(f => <th key={f.id} className="p-2.5 px-3.5 bg-app text-[0.8rem] font-semibold text-text-muted text-left border-b border-border whitespace-nowrap"><div className="flex items-center gap-2 max-w-[180px] overflow-hidden">{f.thumbnailUrl ? <img src={f.thumbnailUrl} className="w-10 h-6.5 rounded object-cover shrink-0" alt="" /> : <DefaultThumbnail format={f.format} width={40} height={26} />}<span className="truncate" title={f.name}>{f.name}</span></div></th>)}</tr></thead>
-                      <tbody>{COMPARE_FIELDS.map(field => <tr key={field.label} className="hover:bg-nav-hover-bg/30"><td className="p-2 px-3.5 text-[0.83rem] text-text-muted font-medium border-b border-border align-top whitespace-nowrap w-[130px]">{field.label}</td>{compareFiles.map(f => <td key={f.id} className="p-2 px-3.5 text-[0.83rem] text-text-main border-b border-border align-top min-w-[140px]">{field.fn(f)}</td>)}</tr>)}</tbody>
+                      <tbody>{COMPARE_FIELDS.map(field => <tr key={field.labelKey} className="hover:bg-nav-hover-bg/30"><td className="p-2 px-3.5 text-[0.83rem] text-text-muted font-medium border-b border-border align-top whitespace-nowrap w-[130px]">{t(field.labelKey)}</td>{compareFiles.map(f => <td key={f.id} className="p-2 px-3.5 text-[0.83rem] text-text-main border-b border-border align-top min-w-[140px]">{field.fn(f, t)}</td>)}</tr>)}</tbody>
                     </table>
                   </div>
                 ) : <p className="text-text-muted text-[0.85rem] italic mt-2">{t('tool-videometa.ui.selectAtLeastOne')}</p>}

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import BioinfoIcon from './components/BioinfoIcon.jsx';
 import SimpleHome from './components/SimpleHome.jsx';
 import LanguageSwitcher from './components/LanguageSwitcher.jsx';
 import MobileDrawer from './components/MobileDrawer.jsx';
@@ -18,102 +17,20 @@ import {
 } from './toolModes.js';
 import { useAppRouting } from './hooks/useAppRouting.js';
 import { useDocumentTitle } from './hooks/useDocumentTitle.js';
-import { readStoredActiveTool, useShellPersistence } from './hooks/useShellPersistence.js';
+import { readStoredActiveTool, useShellPreferences } from './hooks/useShellPersistence.js';
+import { CATEGORY_DEFINITIONS as categories } from './categoryDefinitions.jsx';
 
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '';
 const SHOW_CHANNEL_ALERT = typeof __SHOW_CHANNEL_ALERT__ !== 'undefined' ? __SHOW_CHANNEL_ALERT__ : false;
 const APP_CHANNEL = typeof __APP_CHANNEL__ !== 'undefined' ? __APP_CHANNEL__ : '';
 
 
-const categories = [
-  {
-    id: 'text',
-    nameKey: 'text',
-    icon: (
-      <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-        <polyline points="14 2 14 8 20 8"></polyline>
-        <line x1="16" y1="13" x2="8" y2="13"></line>
-        <line x1="16" y1="17" x2="8" y2="17"></line>
-        <polyline points="10 9 9 9 8 9"></polyline>
-      </svg>
-    )
-  },
-  {
-    id: 'developer',
-    nameKey: 'developer',
-    icon: (
-      <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="16 18 22 12 16 6"></polyline>
-        <polyline points="8 6 2 12 8 18"></polyline>
-      </svg>
-    )
-  },
-  {
-    id: 'network',
-    nameKey: 'network',
-    icon: (
-      <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="2" y1="12" x2="22" y2="12"></line>
-        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-      </svg>
-    )
-  },
-  {
-    id: 'media',
-    nameKey: 'media',
-    icon: (
-      <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-        <polyline points="21 15 16 10 5 21"></polyline>
-      </svg>
-    )
-  },
-  {
-    id: 'bioinfo',
-    nameKey: 'bioinfo',
-    icon: <BioinfoIcon />
-  },
-  {
-    id: 'utilities',
-    nameKey: 'utilities',
-    icon: (
-      <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="2" x2="12" y2="22"></line>
-        <line x1="2" y1="12" x2="22" y2="12"></line>
-        <path d="M16.24 7.76l-8.48 8.48"></path>
-        <path d="M7.76 7.76l8.48 8.48"></path>
-      </svg>
-    )
-  }
-];
-
 const staticTools = STATIC_LAYOUT_IDS;
 
 export default function App() {
   const { t, i18n } = useTranslation(['common', 'navigation', 'tools', 'errors']);
   const { activeTool, toolMode, navigateToTool, changeMode } = useAppRouting(readStoredActiveTool);
-
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
-    try {
-      return localStorage.getItem("sidebarCollapsed") === "true";
-    } catch {
-      return false;
-    }
-  });
-
-  const [theme, setTheme] = useState(() => {
-    try {
-      const savedTheme = localStorage.getItem("theme");
-      if (savedTheme) return savedTheme;
-    } catch {
-      // Storage access can be blocked by the browser; keep the in-memory default.
-    }
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  });
+  const { theme, setTheme, isSidebarCollapsed, setIsSidebarCollapsed } = useShellPreferences(activeTool);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -181,8 +98,6 @@ export default function App() {
     language: i18n.resolvedLanguage,
     t,
   });
-  useShellPersistence({ activeTool, theme, isSidebarCollapsed });
-
   // Keyboard shortcut '/' to focus search
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -659,7 +574,6 @@ export default function App() {
               )}
               <span className="text-[0.9rem] font-semibold text-text-main">{activeTitle}</span>
             </div>
-            <div className="flex items-center gap-[10px]"></div>
           </div>
 
           {/* Tool Stage */}

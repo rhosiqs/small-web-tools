@@ -26,6 +26,11 @@ current architecture, route inventory, API topology, and project map.
 
 ## Local development
 
+For a containerized frontend workflow that does not require Node.js on the host,
+follow the bilingual [Docker development manual](docs/docker-development.md).
+The Docker method has the same API scope as Vite; use the Wrangler workflow
+below when every Pages Function is required.
+
 Start the browser application:
 
 ```bash
@@ -93,7 +98,8 @@ duplicating the most expensive browser and audit work. `npm run typecheck:baseli
 checks the broad JavaScript graph without strict mode, `npm run typecheck:domain`
 preserves the existing narrow domain/shared-helper boundary, and
 `npm run typecheck:ui` enables `strictNullChecks` for the explicitly listed shared
-UI migration boundary. Expand that boundary only with fixes in the same change;
+UI migration boundary, including shared category definitions and the extracted
+audio/video metadata domains. Expand that boundary only with fixes in the same change;
 keep exclusions minimal and documented in `jsconfig.ui.json`.
 
 ## Engineering standards
@@ -109,6 +115,11 @@ keep exclusions minimal and documented in `jsconfig.ui.json`.
   Put reusable request validation and safe-fetch logic in `functions/_shared/`.
 - Add focused unit tests for pure/domain logic and Playwright coverage for critical
   journeys. Avoid relying only on route smoke tests.
+- Keep Blob URL ownership explicit: create and revoke preview, derived-output, and
+  download URLs through the shared registry. FFmpeg services must use unique virtual
+  filenames and remove listeners and temporary files on success, failure, and cancellation.
+- Keep Dependabot major-version updates enabled. Review major updates individually;
+  do not replace that review with a repository-wide major-version ignore.
 
 ## Internationalization
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { NAVIGATION_ROUTES } from '../toolRegistry.js';
 import {
   AUDIENCE_MODES,
+  INTENTIONAL_CURATED_EXCLUSIONS,
   SIMPLE_WORKSPACE,
   TOOL_MODES,
   buildModeUrl,
@@ -46,6 +47,22 @@ describe('tool modes', () => {
     }
     expect(SIMPLE_WORKSPACE.toolIds.length)
       .toBeLessThan(getToolMode('daily').toolIds.length);
+  });
+
+  it('curates every navigable tool or records a durable exclusion rationale', () => {
+    const curatedIds = new Set([
+      ...TOOL_MODES.flatMap((mode) => mode.toolIds ?? []),
+      ...SIMPLE_WORKSPACE.toolIds,
+    ]);
+    const navigableIds = NAVIGATION_ROUTES.map(({ id }) => id);
+    const missingIds = navigableIds.filter((id) => !curatedIds.has(id));
+
+    expect(missingIds.sort()).toEqual(Object.keys(INTENTIONAL_CURATED_EXCLUSIONS).sort());
+    for (const [id, rationale] of Object.entries(INTENTIONAL_CURATED_EXCLUSIONS)) {
+      expect(navigableIds, id).toContain(id);
+      expect(rationale.length, id).toBeGreaterThan(20);
+    }
+    expect(getToolMode('developer').toolIds).toContain('tool-mermaid');
   });
 
   it('builds complete bookmarkable addresses and reads the selected mode', () => {

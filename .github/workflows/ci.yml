@@ -95,6 +95,9 @@ jobs:
       - name: Dependency Check
         run: npm run deps:check
 
+      - name: Dead Code Check
+        run: npm run deadcode:check
+
       - name: Security Audit
         run: npm run audit
 
