@@ -49,6 +49,8 @@ The FFmpeg JavaScript and WebAssembly assets remain pinned to `@ffmpeg/core` 0.1
 
 The consent manager stores explicit service choices under `small_web_tools_consent`. Theme, collapsed navigation, and recent route state may also use local or session storage. The project does not add analytics trackers or tracking cookies.
 
+Tool state stays in local storage and is never written to a cookie, so it is not attached to any request to the origin. Earlier versions of the Color Converter also mirrored a custom palette into a `customPresets` cookie. That cookie is no longer written; an existing one is read once so a saved palette survives, migrated to local storage, and then cleared.
+
 Revoking or resetting consent immediately removes an active OpenStreetMap iframe and blocks future consent-gated requests. It cannot recall a request that already completed.
 
 ## 5. Local file safety

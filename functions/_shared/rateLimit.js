@@ -13,10 +13,19 @@ function limiterError(status, code, extraHeaders = {}, log = false, diagnostic =
   });
 }
 
-function getNetworkIdentifier(request) {
-  return request.headers.get('CF-Connecting-IP')
-    || request.headers.get('X-Forwarded-For')?.split(',')[0]?.trim()
-    || 'unknown';
+/**
+ * Only `CF-Connecting-IP` is trustworthy here: Cloudflare sets it on every edge
+ * request and strips any client-supplied copy. `X-Forwarded-For` is attacker
+ * controlled, and accepting it means a client can mint a fresh limiter bucket
+ * per request simply by rotating the header. Off the edge, the limiter fails
+ * closed instead, matching how this module handles every other missing
+ * precondition.
+ */
+function getNetworkIdentifier(request, developmentMode) {
+  const edgeIdentifier = request.headers.get('CF-Connecting-IP')?.trim();
+  if (edgeIdentifier) return edgeIdentifier;
+  if (!developmentMode) return null;
+  return request.headers.get('X-Forwarded-For')?.split(',')[0]?.trim() || 'unknown';
 }
 
 async function hmacClientKey(secret, networkIdentifier, period) {
@@ -64,13 +73,14 @@ export async function enforceRateLimit(context, options) {
     return limiterError(503, 'RATE_LIMIT_UNAVAILABLE', {}, true);
   }
 
+  const networkIdentifier = getNetworkIdentifier(context.request, developmentMode);
+  if (!networkIdentifier) {
+    return limiterError(503, 'RATE_LIMIT_UNAVAILABLE', {}, true, 'rate-limiter-unidentified-client');
+  }
+
   const now = options.now?.() ?? Date.now();
   const period = Math.floor(now / 86_400_000);
-  const clientKey = await hmacClientKey(
-    secret,
-    getNetworkIdentifier(context.request),
-    period,
-  );
+  const clientKey = await hmacClientKey(secret, networkIdentifier, period);
 
   if (!env.RATE_LIMITER_SERVICE?.fetch) {
     if (developmentMode) {

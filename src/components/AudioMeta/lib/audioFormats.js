@@ -1,3 +1,4 @@
+import { bytesToDataUrl } from '../../../lib/binaryEncoding.js';
 import { latin1ToString, parseID3v2, readUint16BE, readUint16LE, readUint32BE, readUint32LE } from './id3.js';
 
 /**
@@ -155,8 +156,7 @@ function parseFlac(uint8) {
           pPos += 16; // width, height, color depth, colors used
           const dataLen = readUint32BE(block, pPos); pPos += 4;
           const imgBytes = block.slice(pPos, pPos + dataLen);
-          const b64 = btoa(String.fromCharCode(...imgBytes));
-          result.coverArt = `data:${mimeType};base64,${b64}`;
+          result.coverArt = bytesToDataUrl(imgBytes, mimeType);
         } catch { /* ignore */ }
       }
     }
@@ -275,9 +275,8 @@ function parseM4a(uint8) {
               const imgBytes = uint8.slice(dPos + 16, dPos + dSize);
               const mimeType = dataType === 13 ? 'image/jpeg' : 'image/png';
               try {
-                const b64 = btoa(String.fromCharCode(...imgBytes));
-                result.coverArt = `data:${mimeType};base64,${b64}`;
-              } catch { /* too big for btoa */ }
+                result.coverArt = bytesToDataUrl(imgBytes, mimeType);
+              } catch { /* unencodable artwork payload */ }
             }
             if (dSize === 0) break;
             dPos += dSize;

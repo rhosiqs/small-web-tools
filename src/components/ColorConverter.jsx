@@ -422,24 +422,51 @@ const SWATCH_GRID = (() => {
   return grid;
 })();
 
-// Cookie Helper Functions
-const saveCookie = (name, value, days = 365) => {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(JSON.stringify(value))}; expires=${expires}; path=/`;
+// A palette is user data and belongs in browser storage only. Earlier versions
+// also mirrored it into a `path=/` cookie, which attached it to every request to
+// the origin. Cookies are now read once so existing palettes survive, then
+// cleared; nothing is written back.
+const PRESETS_STORAGE_KEY = 'customPresets';
+
+const isHexPalette = (value) => Array.isArray(value)
+  && value.every((item) => typeof item === 'string' && /^#[0-9a-f]{3,8}$/iu.test(item));
+
+const clearLegacyPresetCookie = () => {
+  if (typeof document === 'undefined') return;
+  document.cookie = `${PRESETS_STORAGE_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
 };
 
-const getCookie = (name) => {
+const readLegacyPresetCookie = () => {
   if (typeof document === 'undefined') return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) {
-    try {
-      return JSON.parse(decodeURIComponent(parts.pop().split(';').shift()));
-    } catch {
-      // Ignore malformed legacy cookie data and use the default palette.
-    }
+  const parts = `; ${document.cookie}`.split(`; ${PRESETS_STORAGE_KEY}=`);
+  if (parts.length !== 2) return null;
+  try {
+    const parsed = JSON.parse(decodeURIComponent(parts.pop().split(';').shift()));
+    return isHexPalette(parsed) ? parsed : null;
+  } catch {
+    // Ignore malformed legacy cookie data and use the default palette.
+    return null;
   }
-  return null;
+};
+
+const readStoredPalette = (key) => {
+  try {
+    const saved = localStorage.getItem(key);
+    if (!saved) return null;
+    const parsed = JSON.parse(saved);
+    return isHexPalette(parsed) ? parsed : null;
+  } catch {
+    // Storage may be unavailable or hold data written by another version.
+    return null;
+  }
+};
+
+const writeStoredPalette = (key, value) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Storage may be unavailable; the in-memory palette remains usable.
+  }
 };
 
 // 12 Curated modern presets
@@ -466,26 +493,22 @@ export default function ColorConverter() {
   const [isSynced, setIsSynced] = useState(true); // Sync selection state toggle
   const [sliderModel, setSliderModel] = useState('HSB'); // Interactive Slider model
   
-  const [recentColors, setRecentColors] = useState(() => {
-    try {
-      const saved = localStorage.getItem("recentColors");
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [recentColors, setRecentColors] = useState(() => readStoredPalette('recentColors') || []);
 
   // State for Customizable Standard Palettes
   const [presets, setPresets] = useState(() => {
-    try {
-      const savedLocal = localStorage.getItem("customPresets");
-      if (savedLocal) return JSON.parse(savedLocal);
-    } catch {
-      // Storage may be unavailable; the in-memory palette remains usable.
+    const stored = readStoredPalette(PRESETS_STORAGE_KEY);
+    if (stored) {
+      clearLegacyPresetCookie();
+      return stored;
     }
 
-    const savedCookie = getCookie("customPresets");
-    if (savedCookie) return savedCookie;
+    const migrated = readLegacyPresetCookie();
+    clearLegacyPresetCookie();
+    if (migrated) {
+      writeStoredPalette(PRESETS_STORAGE_KEY, migrated);
+      return migrated;
+    }
 
     return DEFAULT_PRESETS;
   });
@@ -605,11 +628,7 @@ export default function ColorConverter() {
     setRecentColors((prev) => {
       const filtered = prev.filter((c) => c.toUpperCase() !== formatted);
       const next = [formatted, ...filtered].slice(0, 8);
-      try {
-        localStorage.setItem("recentColors", JSON.stringify(next));
-      } catch {
-        // Storage may be unavailable; recent colors remain in memory.
-      }
+      writeStoredPalette('recentColors', next);
       return next;
     });
   };
@@ -853,35 +872,25 @@ export default function ColorConverter() {
       }
       const next = [...presets, formatted];
       setPresets(next);
-      try {
-        localStorage.setItem("customPresets", JSON.stringify(next));
-      } catch {
-        // Storage may be unavailable; the in-memory palette remains usable.
-      }
-      saveCookie("customPresets", next);
+      writeStoredPalette(PRESETS_STORAGE_KEY, next);
     }
   };
 
   const handleDeletePreset = (indexToDelete) => {
     const next = presets.filter((_, idx) => idx !== indexToDelete);
     setPresets(next);
-    try {
-      localStorage.setItem("customPresets", JSON.stringify(next));
-    } catch {
-      // Storage may be unavailable; the in-memory palette remains usable.
-    }
-    saveCookie("customPresets", next);
+    writeStoredPalette(PRESETS_STORAGE_KEY, next);
   };
 
   const handleResetPresets = () => {
     if (window.confirm("Are you sure you want to reset the Standard Palette to the default 12 colors?")) {
       setPresets(DEFAULT_PRESETS);
       try {
-        localStorage.removeItem("customPresets");
+        localStorage.removeItem(PRESETS_STORAGE_KEY);
       } catch {
         // Storage may be unavailable; the default palette remains active.
       }
-      document.cookie = "customPresets=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      clearLegacyPresetCookie();
     }
   };
 
@@ -903,14 +912,9 @@ export default function ColorConverter() {
     fileReader.onload = (event) => {
       try {
         const parsed = JSON.parse(String(event.target?.result || ''));
-        if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string' && item.startsWith('#'))) {
+        if (isHexPalette(parsed)) {
           setPresets(parsed);
-          try {
-            localStorage.setItem("customPresets", JSON.stringify(parsed));
-          } catch {
-            // Storage may be unavailable; the imported palette remains in memory.
-          }
-          saveCookie("customPresets", parsed);
+          writeStoredPalette(PRESETS_STORAGE_KEY, parsed);
         } else {
           alert(t('tool-color.ui.invalidPalette'));
         }

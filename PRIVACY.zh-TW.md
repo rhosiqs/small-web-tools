@@ -60,6 +60,11 @@ FFmpeg JavaScript 與 WebAssembly 資產固定使用 unpkg 上的 @ffmpeg/core 0
 與最近路由狀態也可能使用 local storage 或 session storage。本專案不加入分析追蹤器
 或追蹤 Cookie。
 
+工具狀態僅保存在 local storage，不會寫入 Cookie，因此不會附加在任何送往本站的
+請求上。舊版色彩轉換器曾將自訂色盤同時寫入 customPresets Cookie。該 Cookie 已
+不再寫入；既有 Cookie 只會被讀取一次，讓已儲存的色盤得以保留並移轉到
+local storage，之後即予清除。
+
 撤銷或重設同意後，會立即移除作用中的 OpenStreetMap iframe，並阻擋未來需要同意
 的請求；但無法追回已經完成的請求。
 

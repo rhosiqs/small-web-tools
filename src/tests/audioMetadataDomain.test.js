@@ -93,6 +93,44 @@ describe('audio metadata domain', () => {
     expect(parseID3v2(bytes).tags).toEqual({ TIT2: 'Example song' });
   });
 
+  it.each([
+    ['a small cover', 1024],
+    // Above the ~100 KB argument-spread ceiling that used to raise RangeError
+    // inside an empty catch, silently dropping artwork for ordinary files.
+    ['a full-size cover', 400 * 1024],
+  ])('extracts APIC artwork for %s', (_label, imageBytes) => {
+    const mime = 'image/jpeg';
+    // encoding + mime + NUL + picture type + description NUL + image
+    const frameSize = 1 + mime.length + 1 + 1 + 1 + imageBytes;
+    const bytes = new Uint8Array(10 + 10 + frameSize);
+    writeAscii(bytes, 0, 'ID3');
+    bytes[3] = 3;
+    const tagSize = 10 + frameSize;
+    bytes[6] = (tagSize >> 21) & 0x7f;
+    bytes[7] = (tagSize >> 14) & 0x7f;
+    bytes[8] = (tagSize >> 7) & 0x7f;
+    bytes[9] = tagSize & 0x7f;
+    writeAscii(bytes, 10, 'APIC');
+    new DataView(bytes.buffer).setUint32(14, frameSize, false);
+
+    let cursor = 20;
+    bytes[cursor] = 0; // Latin-1 encoding
+    cursor += 1;
+    writeAscii(bytes, cursor, mime);
+    cursor += mime.length;
+    bytes[cursor] = 0; // mime terminator
+    cursor += 1;
+    bytes[cursor] = 3; // picture type: front cover
+    cursor += 1;
+    bytes[cursor] = 0; // empty description
+    cursor += 1;
+    bytes.fill(0x41, cursor, cursor + imageBytes);
+
+    const { coverArt } = parseID3v2(bytes);
+    expect(coverArt).toMatch(/^data:image\/jpeg;base64,/u);
+    expect(coverArt.length).toBeGreaterThan(imageBytes);
+  });
+
   it('returns empty metadata for malformed input', () => {
     expect(parseID3v2(new Uint8Array([1, 2, 3]))).toEqual({ tags: {}, coverArt: null });
     expect(parseWav(new Uint8Array([1, 2, 3]))).toEqual({ tags: {}, technical: {}, coverArt: null });

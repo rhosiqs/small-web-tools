@@ -76,8 +76,10 @@ function declarationValue(block, property) {
   return block.slice(valueStart, cursor).trim();
 }
 
+// `\b` matches between a hyphen and a letter, so a `\bhref` pattern also matches
+// `data-href`. Attribute names are delimited by whitespace or the tag opener.
 function htmlAttribute(tag, attribute) {
-  const pattern = new RegExp(`\\b${attribute}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s"'=<>]+))`, 'iu');
+  const pattern = new RegExp(`(?:^|[\\s/])${attribute}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s"'=<>]+))`, 'iu');
   const match = pattern.exec(tag);
   return match ? (match[1] ?? match[2] ?? match[3] ?? '') : null;
 }
@@ -95,6 +97,16 @@ function getFormat(url, declaredFormat) {
   }[extension] || 'UNKNOWN';
 }
 
+// Descriptor values are copied onto every source in a @font-face block and then
+// serialized into the JSON response. Left unbounded, a small stylesheet of long
+// declarations expands into a response large enough to exhaust Worker memory.
+const MAX_DESCRIPTOR_LENGTH = 128;
+
+function descriptor(block, property) {
+  const value = block.match(new RegExp(`${property}\\s*:\\s*([^;]+)`, 'iu'))?.[1]?.trim();
+  return value ? value.slice(0, MAX_DESCRIPTOR_LENGTH) : 'unknown';
+}
+
 function parseCss(css, baseUrl) {
   const sourceCss = css.replace(/\/\*[\s\S]*?\*\//gu, '');
   const imports = [];
@@ -110,14 +122,14 @@ function parseCss(css, baseUrl) {
 
   for (const faceMatch of sourceCss.matchAll(fontFacePattern)) {
     const block = faceMatch[1];
-    const family = block.match(/font-family\s*:\s*['"]?([^'";]+)['"]?/iu)?.[1]?.trim();
+    const family = block.match(/font-family\s*:\s*['"]?([^'";]+)['"]?/iu)?.[1]?.trim()?.slice(0, MAX_DESCRIPTOR_LENGTH);
     const sourceList = declarationValue(block, 'src');
     if (!family || !sourceList) continue;
-    const weight = block.match(/font-weight\s*:\s*([^;]+)/iu)?.[1]?.trim() || 'unknown';
-    const style = block.match(/font-style\s*:\s*([^;]+)/iu)?.[1]?.trim() || 'unknown';
-    const stretch = block.match(/font-stretch\s*:\s*([^;]+)/iu)?.[1]?.trim() || 'unknown';
-    const unicodeRange = block.match(/unicode-range\s*:\s*([^;]+)/iu)?.[1]?.trim() || 'unknown';
-    const variationSettings = block.match(/font-variation-settings\s*:\s*([^;]+)/iu)?.[1]?.trim() || 'unknown';
+    const weight = descriptor(block, 'font-weight');
+    const style = descriptor(block, 'font-style');
+    const stretch = descriptor(block, 'font-stretch');
+    const unicodeRange = descriptor(block, 'unicode-range');
+    const variationSettings = descriptor(block, 'font-variation-settings');
 
     for (const source of sourceList.matchAll(sourcePattern)) {
       const resolved = resolveRemoteUrl(baseUrl, source[1]);
@@ -224,7 +236,10 @@ async function fetchBudgeted(url, type, budget, limits) {
     budget.finishBytes(reservation, result.buffer.byteLength);
     return result;
   } catch (error) {
-    budget.finishBytes(reservation, 0);
+    // A failed fetch may still have streamed bytes before aborting. The actual
+    // count is not observable here, so charge the whole reservation rather than
+    // returning it to the budget and letting real egress exceed the limit.
+    budget.finishBytes(reservation, reservation);
     throw error;
   }
 }
@@ -300,6 +315,33 @@ async function extractFontMetadata(targetUrl, limits) {
   };
 }
 
+/**
+ * A plain-text Workers variable arrives as a string, so spreading the raw value
+ * scatters its characters into numeric keys instead of applying an override.
+ * Accept both the string and JSON-object binding forms, and take only known keys
+ * whose value is a positive finite number.
+ */
+function resolveLimits(rawOverride) {
+  const defaults = { ...FONT_EXTRACTION_LIMITS };
+  let override = rawOverride;
+
+  if (typeof override === 'string') {
+    if (!override.trim()) return defaults;
+    try {
+      override = JSON.parse(override);
+    } catch {
+      return defaults;
+    }
+  }
+  if (!override || typeof override !== 'object' || Array.isArray(override)) return defaults;
+
+  for (const key of Object.keys(FONT_EXTRACTION_LIMITS)) {
+    const value = Number(override[key]);
+    if (Number.isFinite(value) && value > 0) defaults[key] = value;
+  }
+  return defaults;
+}
+
 export async function onRequestPost(context) {
   const { request, env = {} } = context;
   const corsHeaders = sameOriginCorsHeaders(request);
@@ -355,7 +397,7 @@ export async function onRequestPost(context) {
   }
 
   try {
-    const limits = { ...FONT_EXTRACTION_LIMITS, ...(env.FONT_EXTRACTION_LIMITS || {}) };
+    const limits = resolveLimits(env.FONT_EXTRACTION_LIMITS);
     const result = await extractFontMetadata(targetUrl, limits);
     return jsonResponse({
       ok: true,

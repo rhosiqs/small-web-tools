@@ -1,3 +1,5 @@
+import { bytesToBinaryString, bytesToDataUrl } from '../../../lib/binaryEncoding.js';
+
 function readUint32BE(buf, offset) {
   return ((buf[offset] << 24) | (buf[offset + 1] << 16) | (buf[offset + 2] << 8) | buf[offset + 3]) >>> 0;
 }
@@ -23,7 +25,7 @@ function readSyncsafeInt(buf, offset) {
 }
 
 function latin1ToString(bytes) {
-  return Array.from(bytes).map(b => String.fromCharCode(b)).join('');
+  return bytesToBinaryString(bytes);
 }
 
 
@@ -145,8 +147,7 @@ function parseID3v2(uint8) {
         dataStart = descEnd >= 0 ? descEnd + 1 : dataStart;
         const imgBytes = frameData.slice(dataStart);
         if (imgBytes.length > 0) {
-          const b64 = btoa(String.fromCharCode(...imgBytes));
-          coverArt = `data:${mimeType};base64,${b64}`;
+          coverArt = bytesToDataUrl(imgBytes, mimeType);
         }
       } catch { /* ignore */ }
     }
@@ -177,8 +178,7 @@ function parseID3v2(uint8) {
         }
         const imgBytes = frameData.slice(dataPos);
         if (imgBytes.length > 0) {
-          const b64 = btoa(String.fromCharCode(...imgBytes));
-          coverArt = `data:${mimeType};base64,${b64}`;
+          coverArt = bytesToDataUrl(imgBytes, mimeType);
         }
       } catch { /* ignore */ }
     }

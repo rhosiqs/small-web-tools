@@ -64,6 +64,25 @@ describe('isPrivateHost', () => {
     expect(isPrivateHost('::ffff:7f00:1')).toBe(true);
   });
 
+  it('blocks reserved IPv6 addresses written in full, uncompressed form', () => {
+    expect(isPrivateHost('0000:0000:0000:0000:0000:0000:0000:0001')).toBe(true);
+    expect(isPrivateHost('0000:0000:0000:0000:0000:0000:0000:0000')).toBe(true);
+    expect(isPrivateHost('fe80:0000:0000:0000:0000:0000:0000:0001')).toBe(true);
+    expect(isPrivateHost('fd00:0000:0000:0000:0000:0000:0000:0001')).toBe(true);
+    expect(isPrivateHost('0:0:0:0:0:ffff:7f00:1')).toBe(true);
+  });
+
+  it('blocks IPv6 transition and special-purpose ranges', () => {
+    expect(isPrivateHost('64:ff9b::7f00:1')).toBe(true);
+    expect(isPrivateHost('2001:0:5ef5:79fd::1')).toBe(true);
+    expect(isPrivateHost('100::1')).toBe(true);
+  });
+
+  it('allows public IPv6 unicast addresses', () => {
+    expect(isPrivateHost('2606:4700:4700::1111')).toBe(false);
+    expect(isPrivateHost('2001:4860:4860::8888')).toBe(false);
+  });
+
   it('allows public IP addresses', () => {
     expect(isPrivateHost('1.1.1.1')).toBe(false);
     expect(isPrivateHost('8.8.8.8')).toBe(false);

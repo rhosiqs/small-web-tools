@@ -14,17 +14,31 @@ export const THIRD_PARTY_SERVICES = Object.fromEntries(
     }]),
 );
 
+function emptyConsents() {
+  return { version: CURRENT_CONSENT_VERSION, services: {} };
+}
+
+/**
+ * Read the consent store, treating anything that does not match the current
+ * shape as "no consent granted". Stored state is user-editable, so a record
+ * missing `services` must not reach consumers and break rendering — that would
+ * also leave consent unrecoverable through the UI.
+ */
 export function getStoredConsents() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { version: CURRENT_CONSENT_VERSION, services: {} };
+    if (!raw) return emptyConsents();
     const parsed = JSON.parse(raw);
-    if (parsed.version !== CURRENT_CONSENT_VERSION) {
-      return { version: CURRENT_CONSENT_VERSION, services: {} };
+    if (!parsed || typeof parsed !== 'object' || parsed.version !== CURRENT_CONSENT_VERSION) {
+      return emptyConsents();
     }
-    return parsed;
+    const { services } = parsed;
+    if (!services || typeof services !== 'object' || Array.isArray(services)) {
+      return emptyConsents();
+    }
+    return { version: CURRENT_CONSENT_VERSION, services };
   } catch {
-    return { version: CURRENT_CONSENT_VERSION, services: {} };
+    return emptyConsents();
   }
 }
 

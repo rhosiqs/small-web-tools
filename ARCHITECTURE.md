@@ -106,7 +106,7 @@ small-web-tools/
 │   ├── i18n/
 │   │   ├── index.js           Locale resolution, i18next setup, persistence, and document language
 │   │   └── locales/           Paired en-US and zh-TW namespace JSON resources
-│   ├── lib/                  Pure utility helpers (passwordStrength, resourceLimits, thirdPartyServices)
+│   ├── lib/                  Pure utility helpers (binaryEncoding, passwordStrength, resourceLimits, thirdPartyServices)
 │   ├── hooks/                Routing, persistence, and document-title shell effects
 │   ├── tests/                Vitest unit test suites and setup
 │   └── components/
