@@ -22,7 +22,8 @@ small-web-tools 是一個使用 React 18 與 Vite 的單頁應用程式，提供
 
 本專案維護成對的英文與繁體中文說明文件。英文檔名搭配 `.zh-TW.md` 結尾的繁中檔案；
 修改文件描述的行為或結構時，請同步維護兩個版本。只供 AI agent 使用的
-`AGENTS.md`、`.agents/AGENTS.md` 與 `TODO.md` 刻意維持英文單一版本。
+`AGENTS.md`、`.agents/AGENTS.md`、`.claude/skills/` 下的 skills 與 `TODO.md`
+刻意維持英文單一版本。
 
 ## 快速資訊
 
@@ -60,6 +61,8 @@ VITE_APP_VERSION 是最後的明確 fallback。npm manifest 使用固定的非 r
 - .dockerignore：Docker 建置 context 與本機秘密的排除規則。
 - AGENTS.md：工程 skills 的設定與 `docs/agents/` 指引入口；不建立繁中版本。
 - .agents/AGENTS.md：只供 AI agent 使用的英文規則；不建立繁中版本。
+- .claude/skills/：依任務需要才讀取的 agent 工作流程 skills；
+  `.claude/skills/add-tool/SKILL.md` 說明如何新增路由工具。不建立繁中版本。
 - package.json：指令、相依套件與 pipeline 命令。
 - jsconfig.json：JavaScript 的 TypeScript checkJs 設定。
 - eslint.config.js：React、hooks 與 Cloudflare Functions 的 ESLint flat config。
@@ -374,6 +377,7 @@ Wrangler 設定檔（wrangler.jsonc、workers/rate-limiter/wrangler.jsonc 與整
   與驗證。
 - .github/ 包含 CI 與相依套件維護設定；.agents/AGENTS.md 包含儲存庫範圍的開發指引，
   根目錄 AGENTS.md 則將工程 skills 指向 `docs/agents/` 中的規則。
+  `.claude/skills/` 存放依任務需要才讀取的 agent 工作流程 skills。
 - README、CONTRIBUTING、ARCHITECTURE 與 PRIVACY 的英文／繁中說明檔，以及 TODO.md、
   LICENSE，是維護中的專案文件或法律資料。
 - .dev.vars.example 是安全、非秘密的本機執行環境文件；實際 .dev.vars* 仍維持忽略。

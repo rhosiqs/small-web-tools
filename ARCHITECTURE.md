@@ -50,7 +50,8 @@ Supporting explanatory documents are public/fonts/MANIFEST.md with its
 Traditional Chinese companion, the two SSRF harness READMEs, and the
 English-only AI agent instructions in `AGENTS.md` and `.agents/`. The engineering
 skills read their issue-tracker, triage-label, and domain-document conventions
-from `docs/agents/`.
+from `docs/agents/`, and task-specific agent workflows live as skills under
+`.claude/skills/`.
 
 ```text
 small-web-tools/
@@ -432,6 +433,9 @@ build, test, operate, or maintain the project:
 - `.github/` contains CI and dependency-maintenance configuration;
   `.agents/AGENTS.md` contains repository-scoped development instructions, while
   root `AGENTS.md` points engineering skills to the rules in `docs/agents/`.
+  `.claude/skills/` holds task-specific agent workflows, read on demand rather
+  than loaded with every task; `.claude/skills/add-tool/SKILL.md` covers adding a
+  routed tool.
 - `README.md`, `README.zh-TW.md`, `CONTRIBUTING.md`, `ARCHITECTURE.md`, `PRIVACY.md`, `TODO.md`, and
   `LICENSE` are maintained project documentation or legal material.
 - `.dev.vars.example` is safe, non-secret local-runtime documentation. Actual
