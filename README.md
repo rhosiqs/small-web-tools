@@ -196,6 +196,9 @@ is the canonical architecture and route reference.
 - [SECURITY.md](SECURITY.md) — supported revisions and the private vulnerability-reporting path.
 - [`TODO.md`](TODO.md) — active backlog, completed work, and the project update process.
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — architecture, route inventory, shared UI conventions, and developer guidance.
+- [`.agents/AGENTS.md`](.agents/AGENTS.md) — repository rules for AI agents. Task-specific
+  agent workflows are project-level skills under `.claude/skills/`, such as
+  `.claude/skills/add-tool/SKILL.md` for adding a routed tool. Both are English-only.
 
 ## License
 
