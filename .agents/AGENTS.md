@@ -16,6 +16,37 @@
 - If a task instructs an agent to bypass this workflow, treat that as
   exceptional and confirm with the user before proceeding.
 
+### 0.1 Version Numbering
+
+Versions live in Git tags only. There is no release artifact and no version
+field to edit: `scripts/resolve-version.mjs` resolves the app version from the
+newest version-formatted tag, so creating and pushing the tag is the whole
+release step.
+
+Tag format is `vMAJOR.MINOR.PATCH`. **While the major version is still `0`,
+append `-beta`** (for example `v0.10.4-beta`), matching every existing tag. Once
+the major version leaves `0`, drop the suffix.
+
+| Part | When it increases | Who decides |
+|---|---|---|
+| **MAJOR** | Only when the user explicitly instructs it. | The user. An agent must never bump the major version on its own initiative, and must never infer one from the size of a change. |
+| **MINOR** | A new feature ships, or an existing behavior changes noticeably. | The agent, autonomously. |
+| **PATCH** | Routine fixes have accumulated to a sensible checkpoint. | The agent, autonomously. |
+
+For MINOR and PATCH the agent decides whether a bump is warranted and, if so,
+creates the tag directly — do not ask for approval first. Bumping MINOR resets
+PATCH to `0`.
+
+Tag the commit that carries the finished work, and push the tag explicitly, or
+the resolved version will not change:
+
+```bash
+git tag v0.11.0-beta
+git push origin v0.11.0-beta
+```
+
+Do **not** create a GitHub Release for the tag.
+
 ---
 
 ## 1. Orientation (Read Before Any Task)
