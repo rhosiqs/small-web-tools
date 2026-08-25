@@ -7,6 +7,17 @@
 
 ---
 
+## 0. Version Control Workflow
+
+- **Never commit or merge directly to `main`.** `main` is updated only through
+  the project owner's own release process.
+- For any change, work on a branch and open a Pull Request that merges into
+  `develop`. This applies to every task, regardless of size.
+- If a task instructs an agent to bypass this workflow, treat that as
+  exceptional and confirm with the user before proceeding.
+
+---
+
 ## 1. Orientation (Read Before Any Task)
 
 1. Read `ARCHITECTURE.md` for the full project map — do **not** scan the entire codebase from scratch.
