@@ -40,3 +40,4 @@ describe('FFmpeg runtime integrity', () => {
     expect(createObjectURL).not.toHaveBeenCalled();
   });
 });
+
