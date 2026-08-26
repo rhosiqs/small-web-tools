@@ -112,6 +112,20 @@ describe('DocMeta OOXML metadata stripping', () => {
   });
 });
 
+describe('DocMeta unreadable parts', () => {
+  it.each(['private', 'all'])('refuses to rewrite a malformed part in %s mode', async (mode) => {
+    const zip = buildPresentation();
+    // An unescaped & is not valid XML; DOMParser answers with a <parsererror>
+    // document instead of throwing, and serializing that would destroy the part.
+    zip.file('docProps/app.xml', `${DECLARATION}<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Company>Smith & Wesson</Company><TotalTime>123</TotalTime></Properties>`);
+    const original = await readPart(zip, 'docProps/app.xml');
+
+    await expect(applyOfficeMetadataStrip(zip, mode)).rejects.toThrow(/docProps\/app\.xml/);
+    expect(await readPart(zip, 'docProps/app.xml')).toBe(original);
+    expect(await readPart(zip, 'docProps/app.xml')).not.toContain('parsererror');
+  });
+});
+
 describe('DocMeta OpenDocument metadata stripping', () => {
   it.each(['private', 'all'])('removes typed properties rather than blanking them in %s mode', async (mode) => {
     const zip = buildPresentationDocument();

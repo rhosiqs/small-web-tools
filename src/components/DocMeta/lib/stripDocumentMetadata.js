@@ -33,11 +33,23 @@ const serializeXml = (xmlDoc, originalText) => (
   xmlDeclarationOf(originalText) + new XMLSerializer().serializeToString(xmlDoc)
 );
 
+// DOMParser reports malformed XML by returning a <parsererror> document rather
+// than throwing. Serializing that back would replace a real part with the error
+// text, so an unreadable part aborts the strip: telling the user it succeeded
+// while their metadata is still in the file is the worse outcome of the two.
+const parseXmlPart = (text, partPath) => {
+  const xmlDoc = new DOMParser().parseFromString(text, 'application/xml');
+  if (xmlDoc.getElementsByTagName('parsererror').length > 0) {
+    throw new Error(`Unreadable document part: ${partPath}`);
+  }
+  return xmlDoc;
+};
+
 async function rewritePart(zip, partPath, mutate) {
   const partFile = zip.file(partPath);
   if (!partFile) return false;
   const text = await partFile.async('string');
-  const xmlDoc = new DOMParser().parseFromString(text, 'application/xml');
+  const xmlDoc = parseXmlPart(text, partPath);
   if (!mutate(xmlDoc)) return false;
   zip.file(partPath, serializeXml(xmlDoc, text));
   return true;
