@@ -86,6 +86,11 @@ Resist fixing at the symptom site when the class points elsewhere: a wrong numbe
 rendered in JSX is usually a domain-function bug, and a missing label is usually a
 locale-file bug, not a component bug.
 
+One root cause is not proof that you found *the* root cause. When a first
+plausible mechanism turns up early, keep reading the same code path to the end —
+the DocMeta corruption bug had three independent causes in twelve lines, and
+stopping at the first one would have shipped a file that still refused to open.
+
 ## Step 4 — Reproduce in a test before you fix
 
 Write the failing test first. It proves you found the real cause rather than a
@@ -104,8 +109,14 @@ existing suites (for example `src/tests/markdownPreviewerIssue42.test.jsx`,
   convention already used in `src/tests/` makes the link obvious to reviewers.
 
 Run just that file first (see `references/verification.md` for the commands) and
-confirm it fails for the stated reason. A test that passes before your fix is
-testing the wrong thing.
+confirm it fails **against the old behavior**. This is the step that is easiest to
+fake without noticing: if you extracted or added a function, a red run that says
+`TypeError: … is not a function` only proves the new code does not exist yet, and
+it would look identical for a test that asserts nothing. Point the test at the
+behavior instead — keep the old code path in place while you write it, or restore
+it briefly — and read the failure message to check it is the defect talking. A
+test that passes before your fix is testing the wrong thing; a test that fails for
+the wrong reason is worse, because it looks like proof.
 
 ## Step 5 — Make the smallest correct fix
 
@@ -173,6 +184,7 @@ the code, identifiers, and commit messages stay English).
 
 ```
 Symptom      one line, as the user experiences it
+Reproduced   yes, and how — or no, and what you could not get to happen
 Root cause   the actual mechanism, naming file:line
 Fix          what changed and why it is the minimal change
 Regression   the test that now fails without the fix
@@ -180,8 +192,16 @@ Verification the commands you ran and their result
 Risk         other call sites or edge cases a reviewer should look at
 ```
 
-Report honestly: if a gate still fails, or you fixed the reported symptom but
-suspect a second defect nearby, say so plainly instead of implying green.
+The `Reproduced` line is not a formality; it is the difference between a fix and a
+hypothesis, and the reader cannot tell which one they are getting unless you say
+so. When the answer is no, the honest report says no in its opening sentence, and
+any change you still propose is labelled as a candidate explanation with the
+evidence you do have — never as "fixed". Reasoning from source code to a mechanism
+is good work, but it is not reproduction.
+
+Report honestly in the same spirit: if a gate still fails, or you fixed the
+reported symptom but suspect a second defect nearby, say so plainly instead of
+implying green.
 
 ## When to stop and ask
 

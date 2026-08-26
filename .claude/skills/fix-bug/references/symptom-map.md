@@ -142,6 +142,34 @@ not a thrown page. Clear every derived field when a new file is loaded (the
 `fix(docmeta): clear total editing time metadata` history is exactly this bug).
 Anything that reveals location stays behind the existing consent flow.
 
+**Writing a file back is a different problem from reading one.** Office and
+OpenDocument readers validate the container before they show anything, so a
+rewritten package that is merely "mostly right" is reported to the user as a
+damaged file — PowerPoint is the strictest of the three and refuses where Word
+often repairs silently. Every one of these invariants has already been violated
+in this repo at least once, so check all of them whenever you touch
+`src/components/DocMeta/lib/stripDocumentMetadata.js` or any code that rewrites
+a document:
+
+- **A removed part takes its references with it.** Deleting `docProps/custom.xml`
+  from the zip is not enough; its `<Override>` in `[Content_Types].xml` and its
+  `<Relationship>` in `_rels/.rels` must go too, or the package advertises a part
+  that is not there.
+- **Typed properties are removed, never blanked.** `dcterms:created`,
+  `dcterms:modified`, `cp:lastPrinted`, `TotalTime`, `meta:creation-date`, and
+  `meta:editing-duration` are dates, integers, and durations. An empty string is
+  an invalid value for those types, not an absent one. Free-text properties
+  (`dc:title`, `dc:creator`, …) can safely be emptied in place.
+- **`XMLSerializer` drops the XML declaration.** Every rewritten part has to get
+  `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` back.
+- **Do not touch the payload.** Slides, sheets, and document bodies must come out
+  byte-identical; only the metadata parts change.
+
+A test for this class of bug asserts package invariants (no dangling references,
+no empty typed values, declaration present, payload unchanged) on a synthetic but
+structurally faithful fixture — `src/tests/documentMetadataStrip.test.js` is the
+worked example.
+
 ## Pages Functions and APIs
 
 *"429 for no reason", "500 on lookup", "CORS", "works locally, fails deployed".*
