@@ -296,9 +296,13 @@ ImgMeta.jsx、DocMeta.jsx、AudioMeta.jsx 與 VideoMeta.jsx 在瀏覽器中解�
 `useObjectUrlRegistry` 則負責 preview、衍生輸出與下載 Blob URL。聚焦測試位於
 `audioMetadataDomain.test.js` 與 `videoMetadataDomain.test.js`。
 
-純文件格式化／解析 helper 位於 src/components/DocMeta/lib/。QR／barcode 編碼規則與
+純文件格式化／解析 helper 位於 src/components/DocMeta/lib/，同一目錄的
+stripDocumentMetadata.js 負責改寫 OOXML 與 OpenDocument 套件。剝離流程會維持套件有效：
+對 dcterms:created、TotalTime 等具型別屬性採用移除而非清空、保留每個 part 的 XML 宣告，
+並在刪除 part 時一併移除其 content-type override 與套件關聯。QR／barcode 編碼規則與
 codon 輸入／篩選／呈現規則位於各自的 src/components/&lt;Tool&gt;/lib/ 目錄。聚焦覆蓋率
-包含 documentMetadataDomain.test.js、qrBarcodeDomain.test.js 與 codonDomain.test.js；
+包含 documentMetadataDomain.test.js、documentMetadataStrip.test.js、
+qrBarcodeDomain.test.js 與 codonDomain.test.js；
 DNA/RNA 複製格式位於 dnaCopy.test.js，時間差位於 timeDomain.test.js，羅馬數字位於
 romanDomain.test.js，Phred 轉換位於 phredDomain.test.js，消毒 SVG 解析／匯出大小位於
 svgDomain.test.js，URL 百分比編碼位於 urlDomain.test.js。轉換器模式、資料夾選擇器、

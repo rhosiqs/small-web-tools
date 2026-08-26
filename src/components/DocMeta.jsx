@@ -3,11 +3,9 @@ import { useTranslation } from 'react-i18next';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import ToolHeader from './ui/ToolHeader';
-import JSZip from 'jszip';
 import {
   FILE_RESOURCE_POLICIES,
   validateResourceAddition,
-  validateZipArchive,
 } from '../lib/resourceLimits';
 import useObjectUrlRegistry from '../hooks/useObjectUrlRegistry';
 import {
@@ -15,12 +13,10 @@ import {
   formatDocumentDate as formatDate,
   formatDurationMinutes as formatMinutes,
 } from './DocMeta/lib/documentMetadata';
-
-const loadSafeZip = async (file) => {
-  const archiveCheck = await validateZipArchive(file);
-  if (!archiveCheck.valid) throw new Error(archiveCheck.error);
-  return JSZip.loadAsync(file);
-};
+import {
+  loadSafeZip,
+  stripDocumentMetadata,
+} from './DocMeta/lib/stripDocumentMetadata';
 
 // Helper to get element textContent by checking localName
 const getTagValue = (xmlDoc, tagName) => {
@@ -803,103 +799,6 @@ export default function DocMeta() {
     a.click();
     document.body.removeChild(a);
     revokeObjectUrl(url);
-  };
-
-  const stripDocumentMetadata = async (fileObj, mode, type) => {
-    if (type === 'pdf') {
-      const arrayBuffer = await fileObj.arrayBuffer();
-      let text = new TextDecoder('latin1').decode(new Uint8Array(arrayBuffer));
-
-      if (mode === 'private') {
-        text = text.replace(/\/Author\s*\([^)]*\)/g, '/Author ()')
-                   .replace(/\/Author\s*<[^>]*>/g, '/Author ()')
-                   .replace(/\/CreationDate\s*\([^)]*\)/g, '/CreationDate ()')
-                   .replace(/\/ModDate\s*\([^)]*\)/g, '/ModDate ()');
-      } else {
-        text = text.replace(/\/Title\s*\([^)]*\)/g, '/Title ()')
-                   .replace(/\/Author\s*\([^)]*\)/g, '/Author ()')
-                   .replace(/\/Subject\s*\([^)]*\)/g, '/Subject ()')
-                   .replace(/\/Keywords\s*\([^)]*\)/g, '/Keywords ()')
-                   .replace(/\/Creator\s*\([^)]*\)/g, '/Creator ()')
-                   .replace(/\/Producer\s*\([^)]*\)/g, '/Producer ()')
-                   .replace(/\/CreationDate\s*\([^)]*\)/g, '/CreationDate ()')
-                   .replace(/\/ModDate\s*\([^)]*\)/g, '/ModDate ()')
-                   .replace(/<x:xmpmeta[\s\S]*?<\/x:xmpmeta>/gi, '');
-      }
-      return new Blob([new TextEncoder().encode(text)], { type: 'application/pdf' });
-    }
-
-    if (['odt', 'ods', 'odp', 'odg'].includes(type)) {
-      const zip = await loadSafeZip(fileObj);
-      const metaFile = zip.file("meta.xml");
-      if (metaFile) {
-        const metaText = await metaFile.async("string");
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(metaText, "application/xml");
-
-        const removeTags = mode === 'private'
-          ? ["creator", "initial-creator", "creation-date", "date", "editing-duration"]
-          : ["creator", "initial-creator", "creation-date", "date", "editing-duration", "generator", "title", "subject", "description", "keyword"];
-
-        const els = xmlDoc.getElementsByTagName("*");
-        for (let i = els.length - 1; i >= 0; i--) {
-          const el = els[i];
-          const localName = el.localName || el.tagName.split(':').pop();
-          if (removeTags.includes(localName)) {
-            el.textContent = "";
-          }
-          if (mode === 'all' && (localName === 'user-defined')) {
-            el.parentNode.removeChild(el);
-          }
-        }
-        const newMetaText = new XMLSerializer().serializeToString(xmlDoc);
-        zip.file("meta.xml", newMetaText);
-      }
-      return await zip.generateAsync({ type: "blob" });
-    }
-
-    const zip = await loadSafeZip(fileObj);
-    const coreFile = zip.file("docProps/core.xml");
-    if (coreFile) {
-      const coreText = await coreFile.async("string");
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(coreText, "application/xml");
-      const elements = xmlDoc.getElementsByTagName("*");
-      for (let i = elements.length - 1; i >= 0; i--) {
-        const el = elements[i];
-        if (el.localName === "coreProperties" || el.tagName.split(':').pop() === "coreProperties") continue;
-        const localName = el.localName || el.tagName.split(':').pop();
-        if (mode === 'private') {
-          if (["creator", "lastModifiedBy", "created", "modified", "lastPrinted"].includes(localName)) {
-            el.textContent = "";
-          }
-        } else if (mode === 'all') {
-          if (localName !== "revision") {
-            el.textContent = "";
-          }
-        }
-      }
-      zip.file("docProps/core.xml", new XMLSerializer().serializeToString(xmlDoc));
-    }
-    const appFile = zip.file("docProps/app.xml");
-    if (appFile) {
-      const appText = await appFile.async("string");
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(appText, "application/xml");
-      const elements = xmlDoc.getElementsByTagName("*");
-      for (let i = elements.length - 1; i >= 0; i--) {
-        const el = elements[i];
-        const localName = el.localName || el.tagName.split(':').pop();
-        if (localName === "TotalTime") {
-          el.textContent = "";
-        }
-      }
-      zip.file("docProps/app.xml", new XMLSerializer().serializeToString(xmlDoc));
-    }
-    if (zip.file("docProps/custom.xml") && mode === 'all') {
-      zip.remove("docProps/custom.xml");
-    }
-    return await zip.generateAsync({ type: "blob" });
   };
 
   const handleStripMetadata = async (fileObj, mode) => {
