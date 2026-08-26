@@ -50,7 +50,9 @@ Supporting explanatory documents are public/fonts/MANIFEST.md with its
 Traditional Chinese companion, the two SSRF harness READMEs, and the
 English-only AI agent instructions in `AGENTS.md` and `.agents/`. The engineering
 skills read their issue-tracker, triage-label, and domain-document conventions
-from `docs/agents/`.
+from `docs/agents/`. Repository-scoped Claude Code skills live in
+`.claude/skills/`; the `fix-bug` skill documents the defect-repair workflow and is
+also English-only.
 
 ```text
 small-web-tools/
@@ -87,6 +89,10 @@ small-web-tools/
 │   ├── agents/               Issue-tracker, triage-label, and domain-doc rules
 │   ├── docker-development.md Docker development workflow
 │   └── docker-development.zh-TW.md Traditional Chinese Docker workflow
+├── .claude/
+│   ├── CLAUDE.md             Claude Code entry point that imports .agents/AGENTS.md
+│   └── skills/
+│       └── fix-bug/          Bug-diagnosis workflow skill plus symptom-map and verification references
 ├── .github/
 │   ├── dependabot.yml        Monthly dependency updates, including major versions
 │   └── workflows/ci.yml      GitHub Actions CI pipeline workflow
@@ -432,6 +438,8 @@ build, test, operate, or maintain the project:
 - `.github/` contains CI and dependency-maintenance configuration;
   `.agents/AGENTS.md` contains repository-scoped development instructions, while
   root `AGENTS.md` points engineering skills to the rules in `docs/agents/`.
+  `.claude/` holds the Claude Code entry point and the repository's own skills
+  under `.claude/skills/`.
 - `README.md`, `README.zh-TW.md`, `CONTRIBUTING.md`, `ARCHITECTURE.md`, `PRIVACY.md`, `TODO.md`, and
   `LICENSE` are maintained project documentation or legal material.
 - `.dev.vars.example` is safe, non-secret local-runtime documentation. Actual
