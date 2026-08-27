@@ -1,0 +1,55 @@
+{
+  "skill_name": "fix-bug",
+  "evals": [
+    {
+      "id": 0,
+      "name": "docmeta-pptx-corruption",
+      "prompt": "DocMeta（Documents Metadata）工具：上傳 .pptx 檔案，按下清除 metadata 之後把檔案下載回來，PowerPoint 打不開，說檔案毀損。幫我修一下。",
+      "expected_output": "Locates stripDocumentMetadata in src/components/DocMeta.jsx, identifies at least one OPC-validity root cause (dangling docProps/custom.xml override + relationship after zip.remove, schema-invalid empty typed values such as dcterms:created / dcterms:modified / TotalTime, or the XML declaration dropped by XMLSerializer), ships a scoped fix plus a Vitest regression test that is red before the fix.",
+      "files": [],
+      "assertions": [
+        "Names src/components/DocMeta.jsx stripDocumentMetadata (or code it was extracted into) as the failing code path",
+        "Identifies at least one genuine OPC/schema root cause rather than a UI-level symptom guard",
+        "Identifies the dangling docProps/custom.xml content-type override and package relationship left by zip.remove",
+        "Identifies that emptying typed properties (dcterms dates or TotalTime) produces schema-invalid values",
+        "Ships a code change that makes the rewritten package self-consistent",
+        "Adds a Vitest regression test that exercises the stripping logic on an OOXML fixture",
+        "Demonstrates the regression test fails before the fix and passes after",
+        "Adds no npm dependency and does not modify package.json or package-lock.json",
+        "Runs at least one repository verification command (vitest, lint, or typecheck) and reports the real result",
+        "Changes stay scoped to DocMeta and its tests/docs, with no unrelated refactors",
+        "Reports honestly that PowerPoint itself could not be used to verify"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "mermaid-stale-vague-report",
+      "prompt": "Mermaid Converter 好像壞了，我改完圖表之後畫面還停在舊的圖，要切到別的工具再切回來才會更新。這是 bug 嗎？可以的話幫我處理。",
+      "expected_output": "Investigates MermaidConverter, finds the existing stale-render guard and its regression suite (src/tests/mermaidConverterStaleRender.test.jsx), reports that the described defect is already guarded and cannot be reproduced from the information given, and asks for concrete reproduction details instead of shipping a speculative fix.",
+      "files": [],
+      "assertions": [
+        "Locates src/components/MermaidConverter.jsx and its lib/mermaidDomain.js",
+        "Finds the existing stale-render guard and/or src/tests/mermaidConverterStaleRender.test.jsx",
+        "Attempts reproduction (runs the existing tests) before proposing any change",
+        "Does not ship a speculative code change presented as a confirmed fix",
+        "States explicitly that the report could not be reproduced, or explains precisely what is still unguarded",
+        "Asks the user for concrete reproduction details (browser, steps, locale, input)",
+        "Leaves unrelated files untouched"
+      ]
+    }
+  ],
+  "note": "Eval 0 no longer discriminates. Its three root causes were written into references/symptom-map.md after the bug was solved, so a run with the current skill is reading the answer rather than deriving it. Kept as a knowledge-retention check; add an unseen bug of the same class to measure diagnosis.",
+  "history": [
+    {
+      "iteration": 1,
+      "baseline": "no skill",
+      "result": "with-skill 16/19 vs baseline 17/19; both found 1 of eval 0's 3 root causes"
+    },
+    {
+      "iteration": 3,
+      "baseline": "skill v1 snapshot",
+      "result": "v2 12/12 and 3 of 3 root causes; v1 11/12 and 1 of 3",
+      "caveat": "see note"
+    }
+  ]
+}

@@ -38,6 +38,24 @@ describe('third-party consent registry', () => {
     expect(THIRD_PARTY_SERVICES.ffmpeg).toBeUndefined();
   });
 
+  it.each([
+    ['a record with no services map', '{"version":"3.0.0"}'],
+    ['a services array', '{"version":"3.0.0","services":["speedtest"]}'],
+    ['a null services map', '{"version":"3.0.0","services":null}'],
+    ['a bare JSON scalar', '"3.0.0"'],
+    ['unparseable text', 'not json'],
+  ])('treats %s as no consent instead of returning an unusable store', (_label, raw) => {
+    localStorage.setItem('small_web_tools_consent', raw);
+    expect(getStoredConsents()).toEqual({ version: CURRENT_CONSENT_VERSION, services: {} });
+    expect(hasConsent('speedtest')).toBe(false);
+  });
+
+  it('stays recoverable after a malformed record: consent can still be granted', () => {
+    localStorage.setItem('small_web_tools_consent', '{"version":"3.0.0"}');
+    grantConsent('speedtest');
+    expect(hasConsent('speedtest')).toBe(true);
+  });
+
   it('grants, revokes, and resets decisions', () => {
     const dispatch = vi.spyOn(window, 'dispatchEvent');
     expect(hasConsent('speedtest')).toBe(false);

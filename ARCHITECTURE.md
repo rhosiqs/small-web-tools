@@ -50,7 +50,9 @@ Supporting explanatory documents are public/fonts/MANIFEST.md with its
 Traditional Chinese companion, the two SSRF harness READMEs, and the
 English-only AI agent instructions in `AGENTS.md` and `.agents/`. The engineering
 skills read their issue-tracker, triage-label, and domain-document conventions
-from `docs/agents/`.
+from `docs/agents/`, and task-specific agent workflows live as skills under
+`.claude/skills/`. Those skills are English-only for the same reason the agent
+guides are.
 
 ```text
 small-web-tools/
@@ -87,6 +89,11 @@ small-web-tools/
 │   ├── agents/               Issue-tracker, triage-label, and domain-doc rules
 │   ├── docker-development.md Docker development workflow
 │   └── docker-development.zh-TW.md Traditional Chinese Docker workflow
+├── .claude/
+│   ├── CLAUDE.md             Claude Code entry point that imports .agents/AGENTS.md
+│   └── skills/
+│       ├── add-tool/         Routed-tool checklist skill
+│       └── fix-bug/          Bug-diagnosis workflow skill plus symptom-map and verification references
 ├── .github/
 │   ├── dependabot.yml        Monthly dependency updates, including major versions
 │   └── workflows/ci.yml      GitHub Actions CI pipeline workflow
@@ -106,7 +113,7 @@ small-web-tools/
 │   ├── i18n/
 │   │   ├── index.js           Locale resolution, i18next setup, persistence, and document language
 │   │   └── locales/           Paired en-US and zh-TW namespace JSON resources
-│   ├── lib/                  Pure utility helpers (passwordStrength, resourceLimits, thirdPartyServices)
+│   ├── lib/                  Pure utility helpers (binaryEncoding, passwordStrength, resourceLimits, thirdPartyServices)
 │   ├── hooks/                Routing, persistence, and document-title shell effects
 │   ├── tests/                Vitest unit test suites and setup
 │   └── components/
@@ -342,11 +349,17 @@ cancellation checks, and engine termination. `useObjectUrlRegistry` remains the
 component-level owner of preview, derived-output, and download Blob URLs. Focused
 coverage lives in `audioMetadataDomain.test.js` and `videoMetadataDomain.test.js`.
 
-Pure document formatting/parsing helpers live under `src/components/DocMeta/lib/`.
-QR/barcode encoding rules and codon input/filter/presentation rules live in their corresponding
-`src/components/<Tool>/lib/` directories. Focused coverage is in
-`documentMetadataDomain.test.js`, `qrBarcodeDomain.test.js`, and
-`codonDomain.test.js`; DNA/RNA copy formatting coverage is in `dnaCopy.test.js`,
+Pure document formatting/parsing helpers live under `src/components/DocMeta/lib/`,
+alongside `stripDocumentMetadata.js`, which rewrites OOXML and OpenDocument
+packages. Stripping keeps the package valid: it removes typed properties such as
+`dcterms:created` and `TotalTime` instead of blanking them, preserves each part's
+XML declaration, and drops the content-type override and package relationship of
+any part it deletes. QR/barcode encoding rules and codon input/filter/presentation
+rules live in their corresponding `src/components/<Tool>/lib/` directories.
+Focused coverage is in `documentMetadataDomain.test.js`,
+`documentMetadataStrip.test.js`, `qrBarcodeDomain.test.js`, and
+`codonDomain.test.js`, with the downloaded-package journey in
+`e2e/docmeta-strip.spec.js`; DNA/RNA copy formatting coverage is in `dnaCopy.test.js`,
 time-difference coverage is in `timeDomain.test.js`, Roman numeral coverage is
 in `romanDomain.test.js`, Phred conversion coverage is in `phredDomain.test.js`,
 sanitized SVG parsing/export-size coverage is in `svgDomain.test.js`, and URL
@@ -432,6 +445,10 @@ build, test, operate, or maintain the project:
 - `.github/` contains CI and dependency-maintenance configuration;
   `.agents/AGENTS.md` contains repository-scoped development instructions, while
   root `AGENTS.md` points engineering skills to the rules in `docs/agents/`.
+  `.claude/` holds the Claude Code entry point and `.claude/skills/`, the
+  task-specific agent workflows read on demand rather than loaded with every
+  task; `.claude/skills/add-tool/SKILL.md` covers adding a routed tool and
+  `.claude/skills/fix-bug/SKILL.md` covers repairing a defect.
 - `README.md`, `README.zh-TW.md`, `CONTRIBUTING.md`, `ARCHITECTURE.md`, `PRIVACY.md`, `TODO.md`, and
   `LICENSE` are maintained project documentation or legal material.
 - `.dev.vars.example` is safe, non-secret local-runtime documentation. Actual

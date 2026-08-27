@@ -3,6 +3,7 @@ import ffmpegManifest from '../../config/ffmpeg-assets.json';
 
 let ffmpegInstance = null;
 let loadingPromise = null;
+let logSink = null;
 const runtimeBlobUrls = new Set();
 
 function bytesToHex(bytes) {
@@ -27,7 +28,15 @@ export async function createVerifiedAssetUrl(asset, options = {}) {
 }
 
 export function getFFmpeg() {
-  if (!ffmpegInstance) ffmpegInstance = new FFmpeg();
+  if (!ffmpegInstance) {
+    ffmpegInstance = new FFmpeg();
+    // Registered once per instance. Attaching inside the load path would add a
+    // duplicate listener on every retry after a failed load, so log lines would
+    // be emitted repeatedly and stale callbacks retained.
+    ffmpegInstance.on('log', ({ message }) => {
+      if (logSink) logSink(message);
+    });
+  }
   return ffmpegInstance;
 }
 
@@ -37,6 +46,7 @@ export function getFFmpeg() {
  */
 export async function ensureFFmpegLoaded(onLog) {
   const ffmpeg = getFFmpeg();
+  logSink = onLog || null;
   if (ffmpeg.loaded) return ffmpeg;
 
   if (!loadingPromise) {
@@ -44,9 +54,6 @@ export async function ensureFFmpegLoaded(onLog) {
       let coreURL;
       let wasmURL;
       try {
-        ffmpeg.on('log', ({ message }) => {
-          if (onLog) onLog(message);
-        });
         [coreURL, wasmURL] = await Promise.all([
           createVerifiedAssetUrl(ffmpegManifest.assets.core),
           createVerifiedAssetUrl(ffmpegManifest.assets.wasm),
@@ -81,6 +88,7 @@ export function terminateFFmpeg() {
   runtimeBlobUrls.clear();
   ffmpegInstance = null;
   loadingPromise = null;
+  logSink = null;
 }
 
 export const AUDIO_FORMATS = [

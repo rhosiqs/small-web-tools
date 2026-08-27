@@ -152,6 +152,83 @@ describe('font extractor handler', () => {
     });
   });
 
+  it('caps @font-face descriptor lengths so a small stylesheet cannot amplify the response', async () => {
+    // Every descriptor is copied onto each src, so unbounded values multiply.
+    const filler = 'x'.repeat(50_000);
+    const html = [
+      '<style>@font-face {',
+      `font-family: ${filler};`,
+      `font-weight: ${filler};`,
+      `font-style: ${filler};`,
+      `font-stretch: ${filler};`,
+      `unicode-range: ${filler};`,
+      `font-variation-settings: ${filler};`,
+      'src: url("/a.woff2"), url("/b.woff2"), url("/c.woff2");',
+      '}</style>',
+    ].join('');
+    safeExternalFetch.mockResolvedValue(responseBody(html));
+
+    const result = await (await onRequestPost(postContext({ url: 'https://example.com' }))).json();
+
+    expect(result.fonts).toHaveLength(3);
+    for (const font of result.fonts) {
+      for (const field of ['family', 'weight', 'style', 'stretch', 'unicodeRange', 'variationSettings']) {
+        expect(font[field].length).toBeLessThanOrEqual(128);
+      }
+    }
+    expect(JSON.stringify(result).length).toBeLessThan(10_000);
+  });
+
+  it('does not read data-* attributes as link attributes', async () => {
+    const html = [
+      '<link data-rel="stylesheet" data-href="/tracker.css">',
+      '<link rel="stylesheet" href="/real.css">',
+    ].join('');
+    const css = '@font-face { font-family: Demo; src: url("/demo.woff2"); }';
+    safeExternalFetch
+      .mockResolvedValueOnce(responseBody(html))
+      .mockResolvedValueOnce(responseBody(css));
+
+    await onRequestPost(postContext({ url: 'https://example.com' }));
+
+    const fetched = safeExternalFetch.mock.calls.map(([url]) => url);
+    expect(fetched).toContain('https://example.com/real.css');
+    expect(fetched).not.toContain('https://example.com/tracker.css');
+  });
+
+  it('applies a string-encoded limits override the way Workers deliver plain-text vars', async () => {
+    const html = [
+      '<style>',
+      '@font-face { font-family: A; src: url("/a.woff2"); }',
+      '@font-face { font-family: B; src: url("/b.woff2"); }',
+      '</style>',
+    ].join('');
+    safeExternalFetch.mockResolvedValue(responseBody(html));
+
+    const result = await (await onRequestPost(postContext(
+      { url: 'https://example.com' },
+      { env: { FONT_EXTRACTION_LIMITS: JSON.stringify({ fontFaces: 1 }) } },
+    ))).json();
+
+    expect(result.fonts).toHaveLength(1);
+    expect(result.truncation.reasons).toContain('font-faces');
+    expect(result.truncation.limits).not.toHaveProperty('0');
+  });
+
+  it('charges the reserved bytes when an upstream fetch fails mid-stream', async () => {
+    const html = ['<link rel="stylesheet" href="/a.css">', '<link rel="stylesheet" href="/b.css">'].join('');
+    safeExternalFetch
+      .mockResolvedValueOnce(responseBody(html))
+      .mockRejectedValue(new Error('Response size exceeds limit'));
+
+    const result = await (await onRequestPost(postContext(
+      { url: 'https://example.com' },
+      { env: { FONT_EXTRACTION_LIMITS: JSON.stringify({ cssBytes: 1024, totalUpstreamBytes: 2048 }) } },
+    ))).json();
+
+    expect(result.truncation.consumed.upstreamBytes).toBeGreaterThanOrEqual(1024);
+  });
+
   it('returns machine-readable truncation when the face cap is reached', async () => {
     const html = [
       '<style>',
