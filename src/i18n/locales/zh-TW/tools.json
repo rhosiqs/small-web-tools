@@ -77,6 +77,121 @@
       "status": { "pasted": "已從剪貼簿貼上程式碼。", "pasteDenied": "無法讀取剪貼簿，請手動貼到編輯器中。", "copied": "已將程式碼複製到剪貼簿。", "copyDenied": "無法寫入剪貼簿，請手動選取並複製程式碼。", "fileTooLarge": "程式碼檔案不可超過 2 MiB。", "loaded": "已載入 {{filename}}。", "readFailed": "無法讀取所選檔案。", "downloaded": "已下載 {{filename}}。", "preparingPng": "正在準備 PNG…", "pngFailed": "PNG 匯出失敗，請縮短程式碼內容或改用其他瀏覽器。", "cleared": "已清除編輯器。" }
     }
   },
+  "tool-github-html": {
+    "title": "GitHub HTML 積木",
+    "tooltip": "GitHub README HTML 積木組合器",
+    "description": "把 GitHub README 需要的原始 HTML 一塊塊疊起來，並看出 GitHub 會保留哪些。",
+    "search": [
+      "readme",
+      "github html",
+      "摺疊區塊",
+      "徽章",
+      "鍵盤按鍵標籤"
+    ],
+    "blocks": {
+      "center-block": "置中區塊",
+      "center-title": "置中標題與副標",
+      "align-right": "靠右區塊",
+      "two-column": "雙欄圖片表格",
+      "line-break": "強制換行",
+      "rule": "水平分隔線",
+      "details": "摺疊區塊",
+      "details-open": "預設展開的摺疊區塊",
+      "details-code": "摺疊程式碼區塊",
+      "badge-link": "可點擊的徽章",
+      "badge-row": "置中徽章列",
+      "kbd": "鍵盤按鍵",
+      "subscript": "下標",
+      "superscript": "上標",
+      "sample-output": "程式輸出",
+      "underline": "底線",
+      "highlight": "螢光標示",
+      "coloured-text": "彩色文字",
+      "inline-style": "行內 style 屬性",
+      "sized-image": "指定寬度的圖片",
+      "theme-image": "淺色與深色雙圖",
+      "floated-image": "文繞圖圖片",
+      "video": "影片播放器",
+      "anchor": "錨點目標",
+      "back-to-top": "回到頂端連結",
+      "alert-note": "提示標註",
+      "alert-warning": "警告標註",
+      "quote": "引言區塊"
+    },
+    "slots": {
+      "center-title": {
+        "tagline": "用一句話說明這個專案在做什麼。"
+      },
+      "two-column": {
+        "left": "淺色",
+        "right": "深色"
+      },
+      "details": {
+        "body": "摺疊起來的內容放這裡。空一行之後就可以使用 Markdown。"
+      },
+      "details-open": {
+        "body": "在讀者收合之前都會顯示。"
+      },
+      "badge-link": {
+        "alt": "建置狀態"
+      },
+      "sized-image": {
+        "alt": "螢幕截圖"
+      },
+      "theme-image": {
+        "alt": "專案標誌"
+      },
+      "floated-image": {
+        "alt": "專案圖示"
+      },
+      "back-to-top": {
+        "label": "回到頂端"
+      }
+    },
+    "ui": {
+      "sampleText": "文字",
+      "removedByGithub": "GitHub 會移除這個",
+      "openPalette": "加入積木",
+      "copy": "複製",
+      "clear": "清除",
+      "stripAria": "常用積木",
+      "editorTitle": "Markdown",
+      "previewTitle": "預覽",
+      "editorAria": "README 編輯器",
+      "editorPlaceholder": "點上方的積木，或直接在這裡輸入…",
+      "characterCount": "{{count}} 個字元",
+      "previewAria": "README 渲染預覽",
+      "emptyPreview": "疊上一塊積木就會顯示在這裡。",
+      "imagePlaceholder": "圖片：{{alt}}",
+      "untitledImage": "未命名",
+      "untitledLink": "連結",
+      "githubDrops": "GitHub 會移除：{{items}}",
+      "privacyNote": "全部在你的瀏覽器內組合完成，不會載入任何圖片。",
+      "paletteTitle": "積木面板",
+      "paletteSearchLabel": "搜尋積木",
+      "paletteSearchPlaceholder": "輸入文字以縮小範圍…",
+      "paletteEmpty": "沒有符合的積木。",
+      "paletteHintMove": "方向鍵移動",
+      "paletteHintInsert": "Enter 加入",
+      "paletteHintClose": "Esc 關閉",
+      "completedTask": "已完成的項目",
+      "incompleteTask": "未完成的項目",
+      "alert": {
+        "note": "提示",
+        "tip": "訣竅",
+        "important": "重要",
+        "warning": "警告",
+        "caution": "注意"
+      },
+      "status": {
+        "stacked": "已疊上 {{block}}。",
+        "inserted": "已插入 {{block}}。",
+        "copied": "已將文件複製到剪貼簿。",
+        "copyDenied": "剪貼簿存取遭到拒絕，請手動選取並複製文字。",
+        "cleared": "已清除文件。"
+      }
+    }
+  },
   "tool-fontextractor": { "title": "字型擷取器", "tooltip": "網站字型擷取器", "description": "檢查公開網站中受限範圍的字型宣告，不下載字型檔案。", "search": ["網頁字型", "字型家族", "CSS 字型"], "ui": { "heading": "網站字型擷取器", "weight": "字重", "style": "樣式", "stretch": "寬度", "variable": "可變字型", "sourceHost": "來源主機", "unicodeRange": "Unicode 範圍", "unknown": "未知", "yes": "是", "no": "否", "embedded": "內嵌宣告", "similar": "相似字型", "similarHint": "依規則推測的替代選項；只有在您選取連結後才會開啟 Google Fonts。", "blocked": "在您允許已揭露的外部服務前，網站分析會維持封鎖。", "required": "請輸入網站 URL。", "error": "錯誤：{{message}}", "failed": "擷取失敗。", "noneDetailed": "找不到網頁字型宣告；該網站可能使用系統字型或動態載入。", "unavailable": "目前無法使用網站分析。", "unknownFamily": "未知字型家族", "consentDisclosure": "分析會將目標 URL 傳送至本站伺服器，由伺服器擷取有限範圍的公開 HTML 與 CSS；不會擷取字型檔案。", "allow": "允許網站分析", "websiteUrl": "網站 URL", "placeholder": "輸入網站 URL（例如 stripe.com）", "scanning": "掃描中…", "scan": "掃描宣告", "try": "試試：", "fetching": "正在擷取有限範圍的 HTML 與 CSS…", "summary": "找到 {{families}} 個家族、{{faces}} 個字型面", "truncated": "掃描已達安全的{{reasons}}限制，結果可能不完整。", "faceCount_one": "（{{count}} 個字型面）", "faceCount_other": "（{{count}} 個字型面）", "none": "找不到網頁字型宣告。", "disclaimer": "此掃描只回報有限範圍的公開 HTML 與 CSS 中找到的宣告，不代表字型確實已呈現。動態載入或需要驗證的樣式可能無法偵測；建議項目是本機規則推測結果。" } },
   "tool-base": { "title": "進位轉換器", "tooltip": "進位轉換器", "description": "在二、八、十、十六與六十進位之間轉換數值。", "search": ["二進位", "八進位", "十進位", "十六進位", "六十進位"], "ui": { "heading": "進位轉換器", "binary": "二進位", "octal": "八進位", "decimal": "十進位", "hexadecimal": "十六進位", "sexagesimal": "六十進位", "conversionTitle": "輸入進位與轉換值", "conversionHint": "選擇輸入進位，即可用該表示法編輯目前的數值。", "base": "{{base}} 進位", "inputBase": "輸入進位", "number": "數字", "example": "範例：{{example}}", "retryPaste": "重試從剪貼簿貼上", "paste": "從剪貼簿貼上", "pasting": "貼上中", "pasted": "已貼上", "retry": "重試", "pasteShort": "貼上", "clear": "清除", "invalid": "「{{input}}」不是有效的{{base}}輸入。", "interpreting": "將此數值解讀為{{baseName}}（{{base}} 進位）。", "empty": "輸入數字後，會自動產生所有進位表示法。", "convertedValues": "轉換值", "retryCopy": "重試複製{{base}}值", "copyValue": "複製{{base}}值", "copied": "已複製", "copy": "複製", "reference": "0–15 快速參照", "referenceHint": "選擇任一數值，將該表示法設為輸入。", "legend": "BIN · OCT · DEC · HEX", "gridLabel": "十進位 0 至 15 的常用進位轉換", "baseHeading": "進位", "rowTitle": "{{name}}（{{base}} 進位）", "cellLabel": "{{name}} {{display}}，十進位 {{decimal}}", "cellTitle": "{{display}}（{{base}} 進位）= {{decimal}}（十進位）" } },
   "tool-folder-analyzer": {

@@ -221,6 +221,7 @@ public/fonts/MANIFEST.zh-TW.md。應用程式不會自動要求 Google Fonts。
 | tool-markdown | Markdown 預覽器 | MarkdownPreviewer.jsx | 開發 |
 | tool-mermaid | Mermaid 轉換器 | MermaidConverter.jsx | 開發 |
 | tool-code-preview | VS Code 預覽器 | CodePreviewer.jsx | 開發 |
+| tool-github-html | GitHub HTML 積木 | GithubHtmlSnippets.jsx | 開發 |
 | tool-fontextractor | 網站字型擷取器 | WebsiteFontExtractor.jsx | 開發 |
 | tool-base | 進位轉換器 | BaseConverter.jsx | 開發 |
 | tool-folder-analyzer | 資料夾分析器 | FolderAnalyzer.jsx | 開發 |
@@ -270,6 +271,22 @@ helper 與 Markdown 下載。其領域模組會將常見區塊與行內語法解
 不會渲染 raw HTML 與外部圖片，並丟棄不安全的 URL scheme。來源行中繼資料讓可獨立捲動
 的編輯器與預覽區能雙向對齊，不會折疊 fenced-code 內容。重點解析器與互動測試位於
 markdownDomain.test.js 與 markdownPreviewer.test.jsx。
+
+### GitHub HTML 積木
+
+GithubHtmlSnippets.jsx 讓使用者在 `/home/github-html` 以堆疊積木的方式，組出 GitHub
+README 需要的原始 HTML —— 置中標題、徽章列、`<details>`、`<kbd>`、圖片表格等。積木以
+無文字的縮圖呈現：每一塊都用預覽渲染器把自己畫出來，而不是寫出名稱，名稱僅透過
+`aria-label` 提供給輔助技術。最常用的幾塊放在上方的積木列，其餘則在 `Cmd`／`Ctrl` + `K`
+面板中開啟。多行積木會疊在游標所在行的下方而非巢狀嵌入，因此連續點擊會依序堆出文件。
+
+其領域模組是本工具自己的，與 Markdown 預覽器分開：githubHtml.js 解析 HTML 片段並依
+允許清單過濾，composeDocument.js 將文件切成 HTML 與 Markdown 區段（重用預覽器的
+parseMarkdown，而不是再寫一套 Markdown 解析器），blockCatalog.js 則存放語言中立的積木
+範本與純粹的放置規則。預覽會將清理後的節點渲染為 React 元素，完全不使用
+dangerouslySetInnerHTML，也不會載入任何圖片，因此不會產生任何第三方請求。由於允許清單
+對應的正是 GitHub 自身保留的範圍，清理器實際移除的內容便直接驅動「GitHub 會移除」提示
+與每塊積木上的圓點。測試位於 githubHtmlDomain.test.js 與 githubHtmlSnippets.test.jsx。
 
 ### VS Code 預覽器
 

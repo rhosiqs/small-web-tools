@@ -14,6 +14,7 @@ export const ROUTE_DEFINITIONS = [
   route('tool-ascii', 'developer', { staticLayout: true }), route('tool-unicode', 'developer', { staticLayout: true }),
   route('tool-url', 'developer'), route('tool-markdown', 'developer'),
   route('tool-mermaid', 'developer', { iconKey: 'tool-markdown' }), route('tool-code-preview', 'developer'),
+  route('tool-github-html', 'developer'),
   route('tool-fontextractor', 'developer', { staticLayout: true }), route('tool-base', 'developer', { staticLayout: true }),
   route('tool-folder-analyzer', 'developer'), route('tool-dna', 'bioinfo', { staticLayout: true }),
   route('tool-codon', 'bioinfo'), route('tool-phred', 'bioinfo'), route('tool-iplookup', 'network'),

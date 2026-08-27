@@ -35,6 +35,11 @@ export const TOOL_ICONS = {
         <path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.1 1.1"></path>
         <path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.1-1.1"></path>
       </svg>,
+  "tool-github-html": <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="13" width="8" height="8" rx="1"></rect>
+        <rect x="13" y="13" width="8" height="8" rx="1"></rect>
+        <rect x="8" y="3" width="8" height="8" rx="1"></rect>
+      </svg>,
   "tool-markdown": <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
         <path d="M6 3h9l4 4v14H6z"></path>
         <path d="M15 3v5h4"></path>

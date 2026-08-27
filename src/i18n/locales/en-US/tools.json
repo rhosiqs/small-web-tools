@@ -77,6 +77,121 @@
       "status": { "pasted": "Pasted code from the clipboard.", "pasteDenied": "Clipboard access was denied. Paste into the editor manually.", "copied": "Copied code to the clipboard.", "copyDenied": "Clipboard access was denied. Select and copy the code manually.", "fileTooLarge": "The code file must be 2 MiB or smaller.", "loaded": "Loaded {{filename}}.", "readFailed": "The selected file could not be read.", "downloaded": "Downloaded {{filename}}.", "preparingPng": "Preparing PNG…", "pngFailed": "PNG export failed. Try a shorter code sample or another browser.", "cleared": "Editor cleared." }
     }
   },
+  "tool-github-html": {
+    "title": "GitHub HTML Blocks",
+    "tooltip": "GitHub README HTML block builder",
+    "description": "Stack the raw HTML a GitHub README needs, and see what GitHub keeps.",
+    "search": [
+      "readme",
+      "github html",
+      "details collapsible",
+      "shields badge",
+      "kbd tag"
+    ],
+    "blocks": {
+      "center-block": "Centred block",
+      "center-title": "Centred title and tagline",
+      "align-right": "Right-aligned block",
+      "two-column": "Two-column image table",
+      "line-break": "Hard line break",
+      "rule": "Horizontal rule",
+      "details": "Collapsible section",
+      "details-open": "Collapsible section, open by default",
+      "details-code": "Collapsible code block",
+      "badge-link": "Linked badge",
+      "badge-row": "Centred badge row",
+      "kbd": "Keyboard key",
+      "subscript": "Subscript",
+      "superscript": "Superscript",
+      "sample-output": "Program output",
+      "underline": "Underline",
+      "highlight": "Highlight",
+      "coloured-text": "Coloured text",
+      "inline-style": "Inline style attribute",
+      "sized-image": "Image with a set width",
+      "theme-image": "Light and dark image pair",
+      "floated-image": "Image floated beside text",
+      "video": "Video player",
+      "anchor": "Anchor target",
+      "back-to-top": "Back-to-top link",
+      "alert-note": "Note callout",
+      "alert-warning": "Warning callout",
+      "quote": "Block quote"
+    },
+    "slots": {
+      "center-title": {
+        "tagline": "One line about what this project does."
+      },
+      "two-column": {
+        "left": "Light",
+        "right": "Dark"
+      },
+      "details": {
+        "body": "Hidden content goes here. Markdown works after the blank line."
+      },
+      "details-open": {
+        "body": "Visible until the reader collapses it."
+      },
+      "badge-link": {
+        "alt": "Build status"
+      },
+      "sized-image": {
+        "alt": "Screenshot"
+      },
+      "theme-image": {
+        "alt": "Project logo"
+      },
+      "floated-image": {
+        "alt": "Project icon"
+      },
+      "back-to-top": {
+        "label": "Back to top"
+      }
+    },
+    "ui": {
+      "sampleText": "Text",
+      "removedByGithub": "GitHub removes this",
+      "openPalette": "Add a block",
+      "copy": "Copy",
+      "clear": "Clear",
+      "stripAria": "Frequently used blocks",
+      "editorTitle": "Markdown",
+      "previewTitle": "Preview",
+      "editorAria": "README editor",
+      "editorPlaceholder": "Click a block above, or type here…",
+      "characterCount": "{{count}} characters",
+      "previewAria": "Rendered README preview",
+      "emptyPreview": "Stack a block to see it here.",
+      "imagePlaceholder": "Image: {{alt}}",
+      "untitledImage": "untitled",
+      "untitledLink": "link",
+      "githubDrops": "GitHub removes: {{items}}",
+      "privacyNote": "Everything is composed in your browser. Images are never loaded.",
+      "paletteTitle": "Block palette",
+      "paletteSearchLabel": "Search blocks",
+      "paletteSearchPlaceholder": "Type to narrow the blocks…",
+      "paletteEmpty": "No block matches that.",
+      "paletteHintMove": "Arrow keys move",
+      "paletteHintInsert": "Enter adds",
+      "paletteHintClose": "Esc closes",
+      "completedTask": "Completed task",
+      "incompleteTask": "Incomplete task",
+      "alert": {
+        "note": "Note",
+        "tip": "Tip",
+        "important": "Important",
+        "warning": "Warning",
+        "caution": "Caution"
+      },
+      "status": {
+        "stacked": "Stacked {{block}}.",
+        "inserted": "Inserted {{block}}.",
+        "copied": "Copied the document to the clipboard.",
+        "copyDenied": "Clipboard access was denied. Select and copy the text manually.",
+        "cleared": "Cleared the document."
+      }
+    }
+  },
   "tool-fontextractor": { "title": "Font Extractor", "tooltip": "Website Font Extractor", "description": "Inspect bounded font declarations from a public website without downloading font files.", "search": ["web font", "font family", "CSS font"], "ui": { "heading": "Website Font Extractor", "weight": "Weight", "style": "Style", "stretch": "Stretch", "variable": "Variable", "sourceHost": "Source host", "unicodeRange": "Unicode range", "unknown": "unknown", "yes": "Yes", "no": "No", "embedded": "Embedded declaration", "similar": "Similar fonts", "similarHint": "Heuristic alternatives. Links open Google Fonts only after you select them.", "blocked": "Website analysis is blocked until you allow the disclosed external service.", "required": "Please enter a website URL.", "error": "Error: {{message}}", "failed": "Extraction failed.", "noneDetailed": "No web font declarations were found. The site may use system fonts or dynamic loading.", "unavailable": "Website analysis is currently unavailable.", "unknownFamily": "Unknown family", "consentDisclosure": "Analysis sends the target URL to this site's server, which fetches bounded public HTML and CSS. Font files are not fetched.", "allow": "Allow website analysis", "websiteUrl": "Website URL", "placeholder": "Enter a website URL (e.g., stripe.com)", "scanning": "Scanning…", "scan": "Scan declarations", "try": "Try:", "fetching": "Fetching bounded HTML and CSS…", "summary": "{{families}} families, {{faces}} faces found", "truncated": "Results may be incomplete because the scan reached its safe {{reasons}} limit.", "faceCount_one": "({{count}} face)", "faceCount_other": "({{count}} faces)", "none": "No web font declarations were found.", "disclaimer": "This scan reports declarations found in bounded public HTML and CSS; it does not prove a font was rendered. Dynamically loaded or authenticated styles may not be detected. Recommendations are local heuristics." } },
   "tool-base": { "title": "Base Converter", "tooltip": "Base Converter", "description": "Convert values among binary, octal, decimal, hexadecimal, and sexagesimal.", "search": ["binary", "octal", "decimal", "hexadecimal", "sexagesimal"], "ui": { "heading": "Base Converter", "binary": "Binary", "octal": "Octal", "decimal": "Decimal", "hexadecimal": "Hexadecimal", "sexagesimal": "Sexagesimal", "conversionTitle": "Input base & converted values", "conversionHint": "Choose an input base to edit the current value in that notation.", "base": "Base {{base}}", "inputBase": "Input base", "number": "Number", "example": "Example: {{example}}", "retryPaste": "Retry pasting from clipboard", "paste": "Paste from clipboard", "pasting": "Pasting", "pasted": "Pasted", "retry": "Retry", "pasteShort": "Paste", "clear": "Clear", "invalid": "“{{input}}” is not valid {{base}} input.", "interpreting": "Interpreting the value as {{baseName}} (base {{base}}).", "empty": "Enter a number to generate all base representations automatically.", "convertedValues": "Converted values", "retryCopy": "Retry copying {{base}} value", "copyValue": "Copy {{base}} value", "copied": "Copied", "copy": "Copy", "reference": "0–15 quick reference", "referenceHint": "Select any value to use that representation as the input.", "legend": "BIN · OCT · DEC · HEX", "gridLabel": "Common base conversions for decimal 0 through 15", "baseHeading": "Base", "rowTitle": "{{name}} (base {{base}})", "cellLabel": "{{name}} {{display}}, decimal {{decimal}}", "cellTitle": "{{display}} (base {{base}}) = {{decimal}} (decimal)" } },
   "tool-folder-analyzer": {
