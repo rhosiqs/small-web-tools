@@ -7,6 +7,7 @@ import {
   FILE_RESOURCE_POLICIES,
   validateResourceAddition,
 } from '../lib/resourceLimits';
+import { bytesToBinaryString } from '../lib/binaryEncoding.js';
 import useObjectUrlRegistry from '../hooks/useObjectUrlRegistry';
 import {
   formatBytes,
@@ -15,8 +16,13 @@ import {
 } from './DocMeta/lib/documentMetadata';
 import {
   loadSafeZip,
+  readMetadataPart,
   stripDocumentMetadata,
 } from './DocMeta/lib/stripDocumentMetadata';
+
+// A PDF information dictionary is a short record. Bounding the scan keeps a
+// malformed or hostile file from turning metadata lookup into a full-file walk.
+const MAX_PDF_OBJECT_SCAN_BYTES = 64 * 1024;
 
 // Helper to get element textContent by checking localName
 const getTagValue = (xmlDoc, tagName) => {
@@ -76,7 +82,7 @@ const extractWorksheets = async (zip) => {
   const workbookFile = zip.file("xl/workbook.xml");
   if (!workbookFile) return [];
   try {
-    const text = await workbookFile.async("string");
+    const text = await readMetadataPart(workbookFile);
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(text, "application/xml");
     const sheets = xmlDoc.getElementsByTagName("sheet");
@@ -135,7 +141,7 @@ const decodePdfString = (str) => {
       }
       return result;
     }
-    return String.fromCharCode(...bytes);
+    return bytesToBinaryString(bytes);
   }
   return str;
 };
@@ -165,23 +171,36 @@ const parsePdfFile = async (file) => {
   const isEncrypted = /\/Encrypt\s+\d+/.test(text);
   appData.Encrypted = isEncrypted ? 'Yes (Encrypted / Security applied)' : 'No (Unencrypted)';
 
-  // 4. Find /Info dictionary in PDF
+  // 4. Find /Info dictionary in PDF.
+  // The object body is located with plain index scans over a bounded window.
+  // A regex with three lazy quantifiers over the whole latin1 file backtracks
+  // quadratically when `/Info` is present but no matching `endobj` follows.
   const infoMatch = text.match(/\/Info\s+(\d+)\s+(\d+)\s+R/);
   let infoBlock = '';
   if (infoMatch) {
-    const objNum = infoMatch[1];
-    const genNum = infoMatch[2];
-    const objRegex = new RegExp(`${objNum}\\s+${genNum}\\s+obj[\\s\\S]*?<<([\\s\\S]*?)>>[\\s\\S]*?endobj`);
-    const objMatch = text.match(objRegex);
-    if (objMatch) {
-      infoBlock = objMatch[1];
+    const objHeader = new RegExp(`(?:^|[^\\d])${infoMatch[1]}\\s+${infoMatch[2]}\\s+obj`, 'u').exec(text);
+    if (objHeader) {
+      const bodyStart = objHeader.index + objHeader[0].length;
+      const searchEnd = Math.min(text.length, bodyStart + MAX_PDF_OBJECT_SCAN_BYTES);
+      const endObj = text.indexOf('endobj', bodyStart);
+      const bodyEnd = endObj >= 0 ? Math.min(endObj, searchEnd) : searchEnd;
+      const dictStart = text.indexOf('<<', bodyStart);
+      if (dictStart >= 0 && dictStart < bodyEnd) {
+        const dictEnd = text.indexOf('>>', dictStart + 2);
+        if (dictEnd >= 0 && dictEnd < bodyEnd) {
+          infoBlock = text.slice(dictStart + 2, dictEnd);
+        }
+      }
     }
   }
 
   if (!infoBlock) {
-    const genericInfo = text.match(/<<\s*\/Title[\s\S]*?>>/);
-    if (genericInfo) {
-      infoBlock = genericInfo[0];
+    const titleStart = text.search(/<<\s*\/Title/u);
+    if (titleStart >= 0) {
+      const dictEnd = text.indexOf('>>', titleStart);
+      if (dictEnd >= 0 && dictEnd - titleStart <= MAX_PDF_OBJECT_SCAN_BYTES) {
+        infoBlock = text.slice(titleStart, dictEnd + 2);
+      }
     }
   }
 
@@ -323,7 +342,7 @@ const parseOpenOfficeFile = async (file) => {
   const customData = {};
 
   if (metaFile) {
-    const metaText = await metaFile.async("string");
+    const metaText = await readMetadataPart(metaFile);
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(metaText, "application/xml");
 
@@ -650,7 +669,7 @@ export default function DocMeta() {
           
           const coreFile = zip.file("docProps/core.xml");
           if (coreFile) {
-            const coreText = await coreFile.async("string");
+            const coreText = await readMetadataPart(coreFile);
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(coreText, "application/xml");
             coreData = {
@@ -671,7 +690,7 @@ export default function DocMeta() {
 
           const appFile = zip.file("docProps/app.xml");
           if (appFile) {
-            const appText = await appFile.async("string");
+            const appText = await readMetadataPart(appFile);
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(appText, "application/xml");
             appData = {
@@ -698,7 +717,7 @@ export default function DocMeta() {
 
           const customFile = zip.file("docProps/custom.xml");
           if (customFile) {
-            const customText = await customFile.async("string");
+            const customText = await readMetadataPart(customFile);
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(customText, "application/xml");
             customData = parseCustomProperties(xmlDoc);

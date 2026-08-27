@@ -50,9 +50,9 @@ Supporting explanatory documents are public/fonts/MANIFEST.md with its
 Traditional Chinese companion, the two SSRF harness READMEs, and the
 English-only AI agent instructions in `AGENTS.md` and `.agents/`. The engineering
 skills read their issue-tracker, triage-label, and domain-document conventions
-from `docs/agents/`. Repository-scoped Claude Code skills live in
-`.claude/skills/`; the `fix-bug` skill documents the defect-repair workflow and is
-also English-only.
+from `docs/agents/`, and task-specific agent workflows live as skills under
+`.claude/skills/`. Those skills are English-only for the same reason the agent
+guides are.
 
 ```text
 small-web-tools/
@@ -92,6 +92,7 @@ small-web-tools/
 ├── .claude/
 │   ├── CLAUDE.md             Claude Code entry point that imports .agents/AGENTS.md
 │   └── skills/
+│       ├── add-tool/         Routed-tool checklist skill
 │       └── fix-bug/          Bug-diagnosis workflow skill plus symptom-map and verification references
 ├── .github/
 │   ├── dependabot.yml        Monthly dependency updates, including major versions
@@ -112,7 +113,7 @@ small-web-tools/
 │   ├── i18n/
 │   │   ├── index.js           Locale resolution, i18next setup, persistence, and document language
 │   │   └── locales/           Paired en-US and zh-TW namespace JSON resources
-│   ├── lib/                  Pure utility helpers (passwordStrength, resourceLimits, thirdPartyServices)
+│   ├── lib/                  Pure utility helpers (binaryEncoding, passwordStrength, resourceLimits, thirdPartyServices)
 │   ├── hooks/                Routing, persistence, and document-title shell effects
 │   ├── tests/                Vitest unit test suites and setup
 │   └── components/
@@ -443,8 +444,10 @@ build, test, operate, or maintain the project:
 - `.github/` contains CI and dependency-maintenance configuration;
   `.agents/AGENTS.md` contains repository-scoped development instructions, while
   root `AGENTS.md` points engineering skills to the rules in `docs/agents/`.
-  `.claude/` holds the Claude Code entry point and the repository's own skills
-  under `.claude/skills/`.
+  `.claude/` holds the Claude Code entry point and `.claude/skills/`, the
+  task-specific agent workflows read on demand rather than loaded with every
+  task; `.claude/skills/add-tool/SKILL.md` covers adding a routed tool and
+  `.claude/skills/fix-bug/SKILL.md` covers repairing a defect.
 - `README.md`, `README.zh-TW.md`, `CONTRIBUTING.md`, `ARCHITECTURE.md`, `PRIVACY.md`, `TODO.md`, and
   `LICENSE` are maintained project documentation or legal material.
 - `.dev.vars.example` is safe, non-secret local-runtime documentation. Actual

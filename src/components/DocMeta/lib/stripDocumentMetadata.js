@@ -1,9 +1,16 @@
 import JSZip from 'jszip';
-import { validateZipArchive } from '../../../lib/resourceLimits';
+import { readZipEntryText, validateZipArchive } from '../../../lib/resourceLimits';
 
 export const OPEN_DOCUMENT_TYPES = ['odt', 'ods', 'odp', 'odg'];
 
 const CUSTOM_PROPERTIES_PART = 'docProps/custom.xml';
+
+// Office/ODF metadata parts are small XML documents. Capping the inflated size
+// per entry stops an archive that declares a tiny entry from expanding without
+// bound once JSZip decompresses it.
+export const MAX_METADATA_PART_BYTES = 8 * 1024 * 1024;
+
+export const readMetadataPart = (entry) => readZipEntryText(entry, MAX_METADATA_PART_BYTES);
 const DEFAULT_XML_DECLARATION = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n';
 
 // Office validates typed properties before it opens a package, and an empty
@@ -48,7 +55,7 @@ const parseXmlPart = (text, partPath) => {
 async function rewritePart(zip, partPath, mutate) {
   const partFile = zip.file(partPath);
   if (!partFile) return false;
-  const text = await partFile.async('string');
+  const text = await readMetadataPart(partFile);
   const xmlDoc = parseXmlPart(text, partPath);
   if (!mutate(xmlDoc)) return false;
   zip.file(partPath, serializeXml(xmlDoc, text));

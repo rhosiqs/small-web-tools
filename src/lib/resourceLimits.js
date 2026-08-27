@@ -152,26 +152,150 @@ export function validateBatchCount(files, maxCount, category = 'files') {
   return { valid: true, error: null };
 }
 
+const EOCD_SIGNATURE = 0x06054b50;
+const ZIP64_LOCATOR_SIGNATURE = 0x07064b50;
+const ZIP64_EOCD_SIGNATURE = 0x06064b50;
+const CENTRAL_FILE_SIGNATURE = 0x02014b50;
+const EOCD_MIN_SIZE = 22;
+const MAX_ZIP_COMMENT_BYTES = 0xffff;
+const UINT32_SENTINEL = 0xffffffff;
+const UINT16_SENTINEL = 0xffff;
+
+/**
+ * Locate the End Of Central Directory record by scanning backwards from the end
+ * of the archive. The comment length is bounded by the ZIP format, so the search
+ * window is bounded too. Scanning forward for a central-directory signature is
+ * unsafe: an attacker can embed that signature inside stored entry data and steer
+ * the guard away from the directory the ZIP reader actually uses.
+ */
+function findEndOfCentralDirectory(view) {
+  const minOffset = Math.max(0, view.byteLength - (EOCD_MIN_SIZE + MAX_ZIP_COMMENT_BYTES));
+  for (let offset = view.byteLength - EOCD_MIN_SIZE; offset >= minOffset; offset -= 1) {
+    if (view.getUint32(offset, true) !== EOCD_SIGNATURE) continue;
+    const commentLength = view.getUint16(offset + 20, true);
+    if (offset + EOCD_MIN_SIZE + commentLength === view.byteLength) return offset;
+  }
+  return -1;
+}
+
+function readZip64Locator(view, eocdOffset) {
+  const locatorOffset = eocdOffset - 20;
+  if (locatorOffset < 0 || view.getUint32(locatorOffset, true) !== ZIP64_LOCATOR_SIGNATURE) return null;
+  const zip64Offset = Number(view.getBigUint64(locatorOffset + 8, true));
+  if (!Number.isSafeInteger(zip64Offset) || zip64Offset < 0 || zip64Offset + 56 > view.byteLength) return null;
+  if (view.getUint32(zip64Offset, true) !== ZIP64_EOCD_SIGNATURE) return null;
+  return {
+    entries: Number(view.getBigUint64(zip64Offset + 32, true)),
+    directorySize: Number(view.getBigUint64(zip64Offset + 40, true)),
+    directoryOffset: Number(view.getBigUint64(zip64Offset + 48, true)),
+  };
+}
+
+/**
+ * ZIP64 entries store 0xffffffff placeholders in the fixed header and the real
+ * sizes in the 0x0001 extra field, ordered uncompressed then compressed.
+ */
+function readZip64EntrySizes(view, extraStart, extraLength, uncompressed, compressed) {
+  let sizes = { uncompressed, compressed };
+  let cursor = extraStart;
+  const extraEnd = extraStart + extraLength;
+  while (cursor + 4 <= extraEnd) {
+    const headerId = view.getUint16(cursor, true);
+    const dataSize = view.getUint16(cursor + 2, true);
+    const dataStart = cursor + 4;
+    if (dataStart + dataSize > extraEnd) break;
+    if (headerId === 0x0001) {
+      let fieldCursor = dataStart;
+      if (uncompressed === UINT32_SENTINEL && fieldCursor + 8 <= dataStart + dataSize) {
+        sizes = { ...sizes, uncompressed: Number(view.getBigUint64(fieldCursor, true)) };
+        fieldCursor += 8;
+      }
+      if (compressed === UINT32_SENTINEL && fieldCursor + 8 <= dataStart + dataSize) {
+        sizes = { ...sizes, compressed: Number(view.getBigUint64(fieldCursor, true)) };
+      }
+      break;
+    }
+    cursor = dataStart + dataSize;
+  }
+  return sizes;
+}
+
+function emptySummary(malformed) {
+  return {
+    entries: 0,
+    totalCompressedBytes: 0,
+    totalUncompressedBytes: 0,
+    compressionRatio: 0,
+    malformed,
+  };
+}
+
+/**
+ * Summarize a ZIP archive from its authoritative central directory without
+ * decompressing any entry.
+ */
 export function inspectZipCentralDirectory(buffer) {
   const view = new DataView(buffer);
+  if (view.byteLength < EOCD_MIN_SIZE) return emptySummary('missing-end-of-central-directory');
+
+  const eocdOffset = findEndOfCentralDirectory(view);
+  if (eocdOffset < 0) return emptySummary('missing-end-of-central-directory');
+
+  let declaredEntries = view.getUint16(eocdOffset + 10, true);
+  let directorySize = view.getUint32(eocdOffset + 12, true);
+  let directoryOffset = view.getUint32(eocdOffset + 16, true);
+
+  if (
+    declaredEntries === UINT16_SENTINEL
+    || directorySize === UINT32_SENTINEL
+    || directoryOffset === UINT32_SENTINEL
+  ) {
+    const zip64 = readZip64Locator(view, eocdOffset);
+    if (!zip64) return emptySummary('unreadable-zip64-central-directory');
+    declaredEntries = zip64.entries;
+    directorySize = zip64.directorySize;
+    directoryOffset = zip64.directoryOffset;
+  }
+
+  const directoryEnd = directoryOffset + directorySize;
+  if (
+    !Number.isSafeInteger(declaredEntries)
+    || !Number.isSafeInteger(directoryOffset)
+    || !Number.isSafeInteger(directorySize)
+    || directoryOffset < 0
+    || directorySize < 0
+    || directoryEnd > view.byteLength
+  ) {
+    return emptySummary('central-directory-out-of-bounds');
+  }
+
   let entries = 0;
   let totalCompressedBytes = 0;
   let totalUncompressedBytes = 0;
+  let offset = directoryOffset;
 
-  for (let offset = 0; offset + 46 <= view.byteLength;) {
-    if (view.getUint32(offset, true) !== 0x02014b50) {
-      offset += 1;
-      continue;
+  while (entries < declaredEntries) {
+    if (offset + 46 > directoryEnd) return emptySummary('truncated-central-directory');
+    if (view.getUint32(offset, true) !== CENTRAL_FILE_SIGNATURE) {
+      return emptySummary('invalid-central-directory-entry');
     }
-    const compressedBytes = view.getUint32(offset + 20, true);
-    const uncompressedBytes = view.getUint32(offset + 24, true);
     const fileNameLength = view.getUint16(offset + 28, true);
     const extraLength = view.getUint16(offset + 30, true);
     const commentLength = view.getUint16(offset + 32, true);
+    const next = offset + 46 + fileNameLength + extraLength + commentLength;
+    if (next > directoryEnd) return emptySummary('truncated-central-directory');
+
+    const sizes = readZip64EntrySizes(
+      view,
+      offset + 46 + fileNameLength,
+      extraLength,
+      view.getUint32(offset + 24, true),
+      view.getUint32(offset + 20, true),
+    );
     entries += 1;
-    totalCompressedBytes += compressedBytes;
-    totalUncompressedBytes += uncompressedBytes;
-    offset += 46 + fileNameLength + extraLength + commentLength;
+    totalCompressedBytes += sizes.compressed;
+    totalUncompressedBytes += sizes.uncompressed;
+    offset = next;
   }
 
   return {
@@ -179,10 +303,14 @@ export function inspectZipCentralDirectory(buffer) {
     totalCompressedBytes,
     totalUncompressedBytes,
     compressionRatio: totalUncompressedBytes / Math.max(1, totalCompressedBytes),
+    malformed: null,
   };
 }
 
 export function validateZipSummary(summary, limits = RESOURCE_LIMITS) {
+  if (summary.malformed) {
+    return { valid: false, error: 'Archive central directory could not be read (' + summary.malformed + ').' };
+  }
   if (summary.entries > limits.MAX_ZIP_ENTRIES_COUNT) {
     return { valid: false, error: `Archive contains more than ${limits.MAX_ZIP_ENTRIES_COUNT} entries.` };
   }
@@ -198,4 +326,42 @@ export function validateZipSummary(summary, limits = RESOURCE_LIMITS) {
 export async function validateZipArchive(file, limits = RESOURCE_LIMITS) {
   const summary = inspectZipCentralDirectory(await file.arrayBuffer());
   return { ...validateZipSummary(summary, limits), summary };
+}
+
+/**
+ * Read one archive entry while enforcing the limit against bytes actually
+ * produced by the inflater. The central-directory summary only proves what an
+ * archive *declares*; a crafted entry can declare a small size and still expand
+ * without bound, so streamed output is metered and aborted on overflow.
+ */
+export function readZipEntryText(entry, maxBytes = RESOURCE_LIMITS.MAX_UNCOMPRESSED_ZIP_BYTES) {
+  if (!entry) return Promise.resolve('');
+  if (typeof entry.internalStream !== 'function') return entry.async('string');
+
+  return new Promise((resolve, reject) => {
+    const stream = entry.internalStream('string');
+    const parts = [];
+    let total = 0;
+    let settled = false;
+    const finish = (callback, value) => {
+      if (settled) return;
+      settled = true;
+      callback(value);
+    };
+
+    stream
+      .on('data', (chunk) => {
+        if (settled) return;
+        total += chunk.length;
+        if (total > maxBytes) {
+          stream.pause();
+          finish(reject, new Error(`Archive entry expands beyond ${formatBytes(maxBytes)}.`));
+          return;
+        }
+        parts.push(chunk);
+      })
+      .on('error', (error) => finish(reject, error))
+      .on('end', () => finish(resolve, parts.join('')))
+      .resume();
+  });
 }

@@ -13,6 +13,42 @@ const request = new Request('https://tools.example/api/iplookup', {
 beforeEach(() => resetDevelopmentRateLimits());
 
 describe('Pages rate-limiter client', () => {
+  it('ignores a client-supplied X-Forwarded-For and fails closed off the edge', async () => {
+    const fetch = vi.fn(async () => Response.json({ allowed: true }));
+    const spoofed = new Request('https://tools.example/api/iplookup', {
+      headers: { 'X-Forwarded-For': '198.51.100.7' },
+    });
+    const response = await enforceRateLimit({
+      request: spoofed,
+      env: { RATE_LIMIT_HMAC_SECRET: secret, RATE_LIMITER_SERVICE: { fetch } },
+    }, { name: 'iplookup', limit: 60 });
+
+    expect(response.status).toBe(503);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('derives the bucket from CF-Connecting-IP even when X-Forwarded-For disagrees', async () => {
+    const keys = [];
+    const fetch = vi.fn(async (serviceRequest) => {
+      keys.push((await serviceRequest.json()).clientKey);
+      return Response.json({ allowed: true });
+    });
+    const env = { RATE_LIMIT_HMAC_SECRET: secret, RATE_LIMITER_SERVICE: { fetch } };
+    const options = { name: 'iplookup', limit: 60, now: () => 1_800_000_000_000 };
+
+    for (const forwarded of ['198.51.100.1', '198.51.100.2']) {
+      await enforceRateLimit({
+        request: new Request('https://tools.example/api/iplookup', {
+          headers: { 'CF-Connecting-IP': '203.0.113.99', 'X-Forwarded-For': forwarded },
+        }),
+        env,
+      }, options);
+    }
+
+    expect(keys).toHaveLength(2);
+    expect(keys[0]).toBe(keys[1]);
+  });
+
   it('allows and denies according to the service response without forwarding the raw IP', async () => {
     const fetch = vi.fn(async () => Response.json({ allowed: false }));
     const result = await enforceRateLimit({

@@ -152,4 +152,8 @@ Pull request 必須說明翻譯影響，並確認已檢查桌面版與行動版�
   AI agent 僅可在 GitHub Issue 已關閉，且實作、驗證與提交均完成後，依既有日期、
   核取方塊與標籤格式，將完成的 Issue 補登至 `Completed`。除非另有明確要求，
   不得變更 active backlog、既有紀錄、標籤或更新流程。
+- 供 AI agent 使用的儲存庫規則位於 `.agents/AGENTS.md`；依任務需要才讀取的 agent
+  工作流程則以 project-level skill 形式放在 `.claude/skills/`，其中
+  `.claude/skills/add-tool/SKILL.md` 說明如何新增、更名或移除路由工具。
+  skill 描述的流程有變更時請一併更新。兩者皆刻意只提供英文版本。
 - 各階段提交一致的變更。不要包含產生檔、秘密或無關的工作樹變更。

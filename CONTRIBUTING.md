@@ -165,5 +165,10 @@ Pull requests must state the translation impact and confirm bilingual desktop/mo
   the existing date, checklist, label, and English-only format; do not alter the
   active backlog, existing entries, labels, or update process unless explicitly
   requested.
+- Repository rules for AI agents live in `.agents/AGENTS.md`, and task-specific agent
+  workflows live as project-level skills under `.claude/skills/`;
+  `.claude/skills/add-tool/SKILL.md` covers adding, renaming, or removing a routed tool.
+  Update the skill when the workflow it describes changes. Both are intentionally
+  English-only.
 - Commit coherent phases separately. Do not include generated output, secrets, or
   unrelated working-tree changes.

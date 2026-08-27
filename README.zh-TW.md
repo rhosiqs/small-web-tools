@@ -166,6 +166,9 @@ DEPLOYED_BASE_URL=https://small-web-tools.pages.dev npm run test:e2e:deployed
 - [SECURITY.md](SECURITY.md) — 支援版本與私密漏洞通報管道。
 - [TODO.md](TODO.md) — 目前待辦事項、已完成工作與專案更新流程（僅提供英文）。
 - [ARCHITECTURE.zh-TW.md](ARCHITECTURE.zh-TW.md) — 架構、路由清單、共用 UI 慣例與開發人員指南。
+- [.agents/AGENTS.md](.agents/AGENTS.md) — 供 AI agent 使用的儲存庫規則。依任務需要才讀取的
+  工作流程以 project-level skill 形式放在 `.claude/skills/`，例如說明如何新增路由工具的
+  `.claude/skills/add-tool/SKILL.md`（兩者僅提供英文）。
 
 ## 授權條款
 

@@ -1,3 +1,5 @@
+import ipaddr from 'ipaddr.js';
+
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 const DNS_ENDPOINT = 'https://cloudflare-dns.com/dns-query';
 const METADATA_HOSTNAMES = new Set([
@@ -68,19 +70,17 @@ export function isPrivateHost(hostname) {
     const embeddedIpv4 = /(\d+\.\d+\.\d+\.\d+)$/.exec(host)?.[1];
     if (embeddedIpv4 && isPrivateHost(embeddedIpv4)) return true;
 
-    return (
-      host === '::'
-      || host === '::1'
-      || host === '0:0:0:0:0:0:0:0'
-      || host === '0:0:0:0:0:0:0:1'
-      || /^f[cd]/.test(host)
-      || host.startsWith('fe')
-      || host.startsWith('ff')
-      || host.startsWith('::ffff:')
-      || host.startsWith('2001:0:')
-      || host.startsWith('2001:2:')
-      || host.startsWith('2001:db8:')
-    );
+    // Classify by parsed value rather than by textual prefix. Prefix matching
+    // misses every equivalent spelling of a reserved address — `::1` written out
+    // as `0000:0000:0000:0000:0000:0000:0000:0001` reads as public.
+    try {
+      const parsed = ipaddr.IPv6.parse(host);
+      if (parsed.isIPv4MappedAddress()) return true;
+      return parsed.range() !== 'unicast';
+    } catch {
+      // An IPv6-shaped host that will not parse is never treated as public.
+      return true;
+    }
   }
 
   return false;

@@ -5,6 +5,7 @@ import {
   validateFileSize,
   validateBatchCount,
   inspectZipCentralDirectory,
+  readZipEntryText,
   validateZipSummary,
   FILE_RESOURCE_POLICIES,
   getMediaSeparatorPolicy,
@@ -173,23 +174,126 @@ describe('cumulative resource policies', () => {
 });
 
 describe('ZIP archive safeguards', () => {
-  const centralDirectoryEntry = (compressed, uncompressed) => {
-    const buffer = new ArrayBuffer(46);
-    const view = new DataView(buffer);
-    view.setUint32(0, 0x02014b50, true);
-    view.setUint32(20, compressed, true);
-    view.setUint32(24, uncompressed, true);
-    return buffer;
+  // Build a minimal but structurally valid archive: entry payloads, a central
+  // directory, and the EOCD record a real ZIP reader starts from.
+  const buildArchive = ({ entries, payloads = [], comment = '' }) => {
+    const directory = entries.map(({ compressed, uncompressed }, index) => {
+      const record = new Uint8Array(46 + 1);
+      const view = new DataView(record.buffer);
+      view.setUint32(0, 0x02014b50, true);
+      view.setUint32(20, compressed, true);
+      view.setUint32(24, uncompressed, true);
+      view.setUint16(28, 1, true); // file name length
+      record[46] = 0x61 + (index % 26);
+      return record;
+    });
+
+    const payloadBytes = payloads.reduce((total, part) => total + part.length, 0);
+    const directorySize = directory.reduce((total, record) => total + record.length, 0);
+    const commentBytes = new TextEncoder().encode(comment);
+    const buffer = new Uint8Array(payloadBytes + directorySize + 22 + commentBytes.length);
+
+    let offset = 0;
+    for (const payload of payloads) {
+      buffer.set(payload, offset);
+      offset += payload.length;
+    }
+    const directoryOffset = offset;
+    for (const record of directory) {
+      buffer.set(record, offset);
+      offset += record.length;
+    }
+
+    const eocd = new DataView(buffer.buffer, offset, 22);
+    eocd.setUint32(0, 0x06054b50, true);
+    eocd.setUint16(8, entries.length, true);
+    eocd.setUint16(10, entries.length, true);
+    eocd.setUint32(12, directorySize, true);
+    eocd.setUint32(16, directoryOffset, true);
+    eocd.setUint16(20, commentBytes.length, true);
+    buffer.set(commentBytes, offset + 22);
+
+    return buffer.buffer;
   };
 
   it('reads entry sizes without decompressing the archive', () => {
-    const summary = inspectZipCentralDirectory(centralDirectoryEntry(100, 500));
+    const summary = inspectZipCentralDirectory(
+      buildArchive({ entries: [{ compressed: 100, uncompressed: 500 }] }),
+    );
     expect(summary).toMatchObject({
       entries: 1,
       totalCompressedBytes: 100,
       totalUncompressedBytes: 500,
       compressionRatio: 5,
+      malformed: null,
     });
+  });
+
+  it('sums every entry declared by the end-of-central-directory record', () => {
+    const summary = inspectZipCentralDirectory(buildArchive({
+      entries: [
+        { compressed: 10, uncompressed: 100 },
+        { compressed: 20, uncompressed: 200 },
+      ],
+    }));
+    expect(summary).toMatchObject({
+      entries: 2,
+      totalCompressedBytes: 30,
+      totalUncompressedBytes: 300,
+    });
+  });
+
+  it('tolerates an archive comment after the end-of-central-directory record', () => {
+    const summary = inspectZipCentralDirectory(buildArchive({
+      entries: [{ compressed: 1, uncompressed: 2 }],
+      comment: 'created by a packer',
+    }));
+    expect(summary).toMatchObject({ entries: 1, malformed: null });
+  });
+
+  it('ignores a central-directory signature forged inside stored entry data', () => {
+    // A stored entry whose bytes contain `PK\x01\x02` followed by small size
+    // fields. A forward scan would read this decoy; the EOCD record must win.
+    const decoy = new Uint8Array(46 + 1);
+    const decoyView = new DataView(decoy.buffer);
+    decoyView.setUint32(0, 0x02014b50, true);
+    decoyView.setUint32(20, 1, true);
+    decoyView.setUint32(24, 1, true);
+    decoyView.setUint16(28, 1, true);
+
+    const summary = inspectZipCentralDirectory(buildArchive({
+      entries: [{ compressed: 1024, uncompressed: 900 * 1024 * 1024 }],
+      payloads: [decoy],
+    }));
+
+    expect(summary.entries).toBe(1);
+    expect(summary.totalUncompressedBytes).toBe(900 * 1024 * 1024);
+    expect(validateZipSummary(summary).valid).toBe(false);
+  });
+
+  it('rejects an archive with no end-of-central-directory record', () => {
+    const orphan = new ArrayBuffer(46);
+    new DataView(orphan).setUint32(0, 0x02014b50, true);
+    const summary = inspectZipCentralDirectory(orphan);
+    expect(summary.malformed).toBe('missing-end-of-central-directory');
+    expect(validateZipSummary(summary).valid).toBe(false);
+  });
+
+  it('rejects a central directory that points outside the archive', () => {
+    const buffer = buildArchive({ entries: [{ compressed: 1, uncompressed: 1 }] });
+    const view = new DataView(buffer);
+    const eocdOffset = buffer.byteLength - 22;
+    view.setUint32(eocdOffset + 16, 0xfffffff0, true);
+    const summary = inspectZipCentralDirectory(buffer);
+    expect(summary.malformed).toBe('central-directory-out-of-bounds');
+    expect(validateZipSummary(summary).valid).toBe(false);
+  });
+
+  it('rejects a central directory truncated before its declared entry count', () => {
+    const buffer = buildArchive({ entries: [{ compressed: 1, uncompressed: 1 }] });
+    new DataView(buffer).setUint16(buffer.byteLength - 22 + 10, 4, true);
+    const summary = inspectZipCentralDirectory(buffer);
+    expect(summary.malformed).toBe('truncated-central-directory');
   });
 
   it('accepts values exactly on configured boundaries', () => {
@@ -206,5 +310,48 @@ describe('ZIP archive safeguards', () => {
     ['compression ratio', { entries: 1, totalUncompressedBytes: 101, compressionRatio: 101 }],
   ])('rejects an archive over the %s limit', (_label, summary) => {
     expect(validateZipSummary(summary).valid).toBe(false);
+  });
+});
+
+describe('readZipEntryText', () => {
+  const streamingEntry = (chunks) => ({
+    internalStream: () => {
+      const listeners = {};
+      let paused = false;
+      const helper = {
+        on(event, handler) {
+          listeners[event] = handler;
+          return helper;
+        },
+        pause() {
+          paused = true;
+          return helper;
+        },
+        resume() {
+          queueMicrotask(() => {
+            for (const chunk of chunks) {
+              if (paused) return;
+              listeners.data?.(chunk);
+            }
+            if (!paused) listeners.end?.();
+          });
+          return helper;
+        },
+      };
+      return helper;
+    },
+  });
+
+  it('returns the concatenated entry content within the limit', async () => {
+    await expect(readZipEntryText(streamingEntry(['<a>', '</a>']), 1024)).resolves.toBe('<a></a>');
+  });
+
+  it('aborts once inflated output exceeds the limit, whatever the entry declared', async () => {
+    const bomb = streamingEntry(new Array(64).fill('x'.repeat(64)));
+    await expect(readZipEntryText(bomb, 512)).rejects.toThrow('expands beyond');
+  });
+
+  it('falls back to async() for entries without a stream helper', async () => {
+    await expect(readZipEntryText({ async: async () => 'plain' }, 1024)).resolves.toBe('plain');
   });
 });
