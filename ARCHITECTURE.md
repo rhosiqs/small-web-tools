@@ -358,7 +358,8 @@ any part it deletes. QR/barcode encoding rules and codon input/filter/presentati
 rules live in their corresponding `src/components/<Tool>/lib/` directories.
 Focused coverage is in `documentMetadataDomain.test.js`,
 `documentMetadataStrip.test.js`, `qrBarcodeDomain.test.js`, and
-`codonDomain.test.js`; DNA/RNA copy formatting coverage is in `dnaCopy.test.js`,
+`codonDomain.test.js`, with the downloaded-package journey in
+`e2e/docmeta-strip.spec.js`; DNA/RNA copy formatting coverage is in `dnaCopy.test.js`,
 time-difference coverage is in `timeDomain.test.js`, Roman numeral coverage is
 in `romanDomain.test.js`, Phred conversion coverage is in `phredDomain.test.js`,
 sanitized SVG parsing/export-size coverage is in `svgDomain.test.js`, and URL

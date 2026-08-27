@@ -64,7 +64,7 @@ already running. Useful specs by area: `routes.spec.js`,
 `simple-workspace.spec.js`, `language-switcher.spec.js`, `accessibility.spec.js`,
 `file-limits.spec.js`, `error-safety.spec.js`, `privacy-network.spec.js`,
 `gps-consent.spec.js`, `currency.spec.js`, `speed-test.spec.js`,
-`font-extractor.spec.js`.
+`font-extractor.spec.js`, `docmeta-strip.spec.js`.
 
 ## Serverless fixes
 
@@ -86,6 +86,22 @@ npm run platform:check            # Cloudflare configuration consistency
 Do not run `npm run test:ssrf-runtime` as part of an ordinary bug fix — it creates
 a temporary external Cloudflare preview deployment and is reserved for CR-009
 evidence.
+
+## jsdom is not the browser
+
+The unit suite runs in jsdom, and jsdom differs from a real engine in ways that
+change conclusions, not just coverage. `XMLSerializer` is the worked example:
+Chrome emits an XML declaration for a Document, jsdom emits none, so a jsdom test
+can show a "missing declaration" defect that the shipped app never had. jsdom also
+lacks layout — `getComputedTextLength` and friends are absent, so anything that
+measures text cannot run there at all.
+
+So when a defect's mechanism lives in a browser API rather than in your own
+logic, confirm it in a browser before you name it a root cause. A Playwright spec
+driving the built app, asserting on the bytes the user actually receives, settles
+it; `e2e/docmeta-strip.spec.js` is the pattern. If the environment cannot launch
+the repo's pinned browser, point Playwright at the one it has with a local
+`--config` override rather than editing `playwright.config.js`.
 
 ## Manual re-check for user-visible fixes
 

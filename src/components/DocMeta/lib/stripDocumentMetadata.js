@@ -34,8 +34,9 @@ const xmlDeclarationOf = (text) => {
   return match ? `${match[0]}\r\n` : DEFAULT_XML_DECLARATION;
 };
 
-// XMLSerializer never emits the XML declaration that OOXML and ODF parts are
-// written with, so it is carried over from the part that was read.
+// Serializers disagree about the XML declaration: Chrome emits a canonical one
+// for a Document, jsdom emits none. Carrying the original over keeps the part
+// faithful either way, and keeps the unit tests honest about what ships.
 const serializeXml = (xmlDoc, originalText) => (
   xmlDeclarationOf(originalText) + new XMLSerializer().serializeToString(xmlDoc)
 );

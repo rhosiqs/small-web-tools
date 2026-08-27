@@ -160,8 +160,11 @@ a document:
   `meta:editing-duration` are dates, integers, and durations. An empty string is
   an invalid value for those types, not an absent one. Free-text properties
   (`dc:title`, `dc:creator`, …) can safely be emptied in place.
-- **`XMLSerializer` drops the XML declaration.** Every rewritten part has to get
-  `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` back.
+- **Carry the XML declaration across yourself.** Chrome's `XMLSerializer` emits a
+  canonical `<?xml ...?>` for a Document; jsdom emits none. A unit test will
+  therefore report a missing declaration that the shipped app does not actually
+  produce — this repo believed that for a while. Preserving the original text is
+  right regardless, but do not call it a corruption cause without browser proof.
 - **Do not touch the payload.** Slides, sheets, and document bodies must come out
   byte-identical; only the metadata parts change.
 

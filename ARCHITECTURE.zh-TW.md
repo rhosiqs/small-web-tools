@@ -305,7 +305,8 @@ stripDocumentMetadata.js 負責改寫 OOXML 與 OpenDocument 套件。剝離流�
 並在刪除 part 時一併移除其 content-type override 與套件關聯。QR／barcode 編碼規則與
 codon 輸入／篩選／呈現規則位於各自的 src/components/&lt;Tool&gt;/lib/ 目錄。聚焦覆蓋率
 包含 documentMetadataDomain.test.js、documentMetadataStrip.test.js、
-qrBarcodeDomain.test.js 與 codonDomain.test.js；
+qrBarcodeDomain.test.js 與 codonDomain.test.js，下載檔案的瀏覽器流程則由
+e2e/docmeta-strip.spec.js 覆蓋；
 DNA/RNA 複製格式位於 dnaCopy.test.js，時間差位於 timeDomain.test.js，羅馬數字位於
 romanDomain.test.js，Phred 轉換位於 phredDomain.test.js，消毒 SVG 解析／匯出大小位於
 svgDomain.test.js，URL 百分比編碼位於 urlDomain.test.js。轉換器模式、資料夾選擇器、
