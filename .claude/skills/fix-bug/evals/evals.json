@@ -37,5 +37,19 @@
         "Leaves unrelated files untouched"
       ]
     }
+  ],
+  "note": "Eval 0 no longer discriminates. Its three root causes were written into references/symptom-map.md after the bug was solved, so a run with the current skill is reading the answer rather than deriving it. Kept as a knowledge-retention check; add an unseen bug of the same class to measure diagnosis.",
+  "history": [
+    {
+      "iteration": 1,
+      "baseline": "no skill",
+      "result": "with-skill 16/19 vs baseline 17/19; both found 1 of eval 0's 3 root causes"
+    },
+    {
+      "iteration": 3,
+      "baseline": "skill v1 snapshot",
+      "result": "v2 12/12 and 3 of 3 root causes; v1 11/12 and 1 of 3",
+      "caveat": "see note"
+    }
   ]
 }
