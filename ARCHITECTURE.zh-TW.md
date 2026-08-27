@@ -62,7 +62,8 @@ VITE_APP_VERSION 是最後的明確 fallback。npm manifest 使用固定的非 r
 - AGENTS.md：工程 skills 的設定與 `docs/agents/` 指引入口；不建立繁中版本。
 - .agents/AGENTS.md：只供 AI agent 使用的英文規則；不建立繁中版本。
 - .claude/skills/：依任務需要才讀取的 agent 工作流程 skills；
-  `.claude/skills/add-tool/SKILL.md` 說明如何新增路由工具。不建立繁中版本。
+  `.claude/skills/add-tool/SKILL.md` 說明如何新增路由工具，
+  `.claude/skills/fix-bug/SKILL.md` 說明缺陷修復流程。不建立繁中版本。
 - package.json：指令、相依套件與 pipeline 命令。
 - jsconfig.json：JavaScript 的 TypeScript checkJs 設定。
 - eslint.config.js：React、hooks 與 Cloudflare Functions 的 ESLint flat config。
@@ -82,6 +83,8 @@ VITE_APP_VERSION 是最後的明確 fallback。npm manifest 使用固定的非 r
 - scripts/：版本、i18n、硬編碼 UI 與文件一致性檢查腳本。
 - docs/：包含 `docs/agents/` 的 issue tracker、triage label 與 domain docs 規則，
   以及 Docker 開發流程與其他成對的操作文件。
+- .claude/：Claude Code 進入點 CLAUDE.md，以及 `.claude/skills/` 中的儲存庫 skills；
+  fix-bug 另附 symptom-map 與 verification 兩份參考文件。
 - src/：React 應用程式、工具登錄表、樣式、共用 UI、工具元件與測試。
 - src/components/LanguageSwitcher.jsx：桌面與行動 header 共用的地區設定選單、鍵盤導覽與焦點生命週期。
 - src/components/MobileDrawer.jsx：行動導覽的焦點、inert、關閉與捲動生命週期。
@@ -296,9 +299,14 @@ ImgMeta.jsx、DocMeta.jsx、AudioMeta.jsx 與 VideoMeta.jsx 在瀏覽器中解�
 `useObjectUrlRegistry` 則負責 preview、衍生輸出與下載 Blob URL。聚焦測試位於
 `audioMetadataDomain.test.js` 與 `videoMetadataDomain.test.js`。
 
-純文件格式化／解析 helper 位於 src/components/DocMeta/lib/。QR／barcode 編碼規則與
+純文件格式化／解析 helper 位於 src/components/DocMeta/lib/，同一目錄的
+stripDocumentMetadata.js 負責改寫 OOXML 與 OpenDocument 套件。剝離流程會維持套件有效：
+對 dcterms:created、TotalTime 等具型別屬性採用移除而非清空、保留每個 part 的 XML 宣告，
+並在刪除 part 時一併移除其 content-type override 與套件關聯。QR／barcode 編碼規則與
 codon 輸入／篩選／呈現規則位於各自的 src/components/&lt;Tool&gt;/lib/ 目錄。聚焦覆蓋率
-包含 documentMetadataDomain.test.js、qrBarcodeDomain.test.js 與 codonDomain.test.js；
+包含 documentMetadataDomain.test.js、documentMetadataStrip.test.js、
+qrBarcodeDomain.test.js 與 codonDomain.test.js，下載檔案的瀏覽器流程則由
+e2e/docmeta-strip.spec.js 覆蓋；
 DNA/RNA 複製格式位於 dnaCopy.test.js，時間差位於 timeDomain.test.js，羅馬數字位於
 romanDomain.test.js，Phred 轉換位於 phredDomain.test.js，消毒 SVG 解析／匯出大小位於
 svgDomain.test.js，URL 百分比編碼位於 urlDomain.test.js。轉換器模式、資料夾選擇器、
@@ -376,8 +384,9 @@ Wrangler 設定檔（wrangler.jsonc、workers/rate-limiter/wrangler.jsonc 與整
   Playwright、PostCSS、Tailwind、Vite、Vitest 與 Wrangler 設定檔定義可重現的本機開發
   與驗證。
 - .github/ 包含 CI 與相依套件維護設定；.agents/AGENTS.md 包含儲存庫範圍的開發指引，
-  根目錄 AGENTS.md 則將工程 skills 指向 `docs/agents/` 中的規則。
-  `.claude/skills/` 存放依任務需要才讀取的 agent 工作流程 skills。
+  根目錄 AGENTS.md 則將工程 skills 指向 `docs/agents/` 中的規則；.claude/ 存放
+  Claude Code 進入點，`.claude/skills/` 則存放依任務需要才讀取的 agent 工作流程
+  skills：add-tool 對應新增路由工具，fix-bug 對應缺陷修復。
 - README、CONTRIBUTING、ARCHITECTURE 與 PRIVACY 的英文／繁中說明檔，以及 TODO.md、
   LICENSE，是維護中的專案文件或法律資料。
 - .dev.vars.example 是安全、非秘密的本機執行環境文件；實際 .dev.vars* 仍維持忽略。

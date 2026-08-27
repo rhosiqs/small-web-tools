@@ -80,5 +80,8 @@ _incoming/
 code_reviews/
 .codex-remote-attachments/
 
+# Disposable agent worktrees created by Claude Code
+.claude/worktrees/
+
 # Local private security issue records
 .scratch/security/
