@@ -12,6 +12,7 @@
     "speedtest": { "name": "Network Speed Test", "purpose": "Measure latency, download speed, and upload speed.", "fallback": "No remote speed measurement." },
     "fontextractor": { "name": "Website Font Extractor", "purpose": "Scan bounded public HTML and CSS for font declarations.", "fallback": "Do not run the website scan." },
     "osm": { "name": "OpenStreetMap Preview", "purpose": "Render an optional map for coordinates.", "fallback": "Coordinates remain visible without a map." },
+    "markdownimages": { "name": "Markdown Badge Images", "purpose": "Show badge and screenshot images a Markdown document points at.", "fallback": "Every image stays a placeholder in the preview." },
     "ffmpeg": { "name": "FFmpeg WebAssembly Runtime", "purpose": "Download the pinned FFmpeg engine for browser-side media processing.", "fallback": "Do not start FFmpeg-based processing." },
     "google-fonts-navigation": { "name": "Google Fonts Recommendations", "purpose": "Open a recommended font specimen in a new tab.", "fallback": "Read the recommendation name without opening it." },
     "google-maps-navigation": { "name": "Google Maps Link", "purpose": "Open coordinates in Google Maps.", "fallback": "Coordinates remain visible locally." },

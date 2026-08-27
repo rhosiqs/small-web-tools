@@ -651,6 +651,111 @@ html[data-theme="dark"] .ct-fisc-side-bond {
 }
 
 /* ==========================================================================
+   Markdown preview: raw HTML kept from the document
+   ==========================================================================
+   The previewer renders an allow-listed subset of the HTML a README contains.
+   Those elements arrive without utility classes, so the base styles they lose
+   to the Tailwind reset are restored here, scoped to the preview surface. */
+
+.markdown-html :is(h1, h2, h3, h4, h5, h6) {
+  margin: 0.6em 0 0.35em;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--text-main);
+}
+
+.markdown-html h1 { font-size: 1.75rem; }
+.markdown-html h2 { font-size: 1.4rem; }
+.markdown-html h3 { font-size: 1.2rem; }
+.markdown-html :is(h4, h5, h6) { font-size: 1rem; }
+
+.markdown-html p {
+  margin: 0.5em 0;
+}
+
+.markdown-html :is(ul, ol) {
+  margin: 0.4em 0;
+  padding-left: 1.5rem;
+}
+
+.markdown-html ul { list-style: disc; }
+.markdown-html ol { list-style: decimal; }
+
+.markdown-html a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.markdown-html img {
+  display: inline-block;
+  max-width: 100%;
+  height: auto;
+}
+
+.markdown-html table {
+  border-collapse: collapse;
+  margin: 0.5em 0;
+}
+
+.markdown-html :is(th, td) {
+  border: 1px solid var(--border-color);
+  padding: 0.35rem 0.6rem;
+}
+
+.markdown-html blockquote {
+  margin: 0.5em 0;
+  padding: 0.25rem 0.9rem;
+  border-left: 3px solid var(--accent);
+  color: var(--text-muted);
+}
+
+.markdown-html :is(code, kbd, samp) {
+  padding: 0.05rem 0.3rem;
+  border-radius: 0.25rem;
+  background: var(--bg-app);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+
+.markdown-html kbd {
+  border: 1px solid var(--border-color);
+  border-bottom-width: 2px;
+}
+
+.markdown-html details {
+  margin: 0.5em 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+}
+
+.markdown-html summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.markdown-html hr {
+  margin: 0.75em 0;
+  border-color: var(--border-color);
+}
+
+.markdown-html sub,
+.markdown-html sup {
+  font-size: 0.75em;
+  line-height: 0;
+}
+
+.markdown-html sup { vertical-align: super; }
+.markdown-html sub { vertical-align: sub; }
+
+.markdown-html :is(b, strong) { font-weight: 700; }
+.markdown-html :is(i, em, cite, q) { font-style: italic; }
+.markdown-html mark { background: var(--accent-light); color: var(--text-main); }
+.markdown-html small { font-size: 0.85em; }
+
+/* ==========================================================================
    Header and Footer Modification Overrides
    ========================================================================== */
 

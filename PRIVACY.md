@@ -33,6 +33,7 @@ Local-first does not mean offline-only. The hosted application, named network-de
 | Cloudflare Speed Test | User-started latency/download/upload measurement | IP, request metadata, and generated measurement traffic | Explicit consent | No remote measurement |
 | Website Font Extractor | Bounded public HTML/CSS scan after consent and URL submission | Target URL; target servers receive Function request metadata | Explicit consent | Do not scan |
 | OpenStreetMap | Optional coordinate map after map consent | Coordinates and standard browser request metadata | Explicit consent | Coordinate text without an iframe |
+| Markdown badge images | Badge and screenshot images in a previewed Markdown document, after the reader turns badge images on | Image URL and standard browser request metadata; the image host learns the reader IP address | Explicit consent | Every image stays a placeholder |
 | unpkg FFmpeg 0.12.6 | Download pinned JS/WASM on the first processing action | Standard browser request metadata only; media and outputs remain local | Point-of-use disclosure | Do not process with FFmpeg |
 | Google Fonts recommendations | Open a specimen after the user selects a link | Standard navigation metadata | User navigation | Read the recommendation without opening it |
 | Google Maps | Open coordinates after the user selects a link | Coordinates and standard navigation metadata | User navigation | Read coordinates locally |
