@@ -41,6 +41,7 @@ function InlineTokens({ tokens }) {
     if (token.type === 'emphasis') return <em key={key}>{token.value}</em>;
     if (token.type === 'strike') return <del key={key}>{token.value}</del>;
     if (token.type === 'image') return <ImagePlaceholder key={key} alt={token.alt} />;
+    if (token.type === 'html') return <DomainHtmlNode key={key} node={token.node} />;
     if (token.type === 'link') {
       if (!token.href) return <span key={key}>{token.value}</span>;
       const external = /^https?:/i.test(token.href);
@@ -60,6 +61,50 @@ function InlineTokens({ tokens }) {
   });
 }
 
+function reactProps(tag, attributes) {
+  const props = {};
+  for (const [name, value] of Object.entries(attributes || {})) {
+    if (name === 'open') {
+      props.open = true;
+      continue;
+    }
+    props[REACT_ATTRIBUTE_NAMES[name] || name] = value;
+  }
+  if (tag === 'a' && /^https?:/i.test(attributes?.href || '')) {
+    props.target = '_blank';
+    props.rel = 'noreferrer';
+  }
+  return props;
+}
+
+/**
+ * Renders the node shape the Markdown Previewer's parser produces.
+ *
+ * Inline HTML inside a paragraph (`press <kbd>Ctrl</kbd> now`) never reaches
+ * this tool's own splitter — it arrives already parsed and sanitized as an
+ * `html` token from the shared Markdown domain, which spells its nodes
+ * `name`/`inline` where this file spells them `tag`/`text`. Without this branch
+ * that markup would silently vanish from the preview.
+ */
+function DomainHtmlNode({ node }) {
+  if (node.type === 'text') return <React.Fragment>{node.value}</React.Fragment>;
+  if (node.type === 'inline') return <InlineTokens tokens={node.inline} />;
+  if (node.type === 'image') return <ImagePlaceholder alt={node.alt} />;
+  if (node.type !== 'element') return null;
+  if (node.name === 'img') return <ImagePlaceholder alt={node.attributes?.alt} />;
+  if (TRANSPARENT_TAGS.has(node.name)) {
+    return node.children?.map((child, index) => <DomainHtmlNode key={index} node={child} />);
+  }
+
+  return React.createElement(
+    node.name,
+    reactProps(node.name, node.attributes),
+    node.children?.length
+      ? node.children.map((child, index) => <DomainHtmlNode key={index} node={child} />)
+      : undefined,
+  );
+}
+
 function HtmlNodes({ nodes }) {
   return nodes.map((node, index) => {
     if (node.type === 'text') return <React.Fragment key={`text-${index}`}>{node.value}</React.Fragment>;
@@ -68,22 +113,9 @@ function HtmlNodes({ nodes }) {
     if (node.tag === 'img') return <ImagePlaceholder key={key} alt={node.attributes.alt} />;
     if (TRANSPARENT_TAGS.has(node.tag)) return <HtmlNodes key={key} nodes={node.children} />;
 
-    const props = { key };
-    for (const [name, value] of Object.entries(node.attributes)) {
-      if (name === 'open') {
-        props.open = true;
-        continue;
-      }
-      props[REACT_ATTRIBUTE_NAMES[name] || name] = value;
-    }
-    if (node.tag === 'a' && /^https?:/i.test(node.attributes.href || '')) {
-      props.target = '_blank';
-      props.rel = 'noreferrer';
-    }
-
     return React.createElement(
       node.tag,
-      props,
+      { key, ...reactProps(node.tag, node.attributes) },
       node.children.length > 0 ? <HtmlNodes nodes={node.children} /> : undefined,
     );
   });
@@ -105,6 +137,9 @@ function MarkdownBlock({ block }) {
     return <p className="whitespace-pre-wrap"><InlineTokens tokens={block.inline} /></p>;
   }
   if (block.type === 'rule') return <hr className="border-border" />;
+  if (block.type === 'html') {
+    return block.nodes.map((node, index) => <DomainHtmlNode key={index} node={node} />);
+  }
   if (block.type === 'quote') {
     // GitHub's alert syntax arrives as an ordinary quote, so the callout is
     // recognised here rather than in the shared Markdown parser.

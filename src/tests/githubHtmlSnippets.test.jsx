@@ -68,6 +68,15 @@ describe('GitHub HTML Blocks', () => {
     expect(preview().querySelector('p').getAttribute('style')).toBeNull();
   });
 
+  it('renders inline HTML that arrives mid-sentence from the shared Markdown parser', async () => {
+    await act(async () => {
+      setNativeValue(editor(), 'press <kbd>Ctrl</kbd> now');
+    });
+    expect(preview().querySelector('kbd')?.textContent).toBe('Ctrl');
+    expect(preview().textContent).toContain('press');
+    expect(preview().textContent).toContain('now');
+  });
+
   it('shows a placeholder instead of fetching a remote image', async () => {
     await act(async () => {
       setNativeValue(editor(), '<img src="https://img.shields.io/badge/a-b-green" alt="Build" />');
