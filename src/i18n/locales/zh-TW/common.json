@@ -12,6 +12,7 @@
     "speedtest": { "name": "網路速度測試", "purpose": "測量延遲、下載速度與上傳速度。", "fallback": "不進行遠端速度測量。" },
     "fontextractor": { "name": "網站字型擷取器", "purpose": "掃描有限範圍的公開 HTML 與 CSS 字型宣告。", "fallback": "不執行網站掃描。" },
     "osm": { "name": "OpenStreetMap 預覽", "purpose": "為座標呈現選用的地圖。", "fallback": "不顯示地圖，座標仍保持可見。" },
+    "markdownimages": { "name": "Markdown 徽章圖片", "purpose": "顯示 Markdown 文件指向的徽章與截圖圖片。", "fallback": "所有圖片在預覽中維持佔位顯示。" },
     "ffmpeg": { "name": "FFmpeg WebAssembly 執行階段", "purpose": "下載固定版本的 FFmpeg 引擎，在瀏覽器中處理媒體。", "fallback": "不啟動 FFmpeg 處理。" },
     "google-fonts-navigation": { "name": "Google Fonts 建議", "purpose": "在新分頁開啟建議的字型範例。", "fallback": "只閱讀建議名稱，不開啟連結。" },
     "google-maps-navigation": { "name": "Google Maps 連結", "purpose": "在 Google Maps 中開啟座標。", "fallback": "座標保留在本機顯示。" },

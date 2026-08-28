@@ -5,4 +5,4 @@
   Permissions-Policy: camera=(self), microphone=(), geolocation=()
   Cross-Origin-Opener-Policy: same-origin
   Strict-Transport-Security: max-age=86400
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' https://speed.cloudflare.com https://unpkg.com; media-src 'self' blob:; worker-src 'self' blob:; frame-src https://www.openstreetmap.org; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests;
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://img.shields.io https://badgen.net https://github.com https://raw.githubusercontent.com https://user-images.githubusercontent.com; connect-src 'self' https://speed.cloudflare.com https://unpkg.com; media-src 'self' blob:; worker-src 'self' blob:; frame-src https://www.openstreetmap.org; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests;

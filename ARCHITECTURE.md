@@ -313,11 +313,19 @@ Prefer the shared primitives and existing design tokens. Add global CSS only for
 
 `MarkdownPreviewer.jsx` provides a browser-local editor, `.md`/`.markdown`
 upload, live preview, formatting helpers, and Markdown download. Its domain
-module parses common block and inline syntax into safe React-rendered tokens;
-raw HTML and external images are not rendered, and unsafe URL schemes are
-discarded. Source-line metadata keeps the independently scrollable editor and
-preview aligned in both directions without collapsing fenced-code content.
-Focused parser and interaction coverage lives in
+module parses common block and inline syntax into safe React-rendered tokens,
+and unsafe URL schemes are discarded. Raw HTML in the document is scanned into a
+node tree, filtered against a tag and attribute allow list, and rendered as React
+elements; no markup string ever reaches `innerHTML`. An HTML block runs to its
+matching closing tag rather than the first blank line, so the centred header
+common to README files survives, and unclosed markup stops at the next heading
+or fence. Images stay placeholders until the reader grants the `markdownimages`
+consent, and then load only from the badge hosts declared in
+`config/network-services.json` and allowed by the `img-src` directive in
+`public/_headers`. `.markdown-html` in `src/styles.css` restores the base styles
+those raw elements lose to the Tailwind reset. Source-line metadata keeps the
+independently scrollable editor and preview aligned in both directions without
+collapsing fenced-code content. Focused parser and interaction coverage lives in
 `markdownDomain.test.js` and `markdownPreviewer.test.jsx`.
 
 ### VS Code Preview
