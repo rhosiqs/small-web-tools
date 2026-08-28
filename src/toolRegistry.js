@@ -19,6 +19,7 @@ const loaders = {
   'tool-markdown': () => import('./components/MarkdownPreviewer.jsx'),
   'tool-mermaid': () => import('./components/MermaidConverter.jsx'),
   'tool-code-preview': () => import('./components/CodePreviewer.jsx'),
+  'tool-github-html': () => import('./components/GithubHtmlSnippets.jsx'),
   'tool-fontextractor': () => import('./components/WebsiteFontExtractor.jsx'),
   'tool-base': () => import('./components/BaseConverter.jsx'),
   'tool-folder-analyzer': () => import('./components/FolderAnalyzer.jsx'),

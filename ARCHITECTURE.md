@@ -126,6 +126,7 @@ small-web-tools/
 │       ├── DesktopCategoryNav.jsx Pointer shortcut navigation derived from the registry
 │       ├── MobileDrawer.jsx  Mobile navigation focus, inert, dismissal, and scroll lifecycle
 │       ├── MarkdownPreviewer/ Markdown parsing and validation domain logic
+│       ├── GithubHtmlSnippets/ README HTML allow-list, block catalogue, and preview
 │       ├── *.jsx             Individual tool components
 │       ├── useMediaSeparator.js
 │       └── mediaSeparatorEngine.js
@@ -268,6 +269,7 @@ Prefer the shared primitives and existing design tokens. Add global CSS only for
 | `tool-markdown` | Markdown Previewer | `MarkdownPreviewer.jsx` | Developer |
 | `tool-mermaid` | Mermaid Converter | `MermaidConverter.jsx` | Developer |
 | `tool-code-preview` | VS Code Preview | `CodePreviewer.jsx` | Developer |
+| `tool-github-html` | GitHub HTML Blocks | `GithubHtmlSnippets.jsx` | Developer |
 | `tool-fontextractor` | Font Extractor | `WebsiteFontExtractor.jsx` | Developer |
 | `tool-base` | Base Converter | `BaseConverter.jsx` | Developer |
 | `tool-folder-analyzer` | Folder Analyzer | `FolderAnalyzer.jsx` | Developer |
@@ -327,6 +329,27 @@ those raw elements lose to the Tailwind reset. Source-line metadata keeps the
 independently scrollable editor and preview aligned in both directions without
 collapsing fenced-code content. Focused parser and interaction coverage lives in
 `markdownDomain.test.js` and `markdownPreviewer.test.jsx`.
+
+### GitHub HTML Blocks
+
+`GithubHtmlSnippets.jsx` composes the raw HTML a GitHub README needs — centred
+headers, badge rows, `<details>`, `<kbd>`, image tables — by stacking blocks at
+`/home/github-html`. Blocks are chosen from wordless thumbnails: each tile draws
+the block through the preview renderer instead of naming it, and the name reaches
+assistive technology through `aria-label` only. The most-used blocks sit on the
+strip and the rest open in a `Cmd`/`Ctrl` + `K` palette. A multi-line block is stacked below
+the caret's line rather than nested, so repeated clicks build a document in order.
+
+Its domain modules are the tool's own, separate from the Markdown Previewer's:
+`githubHtml.js` parses an HTML fragment and filters it against an allow-list,
+`composeDocument.js` splits a document into HTML and Markdown segments — reusing
+the Previewer's `parseMarkdown` rather than carrying a second Markdown parser —
+and `blockCatalog.js` holds the language-neutral block templates plus the pure
+placement rules. The preview renders sanitized nodes as React elements with no
+`dangerouslySetInnerHTML`, and images are never fetched, so the tool makes no
+third-party request. Because the allow-list mirrors what GitHub itself keeps, the
+sanitizer's own removals drive the "GitHub removes" warning and the per-tile dot.
+Coverage lives in `githubHtmlDomain.test.js` and `githubHtmlSnippets.test.jsx`.
 
 ### VS Code Preview
 

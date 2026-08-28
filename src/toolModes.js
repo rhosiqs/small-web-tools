@@ -31,6 +31,7 @@ const modeDefinitions = [
       'tool-url',
       'tool-markdown',
       'tool-mermaid',
+      'tool-github-html',
       'tool-code-preview',
       'tool-fontextractor',
       'tool-base',
