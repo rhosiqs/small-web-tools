@@ -17,8 +17,6 @@
  * not exist.
  */
 
-export const BLOCK_GROUPS = ['layout', 'collapsible', 'badges', 'text', 'media', 'navigation', 'alerts'];
-
 export const BLOCKS = Object.freeze([
   // -- layout -----------------------------------------------------------------
   {
@@ -119,12 +117,6 @@ export const BLOCKS = Object.freeze([
 
 export const PINNED_BLOCKS = BLOCKS.filter((block) => block.pinned);
 
-const blocksById = new Map(BLOCKS.map((block) => [block.id, block]));
-
-export function getBlock(id) {
-  return blocksById.get(id) || null;
-}
-
 /** Fills `{{slot}}` placeholders. Unknown slots are left untouched, not blanked. */
 export function fillTemplate(template, values) {
   return String(template).replace(/{{(\w+)}}/g, (match, key) => (
@@ -134,15 +126,15 @@ export function fillTemplate(template, values) {
 
 /**
  * Which blocks match a free-text query. `terms` is the caller's translated
- * search text for each block, so searching works in the reader's language.
+ * search text for each block, so searching works in the reader's language, and
+ * the group name is part of the haystack so typing "media" narrows to media.
  */
-export function searchBlocks(query, group, terms) {
+export function searchBlocks(query, terms) {
   const needle = String(query).trim().toLowerCase();
-  return BLOCKS.filter((block) => {
-    if (group && block.group !== group) return false;
-    if (!needle) return true;
-    return `${terms[block.id] || ''} ${block.tag} ${block.group}`.toLowerCase().includes(needle);
-  });
+  if (!needle) return [...BLOCKS];
+  return BLOCKS.filter(
+    (block) => `${terms[block.id] || ''} ${block.tag} ${block.group}`.toLowerCase().includes(needle),
+  );
 }
 
 /**

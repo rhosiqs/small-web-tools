@@ -161,11 +161,12 @@ describe('block catalogue', () => {
     }
   });
 
-  it('searches by translated label, tag, and group', () => {
+  it('searches by translated label, tag, and group name', () => {
     const labels = labelsFor(BLOCKS);
-    expect(searchBlocks('details', null, labels).map((block) => block.id)).toContain('details');
-    expect(searchBlocks('', 'alerts', labels).every((block) => block.group === 'alerts')).toBe(true);
-    expect(searchBlocks('<kbd>', null, labels).map((block) => block.id)).toEqual(['kbd']);
+    expect(searchBlocks('details', labels).map((block) => block.id)).toContain('details');
+    expect(searchBlocks('alerts', labels).every((block) => block.group === 'alerts')).toBe(true);
+    expect(searchBlocks('<kbd>', labels).map((block) => block.id)).toEqual(['kbd']);
+    expect(searchBlocks('', labels)).toHaveLength(BLOCKS.length);
   });
 
   it('renders every block into HTML the sanitizer keeps, except the ones that teach a removal', () => {

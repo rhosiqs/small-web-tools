@@ -19,7 +19,7 @@ export default function BlockPalette({ open, onClose, onSelect, labels, bodies }
   const searchRef = useRef(null);
   const dialogRef = useRef(null);
 
-  const matches = useMemo(() => searchBlocks(query, null, labels), [query, labels]);
+  const matches = useMemo(() => searchBlocks(query, labels), [query, labels]);
   const active = matches[Math.min(cursor, matches.length - 1)];
 
   // Focus moves synchronously: React has already committed the dialog by the
