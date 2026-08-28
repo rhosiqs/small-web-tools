@@ -29,7 +29,14 @@
     "description": "在本機編輯、上傳、預覽與下載 Markdown 檔案。",
     "search": ["Markdown 編輯器", "MD 預覽"],
     "ui": {
-      "imagePlaceholder": "圖片：{{alt}}",
+      "imagePlaceholder": {
+        "consent": "未載入的圖片：{{alt}}",
+        "blockedHost": "來源不在允許清單的圖片：{{alt}}",
+        "relative": "相對路徑的圖片：{{alt}}",
+        "unsupported": "無法顯示的圖片：{{alt}}"
+      },
+      "untitledImage": "未命名",
+      "remoteImages": { "enable": "載入徽章圖片", "disable": "停止載入徽章圖片" },
       "previewAria": "Markdown 預覽",
       "emptyPreview": "算繪後的預覽會顯示在這裡。",
       "completedTask": "已完成的工作",
@@ -54,7 +61,7 @@
       "editorAria": "Markdown 編輯器",
       "editorPlaceholder": "在此輸入或貼上 Markdown…",
       "previewTitle": "預覽",
-      "privacyNote": "預覽只會在瀏覽器中處理，不會算繪原始 HTML 或外部圖片。",
+      "privacyNote": "預覽只會在瀏覽器中處理；原始 HTML 會先淨化，圖片僅在你允許後從徽章來源載入。",
       "status": {
         "formatApplied": "已套用格式。",
         "pasted": "已從剪貼簿貼上 Markdown。",
@@ -64,7 +71,9 @@
         "loaded": "已載入 {{filename}}。",
         "readFailed": "無法讀取 Markdown 檔案。",
         "downloaded": "已下載 {{filename}}。",
-        "cleared": "已清除編輯器。"
+        "cleared": "已清除編輯器。",
+        "remoteImagesEnabled": "徽章圖片將從 img.shields.io、badgen.net、github.com、raw.githubusercontent.com 與 user-images.githubusercontent.com 載入。",
+        "remoteImagesDisabled": "已停止載入徽章圖片。"
       }
     }
   },
@@ -255,6 +264,7 @@
     "speedtest": { "name": "網路速度測試", "purpose": "測量延遲、下載速度與上傳速度。", "trigger": "使用者授予同意並開始測試。", "data": "IP 位址、標準要求中繼資料與產生的測量流量。", "fallback": "不進行遠端速度測量。" },
     "fontextractor": { "name": "網站字型擷取器", "purpose": "在有限範圍內掃描公開 HTML 與 CSS 的字型宣告。", "trigger": "使用者授予同意並提交目標 URL。", "data": "目標 URL；目標伺服器會收到 Function 的要求中繼資料。", "fallback": "不執行網站掃描。" },
     "osm": { "name": "OpenStreetMap 預覽", "purpose": "為座標算繪選用地圖。", "trigger": "使用者授予地圖同意。", "data": "座標與標準瀏覽器要求中繼資料。", "fallback": "不顯示地圖，仍可查看座標。" },
+    "markdownimages": { "name": "Markdown 徽章圖片", "purpose": "顯示 Markdown 文件指向的徽章與截圖圖片。", "trigger": "使用者在 Markdown 預覽器中開啟徽章圖片。", "data": "圖片網址，以及送往圖片主機的標準瀏覽器請求中繼資料。", "fallback": "所有圖片在預覽中維持佔位顯示。" },
     "ffmpeg": { "name": "FFmpeg WebAssembly 執行階段", "purpose": "下載固定版本的 FFmpeg 0.12.6 引擎，以在瀏覽器中處理媒體。", "trigger": "第一次執行需要 FFmpeg 的處理動作。", "data": "僅傳送標準瀏覽器要求中繼資料；所選媒體與輸出留在瀏覽器中。", "fallback": "不啟動以 FFmpeg 為基礎的處理。" },
     "google-fonts-navigation": { "name": "Google Fonts 建議", "purpose": "在新分頁開啟建議的字型樣本。", "trigger": "使用者選取建議連結。", "data": "標準導覽要求中繼資料。", "fallback": "閱讀建議名稱而不開啟連結。" },
     "google-maps-navigation": { "name": "Google 地圖連結", "purpose": "在 Google 地圖中開啟座標。", "trigger": "使用者選取外部地圖連結。", "data": "座標與標準導覽要求中繼資料。", "fallback": "座標仍在本機可見。" },

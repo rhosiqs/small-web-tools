@@ -29,7 +29,14 @@
     "description": "Edit, upload, preview, and download Markdown files locally.",
     "search": ["Markdown editor", "MD preview"],
     "ui": {
-      "imagePlaceholder": "Image: {{alt}}",
+      "imagePlaceholder": {
+        "consent": "Image not loaded: {{alt}}",
+        "blockedHost": "Image from an unsupported host: {{alt}}",
+        "relative": "Image with a relative path: {{alt}}",
+        "unsupported": "Image could not be shown: {{alt}}"
+      },
+      "untitledImage": "untitled",
+      "remoteImages": { "enable": "Load badge images", "disable": "Stop loading badge images" },
       "previewAria": "Markdown preview",
       "emptyPreview": "The rendered preview will appear here.",
       "completedTask": "Completed task",
@@ -54,7 +61,7 @@
       "editorAria": "Markdown editor",
       "editorPlaceholder": "Type or paste Markdown here...",
       "previewTitle": "Preview",
-      "privacyNote": "Preview stays in your browser. Raw HTML and external images are not rendered.",
+      "privacyNote": "Preview stays in your browser. Raw HTML is sanitized, and images load only from the badge hosts you allow.",
       "status": {
         "formatApplied": "Formatting applied.",
         "pasted": "Pasted Markdown from the clipboard.",
@@ -64,7 +71,9 @@
         "loaded": "Loaded {{filename}}.",
         "readFailed": "The Markdown file could not be read.",
         "downloaded": "Downloaded {{filename}}.",
-        "cleared": "Editor cleared."
+        "cleared": "Editor cleared.",
+        "remoteImagesEnabled": "Badge images will load from img.shields.io, badgen.net, github.com, raw.githubusercontent.com, and user-images.githubusercontent.com.",
+        "remoteImagesDisabled": "Badge images are no longer loaded."
       }
     }
   },
@@ -255,6 +264,7 @@
     "speedtest": { "name": "Network Speed Test", "purpose": "Measure latency, download speed, and upload speed.", "trigger": "The user grants consent and starts a test.", "data": "IP address, standard request metadata, and generated measurement traffic.", "fallback": "No remote speed measurement." },
     "fontextractor": { "name": "Website Font Extractor", "purpose": "Scan bounded public HTML and CSS for font declarations.", "trigger": "The user grants consent and submits a target URL.", "data": "The target URL; target servers receive the Function's request metadata.", "fallback": "Do not run the website scan." },
     "osm": { "name": "OpenStreetMap Preview", "purpose": "Render an optional map for coordinates.", "trigger": "The user grants map consent.", "data": "Coordinates and standard browser request metadata.", "fallback": "Coordinates remain visible without a map." },
+    "markdownimages": { "name": "Markdown Badge Images", "purpose": "Show badge and screenshot images a Markdown document points at.", "trigger": "The user turns on badge images in the Markdown Previewer.", "data": "The image URL and standard browser request metadata sent to the image host.", "fallback": "Every image stays a placeholder in the preview." },
     "ffmpeg": { "name": "FFmpeg WebAssembly Runtime", "purpose": "Download the pinned FFmpeg 0.12.6 engine for browser-side media processing.", "trigger": "The first processing action that needs FFmpeg.", "data": "Standard browser request metadata only; selected media and outputs stay in the browser.", "fallback": "Do not start FFmpeg-based processing." },
     "google-fonts-navigation": { "name": "Google Fonts Recommendations", "purpose": "Open a recommended font specimen in a new tab.", "trigger": "The user selects a recommendation link.", "data": "Standard navigation request metadata.", "fallback": "Read the recommendation name without opening it." },
     "google-maps-navigation": { "name": "Google Maps Link", "purpose": "Open coordinates in Google Maps.", "trigger": "The user selects the external map link.", "data": "Coordinates and standard navigation request metadata.", "fallback": "Coordinates remain visible locally." },

@@ -267,10 +267,15 @@ ExternalMapPreview.jsx 是 IP Lookup 與 Image Metadata 共用的 OpenStreetMap 
 ### Markdown 預覽器
 
 MarkdownPreviewer.jsx 提供瀏覽器本機編輯器、.md／.markdown 上傳、即時預覽、格式化
-helper 與 Markdown 下載。其領域模組會將常見區塊與行內語法解析為安全的 React token；
-不會渲染 raw HTML 與外部圖片，並丟棄不安全的 URL scheme。來源行中繼資料讓可獨立捲動
-的編輯器與預覽區能雙向對齊，不會折疊 fenced-code 內容。重點解析器與互動測試位於
-markdownDomain.test.js 與 markdownPreviewer.test.jsx。
+helper 與 Markdown 下載。其領域模組會將常見區塊與行內語法解析為安全的 React token，
+並丟棄不安全的 URL scheme。文件中的 raw HTML 會先掃描成節點樹，依標籤與屬性允許清單
+過濾後算繪為 React 元素；任何標記字串都不會進入 innerHTML。HTML 區塊會延伸到相對應的
+結束標籤而非第一個空行，因此 README 常見的置中標頭得以保留；未閉合的標記則停在下一個
+標題或 fence。圖片在讀者授予 markdownimages 同意前一律顯示佔位，之後也僅從
+config/network-services.json 宣告、且 public/_headers 的 img-src 允許的徽章來源載入。
+src/styles.css 中的 .markdown-html 會補回這些 raw 元素被 Tailwind reset 移除的基本樣式。
+來源行中繼資料讓可獨立捲動的編輯器與預覽區能雙向對齊，不會折疊 fenced-code 內容。
+重點解析器與互動測試位於 markdownDomain.test.js 與 markdownPreviewer.test.jsx。
 
 ### GitHub HTML 積木
 
