@@ -43,14 +43,14 @@
     "verify": "npm run version:check && npm run i18n:check && npm run i18n:audit && npm run lint && npm run lint:changed && npm run typecheck && npm run test:coverage && npm run build && npm run bundle:check && npm run headers:check && npm run external-hosts:check && npm run platform:check && npm run docs:check"
   },
   "devDependencies": {
-    "@axe-core/playwright": "4.12.1",
+    "@axe-core/playwright": "4.13.0",
     "@playwright/test": "^1.62.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@types/node": "^24.13.3",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.3.1",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.11",
     "autoprefixer": "^10.5.2",
     "@eslint/js": "9.39.5",
     "eslint": "9.39.5",
@@ -60,12 +60,12 @@
     "jsdom": "^26.1.0",
     "json-dup-key-validator": "^1.0.3",
     "knip": "5.88",
-    "postcss": "^8.5.25",
+    "postcss": "^8.5.26",
     "tailwindcss": "^3.4.19",
     "typescript": "^5.8.3",
     "vite": "^6.0.0",
     "vitest": "^4.1.10",
-    "wrangler": "4.115.0"
+    "wrangler": "4.127.1"
   },
   "overrides": {
     "brace-expansion": "5.0.9",
