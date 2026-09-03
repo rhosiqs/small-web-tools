@@ -24,9 +24,6 @@ const t = (key, values = {}) => ({
   'navigation:footer.email': 'Email',
   'navigation:footer.documents': 'Site documents',
   'navigation:footer.external': 'Project links',
-  'navigation:footer.emailLabel': 'Contact',
-  'navigation:footer.websiteLabel': 'Website',
-  'navigation:footer.githubLabel': 'Repository',
   'navigation:footer.github': 'Repository',
 }[key] || key);
 
