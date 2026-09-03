@@ -8,9 +8,9 @@
 
 **First Published:** July 19, 2026
 
-**Last Updated:** July 30, 2026
+**Last Updated:** September 3, 2026
 
-**In-app policy:** `/home/privacy`
+**In-app policy:** `/home/privacy` (consent settings: `/home/consent`)
 
 **Source repository:** [github.com/hhter2/small-web-tools](https://github.com/hhter2/small-web-tools) (MIT License; GitHub access may be required)
 
@@ -48,7 +48,7 @@ The FFmpeg JavaScript and WebAssembly assets remain pinned to `@ffmpeg/core` 0.1
 
 ## 4. Consent and browser storage
 
-The consent manager stores explicit service choices under `small_web_tools_consent`. Theme, collapsed navigation, and recent route state may also use local or session storage. The project does not add analytics trackers or tracking cookies.
+The consent settings page at `/home/consent` stores explicit service choices under `small_web_tools_consent`. Theme, collapsed navigation, and recent route state may also use local or session storage. The project does not add analytics trackers or tracking cookies.
 
 Tool state stays in local storage and is never written to a cookie, so it is not attached to any request to the origin. Earlier versions of the Color Converter also mirrored a custom palette into a `customPresets` cookie. That cookie is no longer written; an existing one is read once so a saved palette survives, migrated to local storage, and then cleared.
 
@@ -70,3 +70,4 @@ the source repository.
 - **July 22, 2026:** Added data-flow disclosure, local fallbacks, and consent keys.
 - **July 23, 2026:** Added the in-app policy, machine-readable inventory, self-hosted UI fonts, metadata-only Font Extractor, integrity-verified FFmpeg disclosure, and shared OSM consent behavior.
 - **July 30, 2026:** Updated the maintainer contact and documented the canonical path-based privacy route.
+- **September 3, 2026:** Moved consent settings from a dialog to the `/home/consent` document page.

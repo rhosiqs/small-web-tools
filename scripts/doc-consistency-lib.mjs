@@ -1,5 +1,9 @@
-const PUBLIC_ROUTE_PATTERN = /\broute\(\s*['"](tool-[^'"]+|privacy)['"]/gu;
-const ROUTE_TABLE_PATTERN = /^\|\s*`?(tool-[^`\s|]+|privacy)`?\s*\|/gmu;
+// Document pages are registry routes without the `tool-` prefix; they must stay
+// in the architecture route inventory like every other route.
+const DOCUMENT_ROUTE_IDS = ['about', 'privacy', 'consent', 'terms', 'security', 'license'];
+const ROUTE_ID_ALTERNATION = `tool-[^'"\`\\s|]+|${DOCUMENT_ROUTE_IDS.join('|')}`;
+const PUBLIC_ROUTE_PATTERN = new RegExp(`\\broute\\(\\s*['"](${ROUTE_ID_ALTERNATION})['"]`, 'gu');
+const ROUTE_TABLE_PATTERN = new RegExp(`^\\|\\s*\`?(${ROUTE_ID_ALTERNATION})\`?\\s*\\|`, 'gmu');
 const API_PATH_PATTERN = /`(\/api\/[a-z0-9-]+)`/giu;
 const APP_ROUTE_PATTERN = /`(\/(?:home|simple)(?:\/[a-z0-9-]+)*)`/giu;
 const COMMAND_PATTERN = /`((?:npm|npx)\s+[^`\n]+)`/gu;

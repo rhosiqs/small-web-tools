@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AppFooter from '../components/AppFooter.jsx';
 import AppHeader from '../components/AppHeader.jsx';
+import { DOCUMENT_ROUTE_IDS } from '../toolRouteMetadata.js';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -21,10 +22,12 @@ const t = (key, values = {}) => ({
   'navigation:footer.copyright': `${values.year} ${values.version}`,
   'navigation:footer.website': 'Website',
   'navigation:footer.email': 'Email',
-  'navigation:footer.consent': 'Consent',
-  'navigation:footer.privacy': 'Privacy',
+  'navigation:footer.documents': 'Site documents',
+  'navigation:footer.external': 'Project links',
+  'navigation:footer.emailLabel': 'Contact',
+  'navigation:footer.websiteLabel': 'Website',
+  'navigation:footer.githubLabel': 'Repository',
   'navigation:footer.github': 'Repository',
-  'tools:privacy.title': 'Privacy',
 }[key] || key);
 
 let container;
@@ -85,8 +88,8 @@ describe('application shell components', () => {
 
   it('renders registry-derived footer navigation and delegates project actions', async () => {
     const callbacks = {
-      onEmailClick: vi.fn(), onOpenConsent: vi.fn(), onOpenPrivacy: vi.fn(),
-      onSelectCategory: vi.fn(), onSelectTool: vi.fn(),
+      onEmailClick: vi.fn(), onSelectCategory: vi.fn(),
+      onSelectDocument: vi.fn(), onSelectTool: vi.fn(),
     };
     await act(async () => root.render(
       <AppFooter
@@ -105,9 +108,17 @@ describe('application shell components', () => {
     const toolButton = [...container.querySelectorAll('button')].find((button) => button.textContent === 'Image Metadata');
     await act(async () => toolButton.click());
     expect(callbacks.onSelectTool).toHaveBeenCalledWith('tool-imgmeta');
-    await act(async () => container.querySelector('[aria-label="Consent"]').click());
-    await act(async () => container.querySelector('[aria-label="Privacy"]').click());
-    expect(callbacks.onOpenConsent).toHaveBeenCalled();
-    expect(callbacks.onOpenPrivacy).toHaveBeenCalled();
+    const documentNav = container.querySelector('[aria-label="Site documents"]');
+    const documentLabels = [...documentNav.querySelectorAll('button')].map((button) => button.textContent);
+    expect(documentLabels).toEqual(DOCUMENT_ROUTE_IDS.map((id) => `tools:${id}.title`));
+
+    const consentLink = [...documentNav.querySelectorAll('button')].find(
+      (button) => button.textContent === 'tools:consent.title',
+    );
+    await act(async () => consentLink.click());
+    expect(callbacks.onSelectDocument).toHaveBeenCalledWith('consent');
+
+    await act(async () => container.querySelector('[aria-label="Project links"] a').click());
+    expect(callbacks.onEmailClick).toHaveBeenCalled();
   });
 });

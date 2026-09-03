@@ -12,6 +12,7 @@ import {
   getToolMode,
   isToolPath,
 } from '../toolModes.js';
+import { DOCUMENT_ROUTE_IDS } from '../toolRouteMetadata.js';
 
 describe('tool modes', () => {
   it('keeps the requested audiences separate from the simplified workspace', () => {
@@ -91,6 +92,10 @@ describe('tool modes', () => {
     expect(getRouteIdFromLocation('/simple/color')).toBe('tool-color');
     expect(getRouteIdFromLocation('/home/simple/color')).toBe('tool-color');
     expect(getRouteIdFromLocation('/', '#tool-wc')).toBe('tool-wc');
+    for (const documentId of DOCUMENT_ROUTE_IDS) {
+      expect(getRouteIdFromLocation(`/home/${documentId}`)).toBe(documentId);
+      expect(getRouteIdFromLocation(`/simple/${documentId}`)).toBe(documentId);
+    }
     expect(isToolPath('/home/developer/code-preview')).toBe(true);
     expect(isToolPath('/simple/code-preview')).toBe(true);
     expect(isToolPath('/')).toBe(false);

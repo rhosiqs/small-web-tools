@@ -45,7 +45,8 @@ At build time, `scripts/resolve-version.mjs` selects the newest version-sorted G
 
 The maintained documentation pairs are README.md/README.zh-TW.md,
 CONTRIBUTING.md/CONTRIBUTING.zh-TW.md, ARCHITECTURE.md/ARCHITECTURE.zh-TW.md,
-and PRIVACY.md/PRIVACY.zh-TW.md. TODO.md is intentionally English-only.
+PRIVACY.md/PRIVACY.zh-TW.md, ABOUT.md/ABOUT.zh-TW.md, TERMS.md/TERMS.zh-TW.md,
+and SECURITY.md/SECURITY.zh-TW.md. TODO.md is intentionally English-only.
 Supporting explanatory documents are public/fonts/MANIFEST.md with its
 Traditional Chinese companion, the two SSRF harness READMEs, and the
 English-only AI agent instructions in `AGENTS.md` and `.agents/`. The engineering
@@ -62,6 +63,13 @@ small-web-tools/
 ├── CONTRIBUTING.zh-TW.md     Traditional Chinese engineering guide
 ├── PRIVACY.md                English privacy policy and data-flow disclosure
 ├── PRIVACY.zh-TW.md          Traditional Chinese privacy policy
+├── ABOUT.md                  English project description behind the /home/about page
+├── ABOUT.zh-TW.md            Traditional Chinese project description
+├── TERMS.md                  English terms of use behind the /home/terms page
+├── TERMS.zh-TW.md            Traditional Chinese terms of use
+├── SECURITY.md               English vulnerability disclosure policy
+├── SECURITY.zh-TW.md         Traditional Chinese vulnerability disclosure policy
+├── LICENSE                   MIT License, reproduced by the /home/license page
 ├── TODO.md                   Backlog, completed work, and update process
 ├── ARCHITECTURE.md           Architecture and maintenance reference
 ├── ARCHITECTURE.zh-TW.md     Traditional Chinese architecture reference
@@ -115,11 +123,12 @@ small-web-tools/
 │   ├── i18n/
 │   │   ├── index.js           Locale resolution, i18next setup, persistence, and document language
 │   │   └── locales/           Paired en-US and zh-TW namespace JSON resources
-│   ├── lib/                  Pure utility helpers (binaryEncoding, passwordStrength, resourceLimits, thirdPartyServices)
+│   ├── lib/                  Pure utility helpers (binaryEncoding, passwordStrength, resourceLimits, thirdPartyServices, projectLinks, licenseText)
 │   ├── hooks/                Routing, persistence, and document-title shell effects
 │   ├── tests/                Vitest unit test suites and setup
 │   └── components/
 │       ├── ui/               Shared Card, Button, FieldInput, ToolHeader, and related primitives
+│       ├── docs/             Document pages and their shared DocumentPage reading layout
 │       ├── HomeGrid.jsx      Full and audience dashboard tool grid
 │       ├── SimpleHome.jsx    Search-first essential-tool launcher
 │       ├── LanguageSwitcher.jsx Shared responsive locale menu and focus lifecycle
@@ -173,7 +182,7 @@ expanded UI boundary must fix every newly exposed error in the same change.
 - `useAppRouting` initializes `toolMode` from the validated `/home` or `/simple` path. The workspace path
   remains in the URL while path navigation changes tools.
 - `useShellPersistence` owns active-tool session state plus theme and sidebar persistence; `useDocumentTitle` owns title updates independently of storage availability.
-- `renderActiveTool()` resolves the active registry entry and renders its lazy component. The `privacy` route is registered but excluded from the tool catalog.
+- `renderActiveTool()` resolves the active registry entry and renders its lazy component. Policy-category routes are registered but excluded from the tool catalog, and receive an `onNavigateDocument` callback so document pages can link to one another through the shell router.
 
 The shell supplies a responsive desktop sidebar, mobile drawer, top navigation, breadcrumbs, footer, search, theme control, and a centered tool stage. `AppHeader`, `DesktopCategoryNav`, and `AppFooter` own the desktop header and footer presentation while `App.jsx` passes registry-derived data and navigation callbacks.
 
@@ -296,7 +305,12 @@ Prefer the shared primitives and existing design tokens. Add global CSS only for
 | `tool-qrcode` | QR Code Generator | `QrBarcodeGenerator.jsx` (`qr` tab) | Utilities |
 | `tool-qrbarcodescan` | QR & Barcode Scanner | `QrBarcodeScanner.jsx` | Utilities |
 | `tool-wheel` | Random Wheel | `RandomWheel.jsx` | Utilities |
-| `privacy` | Privacy & Network Services | `PrivacyPolicy.jsx` | Policy (not in tool catalog) |
+| `about` | About | `docs/AboutPage.jsx` | Policy (footer only, not in tool catalog) |
+| `privacy` | Privacy & Network Services | `docs/PrivacyPage.jsx` | Policy (footer only, not in tool catalog) |
+| `consent` | Service Consent | `docs/ConsentPage.jsx` | Policy (footer only, not in tool catalog) |
+| `terms` | Terms of Use | `docs/TermsPage.jsx` | Policy (footer only, not in tool catalog) |
+| `security` | Security | `docs/SecurityPage.jsx` | Policy (footer only, not in tool catalog) |
+| `license` | License | `docs/LicensePage.jsx` | Policy (footer only, not in tool catalog) |
 
 ## Component groups
 
@@ -523,7 +537,7 @@ pluralized messages use platform `Intl` APIs or i18next interpolation.
 
 ## Network-service policy
 
-`config/network-services.json` is the machine-readable source of truth for external providers, domains, purposes, triggers, transmitted data, consent modes, fallbacks, and policy links. `src/lib/thirdPartyServices.js`, the consent manager, and the canonical `/home/privacy` route consume this inventory. Legacy hash addresses are accepted only for backward-compatible redirects. `scripts/check-external-hosts.mjs`, included in `npm run verify`, fails when a production source hostname is not declared.
+`config/network-services.json` is the machine-readable source of truth for external providers, domains, purposes, triggers, transmitted data, consent modes, fallbacks, and policy links. `src/lib/thirdPartyServices.js`, the `/home/consent` settings page, and the canonical `/home/privacy` route consume this inventory. Legacy hash addresses are accepted only for backward-compatible redirects. `scripts/check-external-hosts.mjs`, included in `npm run verify`, fails when a production source hostname is not declared.
 
 ## Dependencies
 

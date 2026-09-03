@@ -12,6 +12,10 @@
   <a href="ARCHITECTURE.md">Architecture</a>
   &nbsp;·&nbsp;
   <a href="PRIVACY.md">Privacy</a>
+  &nbsp;·&nbsp;
+  <a href="ABOUT.md">About</a>
+  &nbsp;·&nbsp;
+  <a href="TERMS.md">Terms</a>
 </p>
 
 <p align="center">
@@ -123,9 +127,12 @@ File-focused tools process selected files in the browser whenever possible; file
 - Media Splitter downloads the pinned FFmpeg WebAssembly engine from unpkg on the first processing action and verifies its size and SHA-256 before execution. Media stays in the browser.
 - Camera scanning requires browser camera permission.
 
-The footer’s **Privacy** route at `/home/privacy` lists every declared network
-service, trigger, transmitted data, consent mode, and fallback. Review that policy,
-a tool's own labels, and your browser permissions before using sensitive content.
+The site footer links to six document pages that share one reading layout:
+`/home/about`, `/home/privacy`, `/home/consent`, `/home/terms`, `/home/security`, and
+`/home/license`. `/home/privacy` lists every declared network service, trigger,
+transmitted data, consent mode, and fallback, and `/home/consent` is where each
+explicit-consent service is allowed or blocked. Review that policy, a tool's own
+labels, and your browser permissions before using sensitive content.
 
 ## Run locally
 
@@ -192,7 +199,9 @@ English only.
 is the canonical architecture and route reference.
 
 - [CONTRIBUTING.md](CONTRIBUTING.md) — engineering standards and local-runtime instructions.
+- [ABOUT.md](ABOUT.md) — what this site is, how it processes data, and who maintains it.
 - [PRIVACY.md](PRIVACY.md) — privacy policy and network-service disclosure.
+- [TERMS.md](TERMS.md) — terms of use for the hosted site.
 - [SECURITY.md](SECURITY.md) — supported revisions and the private vulnerability-reporting path.
 - [`TODO.md`](TODO.md) — active backlog, completed work, and the project update process.
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — architecture, route inventory, shared UI conventions, and developer guidance.

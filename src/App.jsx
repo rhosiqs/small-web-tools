@@ -5,7 +5,6 @@ import LanguageSwitcher from './components/LanguageSwitcher.jsx';
 import MobileDrawer from './components/MobileDrawer.jsx';
 import AppHeader from './components/AppHeader.jsx';
 import AppFooter from './components/AppFooter.jsx';
-import ThirdPartyConsentModal from './components/ui/ThirdPartyConsentModal';
 import Spinner from './components/ui/Spinner';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 import { STATIC_LAYOUT_IDS, getLocalizedToolRoutes, getToolRoute, localizeToolRoute, sortLocalizedTools } from './toolRegistry.js';
@@ -41,7 +40,6 @@ export default function App() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [selectedHomeTab, setSelectedHomeTab] = useState('all');
   const [toastMessage, setToastMessage] = useState('');
-  const [isConsentModalOpen, setIsConsentModalOpen] = useState(false);
 
   useEffect(() => {
     if (toastMessage) {
@@ -184,7 +182,10 @@ export default function App() {
         modeId: modeProfile.id,
         onSelectMode: handleModeChange,
       }
-      : route.componentProps;
+      : route.category === 'policy'
+        // Document pages cross-link to one another through the shell router.
+        ? { ...route.componentProps, onNavigateDocument: handleNavClick }
+        : route.componentProps;
     return (
       <ErrorBoundary key={activeTool}>
         <Suspense fallback={<div className="flex flex-col items-center justify-center p-12 gap-3"><Spinner /><span className="text-xs text-text-muted">{t('common:states.loadingTool')}</span></div>}>
@@ -591,8 +592,7 @@ export default function App() {
             navItems={modeNavItems}
             t={t}
             onEmailClick={handleEmailClick}
-            onOpenConsent={() => setIsConsentModalOpen(true)}
-            onOpenPrivacy={() => handleNavClick('privacy')}
+            onSelectDocument={handleNavClick}
             onSelectCategory={(categoryId) => {
               navigateToTool('tool-home');
               setSelectedHomeTab(categoryId);
@@ -600,16 +600,6 @@ export default function App() {
             onSelectTool={handleNavClick}
           />
         </main>
-
-        {/* Third Party Consent Manager Modal */}
-        <ThirdPartyConsentModal
-          isOpen={isConsentModalOpen}
-          onClose={() => setIsConsentModalOpen(false)}
-          onOpenPrivacy={() => {
-            setIsConsentModalOpen(false);
-            handleNavClick('privacy');
-          }}
-        />
 
         {/* Collapsed Sidebar Hover Tooltip */}
         {tooltipState.visible && (

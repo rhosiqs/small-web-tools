@@ -1,0 +1,247 @@
+{
+  "meta": {
+    "lastUpdated": "Last updated: {{date}}",
+    "translationNotice": "This page is a translation of the English original and is provided for reference. If the two versions differ, the English page prevails.",
+    "sourceLink": "Read the complete document on GitHub",
+    "storageNote": "Consent choices are stored only in this browser. Resetting or revoking consent removes permission for future requests; already completed network requests cannot be recalled."
+  },
+  "about": {
+    "updated": "2026-09-03",
+    "intro": "Small Web Tools is a free collection of small, single-purpose tools for text, development, networking, media, bioinformatics, and everyday calculations. There is no account to create, nothing to install, and no advertising.",
+    "sections": [
+      {
+        "heading": "Local-first by design",
+        "body": [
+          "Most tools run entirely in your browser: the text you paste and the files you select are processed on your own device and are not uploaded.",
+          "A few features genuinely need a server, remote data, or a downloaded runtime. Every one of them is listed on the Privacy & Network Services page, and the ones that require permission stay blocked until you allow them."
+        ]
+      },
+      {
+        "heading": "Two ways to browse",
+        "body": [
+          "All tools mode shows the complete catalog grouped by category. Simple mode shows a shorter list for quick everyday tasks.",
+          "The interface is available in English and Traditional Chinese, with a light and a dark theme. Language, theme, and layout preferences are stored only in your browser."
+        ]
+      },
+      {
+        "heading": "Open source",
+        "body": [
+          "The application is open source under the MIT License. Source code, issue tracker, and release history are on GitHub, where bug reports and suggestions are welcome."
+        ]
+      },
+      {
+        "heading": "Contact",
+        "body": [
+          "For questions, corrections, or suggestions, write to emailforvirtualmachine@gmail.com. Security reports follow the separate process described on the Security page."
+        ]
+      }
+    ]
+  },
+  "privacy": {
+    "updated": "2026-09-03",
+    "intro": "Small Web Tools is local-first: most tool inputs and selected files stay in your browser. Features that need a server, remote data, a runtime asset, or external navigation are listed below.",
+    "consentExplanation": "Explicit-consent services remain blocked until they are allowed on the service consent page. A point-of-use disclosure explains a required request before an action starts. External navigation occurs only when you select a link.",
+    "heading": {"service": "Service", "purpose": "Purpose and trigger", "data": "Data sent", "mode": "Mode and fallback"},
+    "providerPolicy": "Provider policy",
+    "consentMode": {
+      "explicit-consent": "Explicit consent",
+      "point-of-use-disclosure": "Point-of-use disclosure",
+      "user-navigation": "User navigation",
+      "hosting-infrastructure": "Hosting infrastructure"
+    },
+    "manageConsent": "Open the service consent settings"
+  },
+  "consent": {
+    "updated": "2026-09-03",
+    "description": "Small Web Tools is local-first. The services below stay blocked until you explicitly allow them. Runtime downloads and external links you select use separate point-of-use disclosures.",
+    "readPolicy": "Read the full Privacy & Network Services policy",
+    "allow": "Allow {{service}}",
+    "revoke": "Revoke {{service}}",
+    "allowed": "Allowed (click to revoke)",
+    "blocked": "Blocked (click to allow)",
+    "allowedAnnouncement": "{{service}} is now allowed.",
+    "blockedAnnouncement": "{{service}} is now blocked.",
+    "fallback": "Fallback: {{fallback}}",
+    "privacyPolicy": "Provider privacy policy",
+    "reset": "Reset all preferences",
+    "resetAnnouncement": "All third-party service preferences were reset."
+  },
+  "terms": {
+    "updated": "2026-09-03",
+    "intro": "These terms apply to everyone who uses Small Web Tools. Using the site means accepting them; if you do not accept them, please stop using the site.",
+    "sections": [
+      {
+        "heading": "Who provides this service",
+        "body": ["Small Web Tools is operated by Rhosiqs, who can be reached at emailforvirtualmachine@gmail.com."]
+      },
+      {
+        "heading": "What the service is",
+        "body": [
+          "The site provides browser-based utilities free of charge. There is no account, no subscription, and no service-level commitment.",
+          "Individual tools, features, and the site as a whole may be changed, limited, or discontinued at any time."
+        ]
+      },
+      {
+        "heading": "No warranty",
+        "body": [
+          "The site and everything it produces are provided as is and as available, without warranties of any kind, express or implied.",
+          "No guarantee is made that a result is accurate, complete, or suitable for any particular purpose. Check any output before you rely on it, and do not use it as the sole basis for a decision that matters."
+        ]
+      },
+      {
+        "heading": "Your responsibility",
+        "body": [
+          "You are responsible for the data you process with these tools and for confirming that you are permitted to process it.",
+          "Do not use the site for unlawful purposes, and do not attempt to disrupt it, circumvent its rate limits, or use it in a way that degrades the service for other people."
+        ]
+      },
+      {
+        "heading": "Third-party services",
+        "body": [
+          "A few features send requests to external providers. Each one is listed on the Privacy & Network Services page together with the data it sends.",
+          "Those providers operate under their own terms and privacy policies, which are outside the control of this site."
+        ]
+      },
+      {
+        "heading": "Limitation of liability",
+        "body": [
+          "To the maximum extent permitted by applicable law, the operator is not liable for any loss or damage arising from use of the site, from an inability to use it, or from reliance on anything it produces."
+        ]
+      },
+      {
+        "heading": "Intellectual property",
+        "body": [
+          "The application source code is released under the MIT License; see the License page. Bundled third-party components remain under their own licences.",
+          "Content you supply to a tool remains yours and is processed as described on the Privacy & Network Services page."
+        ]
+      },
+      {
+        "heading": "Changes to these terms",
+        "body": [
+          "These terms may be updated. The date at the top of this page is the date of the most recent change, and continued use after a change means you accept the updated terms."
+        ]
+      }
+    ]
+  },
+  "security": {
+    "updated": "2026-08-08",
+    "intro": "Security reports are handled privately. This page explains how to report a suspected vulnerability and what falls inside the reporting scope.",
+    "sections": [
+      {
+        "heading": "Report privately",
+        "body": [
+          "Send suspected vulnerabilities by email to emailforvirtualmachine@gmail.com.",
+          "Please do not open a public issue or discussion that contains exploit details, credentials, personal data, or other sensitive information."
+        ]
+      },
+      {
+        "heading": "What to include",
+        "body": [
+          "A concise description with the affected feature and environment, the observed impact, minimal reproduction steps that do not expose anyone else’s data, and a way to reach you for follow-up.",
+          "Remove credentials, access tokens, and personal data from a report before sending it."
+        ]
+      },
+      {
+        "heading": "Scope",
+        "body": [
+          "Reports may cover the hosted web interface, its same-origin API endpoints, the URL-fetching surface used by the Website Font Extractor, the local file and media processing tools, and the build and deployment configuration.",
+          "Reports about unsupported revisions, availability-only traffic floods, or third-party services without a demonstrated impact on this project may be closed as out of scope."
+        ]
+      },
+      {
+        "heading": "Coordinated disclosure",
+        "body": [
+          "Please allow time to investigate and coordinate a fix before disclosing publicly. Act in good faith: do not access data that is not yours, disrupt the service, degrade availability, or keep data obtained while testing.",
+          "Reports are reviewed as availability permits, and no fixed response or resolution time is promised."
+        ]
+      }
+    ]
+  },
+  "license": {
+    "updated": "2026-09-03",
+    "intro": [
+      "The application source code is released under the MIT License. The licence text below is reproduced from the repository and is not translated: only the English original has legal effect.",
+      "Third-party libraries and fonts bundled with the application remain under their own licences, which are listed with each dependency in the repository."
+    ],
+    "textLabel": "MIT License text"
+  },
+  "services": {
+    "currency": {
+      "name": "Live Exchange Rates",
+      "purpose": "Fetch current USD-based rates through the same-origin exchange-rate Function.",
+      "trigger": "The user enables live rates and starts a conversion.",
+      "data": "Standard edge request metadata; the provider receives a server-side rates request.",
+      "fallback": "Manual rate override stays in the browser."
+    },
+    "iplookup": {
+      "name": "IP Geolocation",
+      "purpose": "Look up location and network details through a same-origin Function.",
+      "trigger": "The user grants consent and presses Lookup.",
+      "data": "The requested IP address and standard server request metadata.",
+      "fallback": "Local IP syntax validation."
+    },
+    "speedtest": {
+      "name": "Network Speed Test",
+      "purpose": "Measure latency, download speed, and upload speed.",
+      "trigger": "The user grants consent and starts a test.",
+      "data": "IP address, standard request metadata, and generated measurement traffic.",
+      "fallback": "No remote speed measurement."
+    },
+    "fontextractor": {
+      "name": "Website Font Extractor",
+      "purpose": "Scan bounded public HTML and CSS for font declarations.",
+      "trigger": "The user grants consent and submits a target URL.",
+      "data": "The target URL; target servers receive the Function's request metadata.",
+      "fallback": "Do not run the website scan."
+    },
+    "osm": {
+      "name": "OpenStreetMap Preview",
+      "purpose": "Render an optional map for coordinates.",
+      "trigger": "The user grants map consent.",
+      "data": "Coordinates and standard browser request metadata.",
+      "fallback": "Coordinates remain visible without a map."
+    },
+    "markdownimages": {
+      "name": "Markdown Badge Images",
+      "purpose": "Show badge and screenshot images a Markdown document points at.",
+      "trigger": "The user turns on badge images in the Markdown Previewer.",
+      "data": "The image URL and standard browser request metadata sent to the image host.",
+      "fallback": "Every image stays a placeholder in the preview."
+    },
+    "ffmpeg": {
+      "name": "FFmpeg WebAssembly Runtime",
+      "purpose": "Download the pinned FFmpeg 0.12.6 engine for browser-side media processing.",
+      "trigger": "The first processing action that needs FFmpeg.",
+      "data": "Standard browser request metadata only; selected media and outputs stay in the browser.",
+      "fallback": "Do not start FFmpeg-based processing."
+    },
+    "google-fonts-navigation": {
+      "name": "Google Fonts Recommendations",
+      "purpose": "Open a recommended font specimen in a new tab.",
+      "trigger": "The user selects a recommendation link.",
+      "data": "Standard navigation request metadata.",
+      "fallback": "Read the recommendation name without opening it."
+    },
+    "google-maps-navigation": {
+      "name": "Google Maps Link",
+      "purpose": "Open coordinates in Google Maps.",
+      "trigger": "The user selects the external map link.",
+      "data": "Coordinates and standard navigation request metadata.",
+      "fallback": "Coordinates remain visible locally."
+    },
+    "hosting": {
+      "name": "Application Hosting",
+      "purpose": "Deliver the application and its same-origin API endpoints.",
+      "trigger": "Page loads and same-origin API requests.",
+      "data": "Standard edge request and security metadata.",
+      "fallback": "No hosted application."
+    },
+    "project-links": {
+      "name": "Project and Author Links",
+      "purpose": "Open project source or author information.",
+      "trigger": "The user selects a footer or font-license link.",
+      "data": "Standard navigation request metadata.",
+      "fallback": "Remain in the application."
+    }
+  }
+}

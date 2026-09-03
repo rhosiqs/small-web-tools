@@ -11,12 +11,14 @@ describe('documentation consistency helpers', () => {
       route('tool-home', 'home', loader),
       route("tool-markdown", 'developer', loader),
       route('privacy', 'policy', loader),
+      route('consent', 'policy', loader),
     `;
 
     expect(extractRegistryRouteIds(source)).toEqual([
       'tool-home',
       'tool-markdown',
       'privacy',
+      'consent',
     ]);
   });
 
@@ -25,11 +27,13 @@ describe('documentation consistency helpers', () => {
       route('tool-home', 'home', loader);
       route('tool-markdown', 'developer', loader);
       route('privacy', 'policy', loader);
+      route('terms', 'policy', loader);
     `;
     const architecture = [
       '| `tool-home` | Dashboard | `HomeGrid.jsx` | Dashboard |',
       '| tool-markdown | Markdown | MarkdownPreviewer.jsx | Developer |',
-      '| privacy | Privacy | PrivacyPolicy.jsx | Policy |',
+      '| privacy | Privacy | docs/PrivacyPage.jsx | Policy |',
+      '| `terms` | Terms of Use | `docs/TermsPage.jsx` | Policy |',
     ].join('\n');
 
     expect(findMissingRoutes(registry, architecture)).toEqual([]);

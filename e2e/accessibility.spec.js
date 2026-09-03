@@ -24,29 +24,23 @@ function expectNoUnacceptedViolations(results) {
   expect(results.violations.filter(({ id }) => !acceptedIds.has(id))).toEqual([]);
 }
 
-test('consent dialog traps focus, announces changes, closes with Escape, and restores focus', async ({ page }) => {
+test('consent settings page applies changes in place and announces them', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 720 });
   await page.goto('/');
-  const opener = page.getByRole('button', { name: 'Manage third-party service consent' });
-  await opener.click();
+  await page.getByRole('button', { name: 'Service Consent', exact: true }).click();
+  await expect(page).toHaveURL(/\/home\/consent$/);
+  await expect(page.getByRole('heading', { name: 'Service Consent', level: 1 })).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
 
-  const dialog = page.getByRole('dialog', { name: /Third-Party Service Consent Manager/ });
-  await expect(dialog).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Close consent manager' })).toBeFocused();
-
-  await page.keyboard.press('Shift+Tab');
-  await expect(dialog.getByRole('button', { name: 'Done' })).toBeFocused();
-  await page.keyboard.press('Tab');
-  await expect(page.getByRole('button', { name: 'Close consent manager' })).toBeFocused();
-
-  const allowButton = dialog.getByRole('button', { name: /^Allow / }).first();
+  const allowButton = page.getByRole('button', { name: /^Allow / }).first();
   const serviceName = (await allowButton.getAttribute('aria-label')).replace(/^Allow /, '');
   await allowButton.click();
-  await expect(dialog.getByText(`${serviceName} is now allowed.`)).toBeAttached();
+  await expect(page.getByText(`${serviceName} is now allowed.`)).toBeAttached();
+  await expect(page.getByRole('button', { name: `Revoke ${serviceName}` })).toBeVisible();
 
-  await page.keyboard.press('Escape');
-  await expect(dialog).toHaveCount(0);
-  await expect(opener).toBeFocused();
+  await page.getByRole('button', { name: 'Reset all preferences' }).click();
+  await expect(page.getByText('All third-party service preferences were reset.')).toBeAttached();
+  await expect(page.getByRole('button', { name: `Allow ${serviceName}` })).toBeVisible();
 });
 
 test('brand and folder-selection controls use native button semantics', async ({ page }) => {
@@ -122,7 +116,10 @@ test('mobile navigation has a complete focus and dismissal lifecycle', async ({ 
   await expect(drawer).toHaveCount(0);
 });
 
-for (const route of ['/home', '/simple', '/simple/color', '/home/privacy', '/home/currency', '/home/folder-analyzer']) {
+for (const route of [
+  '/home', '/simple', '/simple/color', '/home/currency', '/home/folder-analyzer',
+  '/home/about', '/home/privacy', '/home/consent', '/home/terms', '/home/security', '/home/license',
+]) {
   test(`${route} has no unaccepted automated accessibility findings`, async ({ page }) => {
     await page.goto(route);
     const results = await new AxeBuilder({ page }).analyze();
