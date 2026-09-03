@@ -83,7 +83,7 @@
     "html-to-image": "^1.11.13",
     "html5-qrcode": "^2.3.8",
     "i18next": "^26.4.0",
-    "ignore": "^7.0.6",
+    "ignore": "^7.0.7",
     "ipaddr.js": "^2.5.0",
     "jsbarcode": "^3.11.6",
     "jszip": "^3.10.1",
