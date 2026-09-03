@@ -17,7 +17,7 @@
   "home": "首頁", "goHome": "前往首頁", "backHome": "返回首頁",
   "simpleMode": "簡易模式", "exitSimpleMode": "離開簡易模式",
   "theme": "佈景主題", "toggleTheme": "切換深色／淺色模式",
-  "footer": {"tagline": "本機優先的工具。", "copyright": "本機優先的工具。© Rhosiqs · {{year}} · {{version}}", "documents": "站內文件", "external": "專案連結", "website": "個人網站", "websiteLabel": "個人網站", "email": "寄信給 Rhosiqs；複製地址並開啟郵件程式", "emailLabel": "聯絡", "github": "GitHub 儲存庫", "githubLabel": "GitHub"},
+  "footer": {"tagline": "本機優先的工具。", "copyright": "本機優先的工具。© Rhosiqs · {{year}} · {{version}}", "documents": "站內文件", "external": "專案連結", "website": "個人網站", "email": "寄信給 Rhosiqs；複製地址並開啟郵件程式", "github": "GitHub 儲存庫"},
   "toast": { "emailCopied": "已將電子郵件地址複製到剪貼簿！" },
   "banner": { "label": "預發行版本提示", "desktop": "本站目前執行 {{channel}} 版本（{{version}}），可能提供不正確的資訊，使用前請先確認。", "mobile": "{{channel}} 版本（{{version}}）— 本站資訊可能不正確。" },
   "titles": { "default": "Small Web Tools — 簡單、隱私優先的瀏覽器工具", "tool": "{{tool}} — Small Web Tools" }
