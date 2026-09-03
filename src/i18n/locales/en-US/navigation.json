@@ -17,7 +17,7 @@
   "home": "Home", "goHome": "Go to home", "backHome": "Back to home",
   "simpleMode": "Simple mode", "exitSimpleMode": "Exit Simple mode",
   "theme": "Theme", "toggleTheme": "Toggle dark/light mode",
-  "footer": { "tagline": "Local-first tools.", "copyright": "Local-first tools. © Rhosiqs · {{year}} · {{version}}", "website": "Personal website", "email": "Email Rhosiqs; copy address and open mail app", "consent": "Manage third-party service consent", "privacy": "Read Privacy and Network Services", "github": "GitHub repository" },
+  "footer": {"tagline": "Local-first tools.", "copyright": "Local-first tools. © Rhosiqs · {{year}} · {{version}}", "documents": "Site documents", "external": "Project links", "website": "Personal website", "websiteLabel": "Website", "email": "Email Rhosiqs; copy address and open mail app", "emailLabel": "Contact", "github": "GitHub repository", "githubLabel": "GitHub"},
   "toast": { "emailCopied": "Email address copied to clipboard!" },
   "banner": { "label": "Pre-release notice", "desktop": "This site is running on a {{channel}} version ({{version}}). It may provide incorrect information; check before using.", "mobile": "{{channel}} version ({{version}}) — site may provide incorrect information." },
   "titles": { "default": "Small Web Tools — Simple, Private Browser Utilities", "tool": "{{tool}} — Small Web Tools" }

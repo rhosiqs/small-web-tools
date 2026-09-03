@@ -60,6 +60,10 @@ Pages 專案中為該分支建立的 deploy hook URL；secret 不存在時 workf
 - README.md／README.zh-TW.md：英文與繁中使用者手冊。
 - CONTRIBUTING.md／CONTRIBUTING.zh-TW.md：工程與本機執行指南。
 - PRIVACY.md／PRIVACY.zh-TW.md：隱私權政策與資料流揭露。
+- ABOUT.md／ABOUT.zh-TW.md：/home/about 頁面背後的專案說明。
+- TERMS.md／TERMS.zh-TW.md：/home/terms 頁面背後的使用條款。
+- SECURITY.md／SECURITY.zh-TW.md：漏洞揭露政策。
+- LICENSE：MIT 授權條款，由 /home/license 頁面原文呈現。
 - TODO.md：英文待辦事項、已完成工作與更新流程。
 - ARCHITECTURE.md／ARCHITECTURE.zh-TW.md：英文與繁中架構參考。
 - Dockerfile.dev：供容器化 Vite 開發使用的 Node.js 22 image。
@@ -93,6 +97,9 @@ Pages 專案中為該分支建立的 deploy hook URL；secret 不存在時 workf
 - .claude/：Claude Code 進入點 CLAUDE.md，以及 `.claude/skills/` 中的儲存庫 skills；
   fix-bug 另附 symptom-map 與 verification 兩份參考文件。
 - src/：React 應用程式、工具登錄表、樣式、共用 UI、工具元件與測試。
+- src/components/docs/：文件頁面與其共用的 DocumentPage 閱讀版型。
+- src/lib/：純函式 helper（binaryEncoding、passwordStrength、resourceLimits、
+  thirdPartyServices、projectLinks、licenseText）。
 - src/components/LanguageSwitcher.jsx：桌面與行動 header 共用的地區設定選單、鍵盤導覽與焦點生命週期。
 - src/components/MobileDrawer.jsx：行動導覽的焦點、inert、關閉與捲動生命週期。
 - src/i18n/：地區設定解析、i18next 設定、持久化，以及成對的 en-US／zh-TW 命名空間資源。
@@ -133,8 +140,9 @@ src/App.jsx 負責應用程式 shell：
   路徑導覽則改變工具。
 - useShellPersistence 集中管理 active-tool session state、theme 與 sidebar 持久化；
   useDocumentTitle 在儲存空間不可用時仍獨立管理頁面標題。
-- renderActiveTool() 解析目前的登錄表項目並渲染其 lazy component。privacy 路由已登錄，
-  但不列入工具目錄。
+- renderActiveTool() 解析目前的登錄表項目並渲染其 lazy component。policy 分類的路由
+  已登錄但不列入工具目錄，並會取得 onNavigateDocument callback，讓文件頁面之間可以
+  透過 shell 路由互相連結。
 
 Shell 提供可回應式的桌面側邊欄、行動抽屜、頂端導覽、麵包屑、footer、搜尋、主題控制項
 與置中的工具工作區。
@@ -253,7 +261,12 @@ public/fonts/MANIFEST.zh-TW.md。應用程式不會自動要求 Google Fonts。
 | tool-qrcode | QR Code 產生器 | QrBarcodeGenerator.jsx（qr 分頁） | 工具 |
 | tool-qrbarcodescan | QR Code 與條碼掃描器 | QrBarcodeScanner.jsx | 工具 |
 | tool-wheel | 隨機轉盤 | RandomWheel.jsx | 工具 |
-| privacy | 隱私權與網路服務 | PrivacyPolicy.jsx | 政策（不在工具目錄） |
+| about | 關於 | docs/AboutPage.jsx | 政策（僅頁尾，不在工具目錄） |
+| privacy | 隱私權與網路服務 | docs/PrivacyPage.jsx | 政策（僅頁尾，不在工具目錄） |
+| consent | 服務同意設定 | docs/ConsentPage.jsx | 政策（僅頁尾，不在工具目錄） |
+| terms | 使用條款 | docs/TermsPage.jsx | 政策（僅頁尾，不在工具目錄） |
+| security | 安全性 | docs/SecurityPage.jsx | 政策（僅頁尾，不在工具目錄） |
+| license | 授權條款 | docs/LicensePage.jsx | 政策（僅頁尾，不在工具目錄） |
 
 ## 元件群組
 
@@ -449,7 +462,7 @@ Color Converter 提供高對比的 Color Sync pressed toggle。
 ## 網路服務政策
 
 config/network-services.json 是外部供應商、網域、用途、觸發條件、傳送資料、同意模式、
-替代方案與政策連結的機器可讀來源。src/lib/thirdPartyServices.js、同意管理器與正式的
+替代方案與政策連結的機器可讀來源。src/lib/thirdPartyServices.js、/home/consent 同意設定頁面與正式的
 /home/privacy 路由都使用這份清單。舊版 hash 位址只為向後相容的重新導向而接受。
 verify 中的 scripts/check-external-hosts.mjs 會在正式來源主機名稱未宣告時失敗。
 

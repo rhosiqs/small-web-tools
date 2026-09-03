@@ -17,6 +17,11 @@ const docs = {
   PRIVACY: read('PRIVACY.md'),
   PRIVACY_ZH_TW: read('PRIVACY.zh-TW.md'),
   SECURITY: read('SECURITY.md'),
+  SECURITY_ZH_TW: read('SECURITY.zh-TW.md'),
+  ABOUT: read('ABOUT.md'),
+  ABOUT_ZH_TW: read('ABOUT.zh-TW.md'),
+  TERMS: read('TERMS.md'),
+  TERMS_ZH_TW: read('TERMS.zh-TW.md'),
   TODO: read('TODO.md'),
   AGENTS: read('.agents/AGENTS.md'),
 };
@@ -89,7 +94,14 @@ requireText('TODO', 'src/toolRegistry.js', 'canonical tool registration location
 requireText('TODO', 'npm run verify', 'baseline verification command');
 requireText('AGENTS', 'canonical path', 'canonical path-routing guidance');
 requireText('README', 'SECURITY.md', 'vulnerability disclosure policy link');
-requireText('README_ZH_TW', 'SECURITY.md', 'vulnerability disclosure policy link');
+requireText('README_ZH_TW', 'SECURITY.zh-TW.md', 'vulnerability disclosure policy link');
+requireText('README', 'ABOUT.md', 'project description link');
+requireText('README_ZH_TW', 'ABOUT.zh-TW.md', 'project description link');
+requireText('README', 'TERMS.md', 'terms of use link');
+requireText('README_ZH_TW', 'TERMS.zh-TW.md', 'terms of use link');
+requireText('TERMS', 'emailforvirtualmachine@gmail.com', 'operator contact');
+requireText('TERMS', '/home/terms', 'canonical terms route /home/terms');
+requireText('ABOUT', '/home/about', 'canonical about route /home/about');
 requireText('SECURITY', 'emailforvirtualmachine@gmail.com', 'private reporting contact');
 requireText('SECURITY', 'current `develop` revision', 'supported revision policy');
 requireText('SECURITY', 'URL-fetching surface', 'URL-fetching scope');
@@ -110,6 +122,9 @@ for (const [sourceName, companionName, source, companion] of [
   ['CONTRIBUTING.md', 'CONTRIBUTING.zh-TW.md', docs.CONTRIBUTING, docs.CONTRIBUTING_ZH_TW],
   ['ARCHITECTURE.md', 'ARCHITECTURE.zh-TW.md', docs.ARCHITECTURE, docs.ARCHITECTURE_ZH_TW],
   ['PRIVACY.md', 'PRIVACY.zh-TW.md', docs.PRIVACY, docs.PRIVACY_ZH_TW],
+  ['SECURITY.md', 'SECURITY.zh-TW.md', docs.SECURITY, docs.SECURITY_ZH_TW],
+  ['ABOUT.md', 'ABOUT.zh-TW.md', docs.ABOUT, docs.ABOUT_ZH_TW],
+  ['TERMS.md', 'TERMS.zh-TW.md', docs.TERMS, docs.TERMS_ZH_TW],
 ]) {
   for (const token of findMissingTokens(source, companion)) {
     failures.push(`${companionName} is missing technical token ${token} from ${sourceName}`);

@@ -23,6 +23,8 @@ for (const route of toolRoutes) {
     await blockExternalRequests(page);
     await page.goto(routePath(route), { waitUntil: 'domcontentloaded' });
     await expect(page.locator('main')).toBeVisible();
+    // A slug the path parser cannot resolve is normalized back to the dashboard.
+    if (route !== 'tool-home') await expect(page).not.toHaveURL(/\/home$/);
     await expect(page.locator('text=Failed to load component')).toHaveCount(0);
     expect(errors).toEqual([]);
   });

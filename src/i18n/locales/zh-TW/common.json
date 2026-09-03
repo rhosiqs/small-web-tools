@@ -6,18 +6,5 @@
   "converter": { "source": "來源", "result": "結果", "mode": "轉換模式", "auto": "自動", "encode": "編碼", "decode": "解碼", "paste": "貼上", "pasteLabel": "從剪貼簿貼上", "retryPaste": "重試從剪貼簿貼上", "sourceInput": "來源輸入", "copyLabel": "複製轉換結果", "retryCopy": "重試複製轉換結果", "fixInput": "請修正來源輸入以查看結果。", "convertedResult": "轉換結果" },
   "fullscreen": { "open": "開啟全螢幕預覽", "title": "全螢幕預覽", "close": "關閉全螢幕預覽" },
   "map": { "title": "地圖預覽", "hide": "隱藏地圖", "show": "顯示地圖", "google": "Google Maps ↗（座標會離開本站）", "frameTitle": "OpenStreetMap 上的{{title}}", "disclosure": "座標仍會顯示在上方。載入此地圖會將座標與標準要求中繼資料傳送至 OpenStreetMap。", "enable": "啟用 OpenStreetMap 預覽" },
-  "consent": { "title": "第三方服務同意管理員", "close": "關閉同意管理員", "description": "Small Web Tools 以本機處理為優先。除非您明確允許，以下服務會維持封鎖。執行階段下載與使用者選擇的外部連結會另外在使用當下說明。", "readPolicy": "閱讀完整的隱私權與網路服務政策", "allow": "允許{{service}}", "revoke": "撤銷{{service}}", "allowed": "已允許（點擊可撤銷）", "blocked": "已封鎖（點擊可允許）", "allowedAnnouncement": "現在已允許{{service}}。", "blockedAnnouncement": "現在已封鎖{{service}}。", "fallback": "替代方式：{{fallback}}", "privacyPolicy": "隱私權政策 ↗", "reset": "重設所有偏好設定", "resetAnnouncement": "已重設所有第三方服務偏好設定。", "done": "完成", "services": {
-    "currency": { "name": "即時匯率", "purpose": "透過同源匯率函式取得目前以 USD 為基準的匯率。", "fallback": "手動匯率設定會保留在瀏覽器中。" },
-    "iplookup": { "name": "IP 地理位置", "purpose": "透過同源函式查詢位置與網路資訊。", "fallback": "在本機驗證 IP 語法。" },
-    "speedtest": { "name": "網路速度測試", "purpose": "測量延遲、下載速度與上傳速度。", "fallback": "不進行遠端速度測量。" },
-    "fontextractor": { "name": "網站字型擷取器", "purpose": "掃描有限範圍的公開 HTML 與 CSS 字型宣告。", "fallback": "不執行網站掃描。" },
-    "osm": { "name": "OpenStreetMap 預覽", "purpose": "為座標呈現選用的地圖。", "fallback": "不顯示地圖，座標仍保持可見。" },
-    "markdownimages": { "name": "Markdown 徽章圖片", "purpose": "顯示 Markdown 文件指向的徽章與截圖圖片。", "fallback": "所有圖片在預覽中維持佔位顯示。" },
-    "ffmpeg": { "name": "FFmpeg WebAssembly 執行階段", "purpose": "下載固定版本的 FFmpeg 引擎，在瀏覽器中處理媒體。", "fallback": "不啟動 FFmpeg 處理。" },
-    "google-fonts-navigation": { "name": "Google Fonts 建議", "purpose": "在新分頁開啟建議的字型範例。", "fallback": "只閱讀建議名稱，不開啟連結。" },
-    "google-maps-navigation": { "name": "Google Maps 連結", "purpose": "在 Google Maps 中開啟座標。", "fallback": "座標保留在本機顯示。" },
-    "hosting": { "name": "應用程式託管", "purpose": "提供應用程式與同源 API 端點。", "fallback": "無託管應用程式。" },
-    "project-links": { "name": "專案與作者連結", "purpose": "開啟專案原始碼或作者資訊。", "fallback": "留在應用程式中。" }
-  } },
   "units": { "bytes": "位元組", "seconds": "秒", "minutes": "分鐘", "hours": "小時", "days": "天" }
 }

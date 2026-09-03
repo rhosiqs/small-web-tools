@@ -27,17 +27,37 @@ test('fresh initial load makes no undeclared or Google Fonts requests', async ({
   ))).toEqual([]);
 });
 
-test('privacy route and consent manager expose the shared network inventory', async ({ page }) => {
+test('privacy and consent pages expose the shared network inventory', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Privacy & Network Services', exact: true }).click();
   await expect(page).toHaveURL(/\/home\/privacy$/);
-  await expect(page.getByRole('heading', { name: 'Privacy & Network Services' })).toBeVisible();
-  await expect(page.getByText('FFmpeg WebAssembly Runtime')).toBeVisible();
-  await expect(page.getByText('Google Fonts Recommendations')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Privacy & Network Services', level: 1 })).toBeVisible();
+  await expect(page.getByText('FFmpeg WebAssembly Runtime').first()).toBeVisible();
+  await expect(page.getByText('Google Fonts Recommendations').first()).toBeVisible();
 
-  await page.getByRole('button', { name: 'Manage third-party service consent' }).click();
+  await page.getByRole('button', { name: 'Open the service consent settings' }).click();
+  await expect(page).toHaveURL(/\/home\/consent$/);
   await page.getByRole('button', { name: 'Read the full Privacy & Network Services policy' }).click();
   await expect(page).toHaveURL(/\/home\/privacy$/);
+});
+
+test('every footer document link opens its own page', async ({ page }) => {
+  const documents = [
+    ['About', '/home/about'],
+    ['Privacy & Network Services', '/home/privacy'],
+    ['Service Consent', '/home/consent'],
+    ['Terms of Use', '/home/terms'],
+    ['Security', '/home/security'],
+    ['License', '/home/license'],
+  ];
+  await page.goto('/');
+  for (const [label, route] of documents) {
+    await page.getByRole('navigation', { name: 'Site documents' })
+      .getByRole('button', { name: label, exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`${route}$`));
+    await expect(page.getByRole('heading', { name: label, level: 1 })).toBeVisible();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+  }
 });
 
 test('FFmpeg is disclosed persistently and requested only after processing starts', async ({ page }) => {

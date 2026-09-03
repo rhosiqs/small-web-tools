@@ -33,8 +33,18 @@ test('IP coordinates do not contact OpenStreetMap before consent and reset remov
   await expect(page.getByTitle('IP Location on OpenStreetMap')).toBeVisible();
   await expect.poll(() => osmRequests.length).toBeGreaterThan(0);
 
-  await page.getByRole('button', { name: 'Manage third-party service consent' }).click();
-  await page.getByRole('button', { name: 'Reset all preferences' }).click();
+  // Consent settings are their own page, so a reset reaches a mounted tool through
+  // the consent_updated event rather than from a dialog above it.
+  await page.evaluate(() => {
+    window.localStorage.removeItem('small_web_tools_consent');
+    window.dispatchEvent(new Event('consent_updated'));
+  });
   await expect(page.getByTitle('IP Location on OpenStreetMap')).toHaveCount(0);
   await expect(page.getByText('25.033, 121.5654')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Allow IP lookup' }).click();
+  await page.getByRole('navigation', { name: 'Site documents' })
+    .getByRole('button', { name: 'Service Consent', exact: true }).click();
+  await page.getByRole('button', { name: 'Reset all preferences' }).click();
+  expect(await page.evaluate(() => window.localStorage.getItem('small_web_tools_consent'))).toBeNull();
 });

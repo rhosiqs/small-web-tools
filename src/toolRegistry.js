@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  DOCUMENT_ROUTE_IDS,
   PUBLIC_ROUTE_IDS,
   ROUTE_DEFINITIONS,
   STATIC_LAYOUT_IDS,
@@ -43,7 +44,12 @@ const loaders = {
   'tool-qrcode': () => import('./components/QrBarcodeGenerator.jsx'),
   'tool-qrbarcodescan': () => import('./components/QrBarcodeScanner.jsx'),
   'tool-wheel': () => import('./components/RandomWheel.jsx'),
-  privacy: () => import('./components/PrivacyPolicy.jsx'),
+  about: () => import('./components/docs/AboutPage.jsx'),
+  privacy: () => import('./components/docs/PrivacyPage.jsx'),
+  consent: () => import('./components/docs/ConsentPage.jsx'),
+  terms: () => import('./components/docs/TermsPage.jsx'),
+  security: () => import('./components/docs/SecurityPage.jsx'),
+  license: () => import('./components/docs/LicensePage.jsx'),
 };
 
 export const TOOL_ROUTES = ROUTE_DEFINITIONS.map((definition) => {
@@ -55,4 +61,4 @@ const routesById = new Map(TOOL_ROUTES.flatMap((item) => [item.id, ...item.alias
 
 export function getToolRoute(id) { return routesById.get(id) || null; }
 export function getLocalizedToolRoutes(t) { return TOOL_ROUTES.map((item) => localizeToolRoute(item, t)); }
-export { PUBLIC_ROUTE_IDS, STATIC_LAYOUT_IDS, localizeToolRoute, sortLocalizedTools };
+export { DOCUMENT_ROUTE_IDS, PUBLIC_ROUTE_IDS, STATIC_LAYOUT_IDS, localizeToolRoute, sortLocalizedTools };

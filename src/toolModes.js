@@ -1,3 +1,9 @@
+import { DOCUMENT_ROUTE_IDS } from './toolRouteMetadata.js';
+
+// Document pages are the registry routes without the `tool-` slug prefix, so the
+// path parser must recognize them before it rebuilds an id from a URL segment.
+const documentRouteIds = new Set(DOCUMENT_ROUTE_IDS);
+
 const DEFAULT_TOOL_MODE = {
   id: 'all',
   toolIds: null,
@@ -177,7 +183,7 @@ export function getRouteIdFromLocation(pathname, hash = '') {
     if (!routeSlug || routeSlug === 'home') {
       return 'tool-home';
     }
-    if (routeSlug === 'privacy' || routeSlug.startsWith('tool-')) {
+    if (documentRouteIds.has(routeSlug) || routeSlug.startsWith('tool-')) {
       return routeSlug;
     }
     return `tool-${routeSlug}`;
@@ -193,7 +199,7 @@ export function getRouteIdFromLocation(pathname, hash = '') {
   if (!routeSlug || routeSlug === 'home') {
     return 'tool-home';
   }
-  if (routeSlug === 'privacy' || routeSlug.startsWith('tool-')) {
+  if (documentRouteIds.has(routeSlug) || routeSlug.startsWith('tool-')) {
     return routeSlug;
   }
   return `tool-${routeSlug}`;

@@ -8,11 +8,11 @@
 
 **首次發布：** 2026 年 7 月 19 日
 
-**最後更新：** 2026 年 7 月 30 日
+**最後更新：** 2026 年 9 月 3 日
 
-**應用程式內政策：** /home/privacy
+**應用程式內政策：** /home/privacy（同意設定：/home/consent）
 
-**原始碼儲存庫：** [github.com/hhter2/small-web-tools](https://github.com/hhter2/small-web-tools)（MIT 授權；可能需要 GitHub 存取權）
+**原始碼儲存庫：** [github.com/rhosiqs/small-web-tools](https://github.com/rhosiqs/small-web-tools)（MIT 授權；可能需要 GitHub 存取權）
 
 **維護者聯絡方式：** Rhosiqs（emailforvirtualmachine@gmail.com）
 
@@ -57,7 +57,7 @@ FFmpeg JavaScript 與 WebAssembly 資產固定使用 unpkg 上的 @ffmpeg/core 0
 
 ## 4. 同意與瀏覽器儲存空間
 
-同意管理器會將明確的服務選擇儲存在 small_web_tools_consent。主題、收合的導覽列
+/home/consent 同意設定頁面會將明確的服務選擇儲存在 small_web_tools_consent。主題、收合的導覽列
 與最近路由狀態也可能使用 local storage 或 session storage。本專案不加入分析追蹤器
 或追蹤 Cookie。
 
@@ -88,3 +88,4 @@ Google Maps 連結時，只有使用者主動導覽才會將座標傳送給 Goog
   僅提供中繼資料的網站字型擷取器、經完整性驗證的 FFmpeg 揭露，以及共用的 OSM
   同意行為。
 - **2026 年 7 月 30 日：** 更新維護者聯絡方式，並記錄正式的路徑式隱私權路由。
+- **2026 年 9 月 3 日：** 同意設定由對話框改為 /home/consent 文件頁面。
