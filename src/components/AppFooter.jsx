@@ -49,23 +49,29 @@ export default function AppFooter({
         </div>
       )}
 
-      <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-3 px-12 py-4 text-[0.78rem] text-text-muted max-md:px-8 max-[500px]:px-4">
-        <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3 max-md:flex-col max-md:items-center">
-          <nav aria-label={t('navigation:footer.documents')} className="flex flex-wrap items-center gap-x-4 gap-y-2 max-md:justify-center">
-            {DOCUMENT_ROUTE_IDS.map((documentId) => (
-              <button
-                key={documentId}
-                type="button"
-                className={footerLinkClass}
-                title={t(`tools:${documentId}.tooltip`)}
-                onClick={() => onSelectDocument(documentId)}
-              >
-                {t(`tools:${documentId}.title`)}
-              </button>
-            ))}
-          </nav>
+      <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-4 px-12 py-4 text-[0.78rem] text-text-muted max-md:px-8 max-[500px]:px-4">
+        <nav aria-label={t('navigation:footer.documents')} className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          {DOCUMENT_ROUTE_IDS.map((documentId) => (
+            <button
+              key={documentId}
+              type="button"
+              className={footerLinkClass}
+              title={t(`tools:${documentId}.tooltip`)}
+              onClick={() => onSelectDocument(documentId)}
+            >
+              {t(`tools:${documentId}.title`)}
+            </button>
+          ))}
+        </nav>
 
-          <nav aria-label={t('navigation:footer.external')} className="flex flex-wrap items-center gap-x-4 gap-y-2 max-md:justify-center">
+        <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3 border-t border-border pt-4 max-md:flex-col max-md:items-start">
+          <div className="flex items-center max-md:flex-col max-md:items-start max-md:gap-1">
+            <span className="font-display font-bold text-text-main">{t('common:productName')}</span>
+            <span className="mx-1 text-text-muted max-md:hidden" aria-hidden="true"> · </span>
+            <span>{t('navigation:footer.copyright', { year: new Date().getFullYear(), version: appVersion })}</span>
+          </div>
+
+          <nav aria-label={t('navigation:footer.external')} className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <a href="mailto:emailforvirtualmachine@gmail.com" onClick={onEmailClick} className={externalLinkClass} title={t('navigation:footer.email')}>
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
               {t('navigation:footer.emailLabel')}
@@ -79,12 +85,6 @@ export default function AppFooter({
               {t('navigation:footer.githubLabel')} ↗
             </a>
           </nav>
-        </div>
-
-        <div className="flex items-center justify-center border-t border-border pt-3 text-center max-md:flex-col max-md:gap-1">
-          <span className="font-display font-bold text-text-main">{t('common:productName')}</span>
-          <span className="mx-1 text-text-muted max-md:hidden" aria-hidden="true"> · </span>
-          <span>{t('navigation:footer.copyright', { year: new Date().getFullYear(), version: appVersion })}</span>
         </div>
       </div>
     </footer>
