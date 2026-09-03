@@ -123,8 +123,8 @@ small-web-tools/
 │   ├── i18n/
 │   │   ├── index.js           Locale resolution, i18next setup, persistence, and document language
 │   │   └── locales/           Paired en-US and zh-TW namespace JSON resources
-│   ├── lib/                  Pure utility helpers (binaryEncoding, passwordStrength, resourceLimits, thirdPartyServices, projectLinks, licenseText)
-│   ├── hooks/                Routing, persistence, and document-title shell effects
+│   ├── lib/                  Pure utility helpers (binaryEncoding, passwordStrength, resourceLimits, thirdPartyServices, simpleLayout, projectLinks, licenseText)
+│   ├── hooks/                Routing, persistence, Simple layout, and document-title shell effects
 │   ├── tests/                Vitest unit test suites and setup
 │   └── components/
 │       ├── ui/               Shared Card, Button, FieldInput, ToolHeader, and related primitives
@@ -181,7 +181,7 @@ expanded UI boundary must fix every newly exposed error in the same change.
 - `useAppRouting` initializes `activeTool` from `/home[/<audience>]/<tool-slug>` or `/simple/<tool-slug>` and synchronizes navigation and browser history with the path.
 - `useAppRouting` initializes `toolMode` from the validated `/home` or `/simple` path. The workspace path
   remains in the URL while path navigation changes tools.
-- `useShellPersistence` owns active-tool session state plus theme and sidebar persistence; `useDocumentTitle` owns title updates independently of storage availability.
+- `useShellPersistence` owns active-tool session state plus theme and sidebar persistence; `useSimpleLayout` owns the browser-stored Simple shortcut layout; `useDocumentTitle` owns title updates independently of storage availability.
 - `renderActiveTool()` resolves the active registry entry and renders its lazy component. Policy-category routes are registered but excluded from the tool catalog, and receive an `onNavigateDocument` callback so document pages can link to one another through the shell router.
 
 The shell supplies a responsive desktop sidebar, mobile drawer, top navigation, breadcrumbs, footer, search, theme control, and a centered tool stage. `AppHeader`, `DesktopCategoryNav`, and `AppFooter` own the desktop header and footer presentation while `App.jsx` passes registry-derived data and navigation callbacks.
@@ -226,23 +226,34 @@ runtime and resource tests are in `src/tests/i18n.test.js`,
 
 `src/toolModes.js` defines the complete dashboard plus five audience profiles:
 daily users, developers, bioinformatics researchers, designers, and students.
-The separate `SIMPLE_WORKSPACE` defines eight high-frequency tools. App-level
-filtering applies audience profiles consistently to dashboard cards, sidebar,
-and search; the Simple sidebar remains limited to its essentials while Simple
-search can open any registered tool.
+The separate `SIMPLE_WORKSPACE` defines the eight default Simple shortcuts.
+App-level filtering applies audience profiles consistently to dashboard cards,
+sidebar, and search; the Simple sidebar remains limited to the shortcuts this
+browser keeps while Simple search can open any registered tool.
 
 `AudienceSwitcher.jsx` renders the homepage segmented control for the complete
 homepage and five audience profiles. `HomeGrid.jsx` places it beside the
 introduction while preserving the complete
 categorized dashboard and renders flat audience recommendations. `SimpleHome.jsx`
-provides an all-tool search and eight compact shortcuts inside the reduced shell.
+provides an all-tool search, the compact shortcut grid, and the layout editor
+inside the reduced shell.
 Routing uses `/home[/<audience>][/<tool-slug>]` and
 `/simple[/<tool-slug>]`; legacy `/home/simple` addresses redirect to `/simple`.
 Focused coverage lives in `toolModes.test.js`, `homeGrid.test.jsx`,
-`audienceSwitcher.test.jsx`, `simpleHome.test.jsx`, and `App.test.jsx`. Mermaid is
+`audienceSwitcher.test.jsx`, `simpleHome.test.jsx`, `simpleLayout.test.js`, and
+`App.test.jsx`. Mermaid is
 part of the developer audience. Every other navigable tool must appear in at least
 one curated workspace or have a maintained rationale in
 `INTENTIONAL_CURATED_EXCLUSIONS`; `toolModes.test.js` enforces that invariant.
+
+Simple shortcuts are editable per browser. `src/lib/simpleLayout.js` owns the
+versioned `simpleLayout` local-storage record: it sanitizes stored ids against
+the live registry, enforces the one-to-twelve shortcut budget, and provides the
+add, remove, and move transforms. `useSimpleLayout` subscribes the launcher and
+the shell to that single record, so the editor in `SimpleHome.jsx` and the
+Simple sidebar always show the same shortcuts. An absent or unusable record
+falls back to `SIMPLE_WORKSPACE`, and a browser that blocks Web Storage keeps
+the layout in memory for the session. The layout is never sent to a server.
 
 ### Shared tool-page contract
 

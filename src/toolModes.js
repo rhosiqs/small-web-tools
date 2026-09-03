@@ -97,10 +97,11 @@ export const TOOL_MODES = modeDefinitions.map((mode) => ({
 
 export const AUDIENCE_MODES = [...TOOL_MODES];
 
+// Default shortcuts only: `useSimpleLayout` lets each browser store its own
+// ordering, and this list is what an uncustomized browser sees.
 export const SIMPLE_WORKSPACE = {
   id: 'simple',
   toolIds: [
-    'tool-wc',
     'tool-casing',
     'tool-url',
     'tool-date',
@@ -108,6 +109,7 @@ export const SIMPLE_WORKSPACE = {
     'tool-color',
     'tool-qrcode',
     'tool-password',
+    'tool-wheel',
   ],
   simplified: true,
 };

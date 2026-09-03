@@ -58,7 +58,7 @@ export default defineConfig({
         'src/components/VideoMeta/lib/**',
         'src/components/LanguageSwitcher.jsx',
         'src/components/{AppFooter,AppHeader,DesktopCategoryNav,MobileDrawer}.jsx',
-        'src/hooks/{useAppRouting,useDocumentTitle,useShellPersistence}.js',
+        'src/hooks/{useAppRouting,useDocumentTitle,useShellPersistence,useSimpleLayout}.js',
         'src/components/ui/{Button,Card,FieldInput,FullscreenPreview,ToolHeader}.jsx',
       ],
       thresholds: {
