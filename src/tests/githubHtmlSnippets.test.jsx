@@ -1,6 +1,6 @@
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import GithubHtmlSnippets from '../components/GithubHtmlSnippets.jsx';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -94,6 +94,26 @@ describe('GitHub HTML Blocks', () => {
     });
     expect(preview().querySelector('img')).toBeNull();
     expect(preview().textContent).toContain('Build');
+  });
+
+  it('renders table markup the way a browser parser would, without invalid nesting', async () => {
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await act(async () => {
+      setNativeValue(editor(), '<table>\n  <tr>\n    <td>left</td>\n    <td>right</td>\n  </tr>\n</table>');
+    });
+
+    const table = preview().querySelector('table');
+    expect(table).not.toBeNull();
+    expect([...table.childNodes].every((child) => child.nodeType === Node.ELEMENT_NODE)).toBe(true);
+    expect(table.querySelector('tbody > tr > td')?.textContent).toBe('left');
+    expect([...table.querySelector('tr').childNodes].every((child) => child.nodeType === Node.ELEMENT_NODE)).toBe(true);
+
+    const nesting = errors.mock.calls
+      .map((call) => String(call[0]))
+      .filter((message) => /validateDOMNesting|cannot appear as a child|Whitespace text nodes/.test(message));
+    errors.mockRestore();
+    expect(nesting, 'table markup must not trip React DOM nesting validation').toEqual([]);
   });
 
   it('keeps no block tiles outside the palette', () => {
