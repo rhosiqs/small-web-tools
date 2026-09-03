@@ -60,7 +60,7 @@ export default function AppFooter({
           </div>
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 max-md:gap-x-4">
-            <nav aria-label={t('navigation:footer.documents')} className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <nav aria-label={t('navigation:footer.documents')} className="flex flex-wrap items-center gap-x-3 gap-y-2">
               {DOCUMENT_ROUTE_IDS.map((documentId) => (
                 <button
                   key={documentId}
