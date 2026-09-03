@@ -10,7 +10,16 @@ let root;
 
 const editor = () => container.querySelector('textarea');
 const preview = () => container.querySelector('.github-html-preview');
-const stripTiles = () => [...container.querySelectorAll('[role="toolbar"] button')];
+const card = () => container.querySelector('[id="tool-github-html"]');
+const expandButtons = () => [...container.querySelectorAll('.fullscreen-preview-control')];
+
+/** Blocks live only in the palette now, so every tile assertion opens it first. */
+const openPalette = async () => {
+  await act(async () => {
+    card().dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }));
+  });
+  return [...container.querySelectorAll('[role="dialog"] button')];
+};
 
 function setNativeValue(element, value) {
   Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(element, value);
@@ -30,8 +39,8 @@ afterEach(async () => {
 });
 
 describe('GitHub HTML Blocks', () => {
-  it('shows the blocks without printing their names on screen', () => {
-    const tiles = stripTiles();
+  it('shows the blocks without printing their names on screen', async () => {
+    const tiles = await openPalette();
     expect(tiles.length).toBeGreaterThan(0);
     for (const tile of tiles) {
       const label = tile.getAttribute('aria-label');
@@ -41,11 +50,13 @@ describe('GitHub HTML Blocks', () => {
   });
 
   it('stacks blocks in the order they are clicked', async () => {
-    await act(async () => stripTiles()[0].click());
+    const tiles = await openPalette();
+    await act(async () => tiles[0].click());
     const afterFirst = editor().value;
     expect(afterFirst).not.toBe('');
 
-    await act(async () => stripTiles()[1].click());
+    const reopened = await openPalette();
+    await act(async () => reopened[1].click());
     const afterSecond = editor().value;
     expect(afterSecond.startsWith(afterFirst.trimEnd())).toBe(true);
     expect(afterSecond.length).toBeGreaterThan(afterFirst.length);
@@ -83,6 +94,40 @@ describe('GitHub HTML Blocks', () => {
     });
     expect(preview().querySelector('img')).toBeNull();
     expect(preview().textContent).toContain('Build');
+  });
+
+  it('keeps no block tiles outside the palette', () => {
+    expect(container.querySelector('[role="toolbar"]')).toBeNull();
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('opens each pane fullscreen and closes it with Escape', async () => {
+    const [editorExpand, previewExpand] = expandButtons();
+    expect(expandButtons()).toHaveLength(2);
+
+    await act(async () => editorExpand.click());
+    expect(document.querySelectorAll('textarea')).toHaveLength(2);
+
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+    expect(document.querySelectorAll('textarea')).toHaveLength(1);
+
+    await act(async () => previewExpand.click());
+    expect(document.querySelectorAll('.github-html-preview')).toHaveLength(2);
+
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+    expect(document.querySelectorAll('.github-html-preview')).toHaveLength(1);
+  });
+
+  it('leaves the palette shortcut inert while a pane is fullscreen', async () => {
+    await act(async () => expandButtons()[1].click());
+    await act(async () => {
+      card().dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }));
+    });
+    expect(container.querySelectorAll('[role="dialog"]')).toHaveLength(1);
   });
 
   it('opens the palette with the keyboard shortcut and closes it with Escape', async () => {

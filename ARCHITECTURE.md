@@ -352,9 +352,13 @@ collapsing fenced-code content. Focused parser and interaction coverage lives in
 headers, badge rows, `<details>`, `<kbd>`, image tables — by stacking blocks at
 `/home/github-html`. Blocks are chosen from wordless thumbnails: each tile draws
 the block through the preview renderer instead of naming it, and the name reaches
-assistive technology through `aria-label` only. The most-used blocks sit on the
-strip and the rest open in a `Cmd`/`Ctrl` + `K` palette. A multi-line block is stacked below
+assistive technology through `aria-label` only. Every block lives in the
+`Cmd`/`Ctrl` + `K` palette, whose grid keeps the thumbnails aligned; nothing but
+the action row sits above the panes. A multi-line block is stacked below
 the caret's line rather than nested, so repeated clicks build a document in order.
+Either pane opens in the shared `FullscreenPreview` overlay, as in the Markdown
+Previewer; the palette shortcut is inert while a pane is fullscreen, since the
+palette would otherwise open behind that overlay.
 
 Its domain modules are the tool's own, separate from the Markdown Previewer's:
 `githubHtml.js` parses an HTML fragment and filters it against an allow-list,

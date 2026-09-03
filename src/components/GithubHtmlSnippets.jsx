@@ -3,25 +3,28 @@ import { useTranslation } from 'react-i18next';
 import Button from './ui/Button';
 import Card from './ui/Card';
 import ToolHeader from './ui/ToolHeader';
+import FullscreenPreview, { FullscreenPreviewButton } from './ui/FullscreenPreview';
 import BlockPalette from './GithubHtmlSnippets/BlockPalette.jsx';
 import BlockPreview from './GithubHtmlSnippets/BlockPreview.jsx';
-import BlockTile from './GithubHtmlSnippets/BlockTile.jsx';
 import { composeDocument } from './GithubHtmlSnippets/lib/composeDocument.js';
-import { BLOCKS, PINNED_BLOCKS, fillTemplate, placeBlock } from './GithubHtmlSnippets/lib/blockCatalog.js';
+import { BLOCKS, fillTemplate, placeBlock } from './GithubHtmlSnippets/lib/blockCatalog.js';
 
 /**
  * GitHub HTML Blocks — compose the raw HTML a README needs by stacking blocks.
  *
- * The editor and preview own the page; the blocks are pictures of themselves
- * with no labels, eight on the strip and the rest behind the palette. Clicking
- * a multi-line block stacks it below the caret's line rather than nesting it,
- * so a README builds up in the order you click.
+ * The editor and preview own the page. Every block lives behind the palette,
+ * reached by the "Add a block" button or Cmd/Ctrl-K, and stays a picture of
+ * itself with no label — the catalogue's own grid gives the thumbnails an
+ * alignment the old top strip could not. Clicking a multi-line block stacks it
+ * below the caret's line rather than nesting it, so a README builds up in the
+ * order you click. Either pane opens fullscreen, as in the Markdown previewer.
  */
 export default function GithubHtmlSnippets() {
   const { t, i18n } = useTranslation('tools');
   const [markdown, setMarkdown] = useState('');
   const [status, setStatus] = useState('');
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [focusedPanel, setFocusedPanel] = useState(null);
   const textareaRef = useRef(null);
   const pendingSelectionRef = useRef(null);
 
@@ -96,7 +99,12 @@ export default function GithubHtmlSnippets() {
     textareaRef.current?.focus();
   };
 
+  // The palette is a plain overlay, so it would land behind the fullscreen
+  // dialog and inside its focus trap. Fullscreen is for reading a pane large,
+  // the way the QR and Markdown tools use it; block insertion stays on the
+  // normal layout rather than half-working on top of it.
   const handleShortcut = (event) => {
+    if (focusedPanel) return;
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
       event.preventDefault();
       setPaletteOpen(true);
@@ -112,7 +120,7 @@ export default function GithubHtmlSnippets() {
     <Card id="tool-github-html" variant="tool" size="wide" className="max-w-[1180px]" onKeyDown={handleShortcut}>
       <ToolHeader title={t('tool-github-html.title')} />
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-app/60 p-3">
         <Button type="button" variant="primary" size="sm" onClick={() => setPaletteOpen(true)}>
           {t('tool-github-html.ui.openPalette')}
         </Button>
@@ -126,23 +134,19 @@ export default function GithubHtmlSnippets() {
         </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1" role="toolbar" aria-label={t('tool-github-html.ui.stripAria')}>
-        {PINNED_BLOCKS.map((block) => (
-          <div key={block.id} className="w-[120px] flex-none">
-            <BlockTile block={block} label={labels[block.id]} body={thumbnails[block.id]} onSelect={addBlock} />
-          </div>
-        ))}
-      </div>
-
       <div className="grid grid-cols-1 overflow-hidden rounded-xl border border-border bg-card lg:h-[560px] lg:grid-cols-2">
         <section className="flex min-h-[380px] min-w-0 flex-col border-b border-border lg:min-h-0 lg:border-b-0 lg:border-r" aria-labelledby="github-html-editor-title">
-          <div className="flex min-h-12 items-center justify-between gap-3 border-b border-border bg-app/70 px-4 py-2">
+          <div className="relative flex min-h-12 items-center justify-between gap-3 border-b border-border bg-app/70 px-4 py-2 pr-14">
             <h3 id="github-html-editor-title" className="text-sm font-bold text-text-main">
               {t('tool-github-html.ui.editorTitle')}
             </h3>
             <span className="text-xs tabular-nums text-text-muted">
               {t('tool-github-html.ui.characterCount', { count: markdown.length.toLocaleString(i18n.language) })}
             </span>
+            <FullscreenPreviewButton
+              label={t('tool-github-html.ui.openEditorFullscreen')}
+              onClick={() => setFocusedPanel('editor')}
+            />
           </div>
           <textarea
             ref={textareaRef}
@@ -157,10 +161,14 @@ export default function GithubHtmlSnippets() {
         </section>
 
         <section className="flex min-h-[380px] min-w-0 flex-col bg-accent-light/10 lg:min-h-0" aria-labelledby="github-html-preview-title">
-          <div className="flex min-h-12 items-center border-b border-border bg-app/45 px-4 py-2">
+          <div className="relative flex min-h-12 items-center border-b border-border bg-app/45 px-4 py-2 pr-14">
             <h3 id="github-html-preview-title" className="text-sm font-bold text-text-main">
               {t('tool-github-html.ui.previewTitle')}
             </h3>
+            <FullscreenPreviewButton
+              label={t('tool-github-html.ui.openPreviewFullscreen')}
+              onClick={() => setFocusedPanel('preview')}
+            />
           </div>
           {removed.length > 0 && (
             <p className="border-b border-warning-border bg-warning-bg px-4 py-2 text-xs text-warning-text">
@@ -177,6 +185,34 @@ export default function GithubHtmlSnippets() {
         <p>{t('tool-github-html.ui.privacyNote')}</p>
         <p role="status" aria-live="polite">{status}</p>
       </div>
+
+      <FullscreenPreview
+        open={focusedPanel === 'editor'}
+        onClose={() => setFocusedPanel(null)}
+        title={t('tool-github-html.ui.editorTitle')}
+        surfaceClassName="bg-card !p-0"
+      >
+        <textarea
+          value={markdown}
+          onChange={(event) => { setMarkdown(event.target.value); setStatus(''); }}
+          spellCheck={false}
+          wrap="off"
+          aria-label={t('tool-github-html.ui.editorAria')}
+          placeholder={t('tool-github-html.ui.editorPlaceholder')}
+          className="h-[80vh] min-h-[420px] w-full resize-none overflow-auto rounded-lg border-0 bg-card p-5 font-mono text-sm leading-6 text-text-main outline-none focus:ring-2 focus:ring-focus"
+        />
+      </FullscreenPreview>
+
+      <FullscreenPreview
+        open={focusedPanel === 'preview'}
+        onClose={() => setFocusedPanel(null)}
+        title={t('tool-github-html.ui.previewTitle')}
+        surfaceClassName="bg-card !p-0"
+      >
+        <div className="h-[80vh] min-h-[420px] w-full overflow-auto">
+          <BlockPreview segments={segments} className="github-html-preview" />
+        </div>
+      </FullscreenPreview>
 
       <BlockPalette
         open={paletteOpen}
