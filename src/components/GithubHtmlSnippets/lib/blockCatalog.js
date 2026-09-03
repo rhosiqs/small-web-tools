@@ -20,11 +20,11 @@
 export const BLOCKS = Object.freeze([
   // -- layout -----------------------------------------------------------------
   {
-    id: 'center-block', group: 'layout', tag: '<div align="center">', pinned: true,
+    id: 'center-block', group: 'layout', tag: '<div align="center">',
     template: '<div align="center">\n  {{selection}}\n</div>',
   },
   {
-    id: 'center-title', group: 'layout', tag: '<h1 align="center">', pinned: true, slots: ['tagline'],
+    id: 'center-title', group: 'layout', tag: '<h1 align="center">', slots: ['tagline'],
     template: '<h1 align="center">{{selection}}</h1>\n<p align="center">{{tagline}}</p>',
   },
   {
@@ -32,18 +32,18 @@ export const BLOCKS = Object.freeze([
     template: '<div align="right">\n  {{selection}}\n</div>',
   },
   {
-    id: 'two-column', group: 'layout', tag: '<table>', pinned: true, slots: ['left', 'right'],
+    id: 'two-column', group: 'layout', tag: '<table>', slots: ['left', 'right'],
     template: '<table>\n  <tr>\n    <td align="center"><img src="light.png" width="380" alt="{{left}}" /><br /><sub>{{left}}</sub></td>\n    <td align="center"><img src="dark.png" width="380" alt="{{right}}" /><br /><sub>{{right}}</sub></td>\n  </tr>\n</table>',
   },
   {
     id: 'line-break', group: 'layout', tag: '<br />',
     template: '{{selection}}<br />', sample: '{{selection}}<br />{{selection}}',
   },
-  { id: 'rule', group: 'layout', tag: '<hr />', pinned: true, template: '<hr />' },
+  { id: 'rule', group: 'layout', tag: '<hr />', template: '<hr />' },
 
   // -- collapsible ------------------------------------------------------------
   {
-    id: 'details', group: 'collapsible', tag: '<details>', pinned: true, slots: ['body'],
+    id: 'details', group: 'collapsible', tag: '<details>', slots: ['body'],
     template: '<details>\n<summary>{{selection}}</summary>\n\n{{body}}\n\n</details>',
   },
   {
@@ -61,12 +61,12 @@ export const BLOCKS = Object.freeze([
     template: '<a href="link-target"><img src="badge-build.svg" alt="{{alt}}" /></a>',
   },
   {
-    id: 'badge-row', group: 'badges', tag: '<p align="center">', pinned: true,
+    id: 'badge-row', group: 'badges', tag: '<p align="center">',
     template: '<p align="center">\n  <img src="badge-license.svg" alt="License" />\n  <img src="badge-build.svg" alt="Build" />\n  <img src="badge-version.svg" alt="Version" />\n</p>',
   },
 
   // -- text -------------------------------------------------------------------
-  { id: 'kbd', group: 'text', tag: '<kbd>', pinned: true, template: '<kbd>{{selection}}</kbd>' },
+  { id: 'kbd', group: 'text', tag: '<kbd>', template: '<kbd>{{selection}}</kbd>' },
   { id: 'subscript', group: 'text', tag: '<sub>', template: '<sub>{{selection}}</sub>' },
   { id: 'superscript', group: 'text', tag: '<sup>', template: '<sup>{{selection}}</sup>' },
   { id: 'sample-output', group: 'text', tag: '<samp>', template: '<samp>{{selection}}</samp>' },
@@ -83,7 +83,7 @@ export const BLOCKS = Object.freeze([
 
   // -- media ------------------------------------------------------------------
   {
-    id: 'sized-image', group: 'media', tag: '<img width>', pinned: true, slots: ['alt'],
+    id: 'sized-image', group: 'media', tag: '<img width>', slots: ['alt'],
     template: '<img src="{{selection}}" alt="{{alt}}" width="480" />',
   },
   {
@@ -110,12 +110,10 @@ export const BLOCKS = Object.freeze([
   },
 
   // -- alerts -----------------------------------------------------------------
-  { id: 'alert-note', group: 'alerts', tag: '> [!NOTE]', pinned: true, template: '> [!NOTE]\n> {{selection}}' },
+  { id: 'alert-note', group: 'alerts', tag: '> [!NOTE]', template: '> [!NOTE]\n> {{selection}}' },
   { id: 'alert-warning', group: 'alerts', tag: '> [!WARNING]', template: '> [!WARNING]\n> {{selection}}' },
   { id: 'quote', group: 'alerts', tag: '<blockquote>', template: '<blockquote>\n  {{selection}}\n</blockquote>' },
 ]);
-
-export const PINNED_BLOCKS = BLOCKS.filter((block) => block.pinned);
 
 /** Fills `{{slot}}` placeholders. Unknown slots are left untouched, not blanked. */
 export function fillTemplate(template, values) {
