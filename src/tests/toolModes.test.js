@@ -26,6 +26,9 @@ describe('tool modes', () => {
     ]);
     expect(SIMPLE_WORKSPACE.simplified).toBe(true);
     expect(SIMPLE_WORKSPACE.toolIds).toHaveLength(8);
+    // Default shortcuts only; each browser can store its own Simple layout.
+    expect(SIMPLE_WORKSPACE.toolIds).toContain('tool-wheel');
+    expect(SIMPLE_WORKSPACE.toolIds).not.toContain('tool-wc');
     expect(getToolMode('simple')).toBe(SIMPLE_WORKSPACE);
     expect(getToolMode('unknown').id).toBe('all');
     expect(AUDIENCE_MODES.map(({ id }) => id)).toEqual([

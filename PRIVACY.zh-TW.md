@@ -58,7 +58,8 @@ FFmpeg JavaScript 與 WebAssembly 資產固定使用 unpkg 上的 @ffmpeg/core 0
 ## 4. 同意與瀏覽器儲存空間
 
 /home/privacy 上的同意設定會將明確的服務選擇儲存在 small_web_tools_consent。主題、收合的導覽列
-與最近路由狀態也可能使用 local storage 或 session storage。本專案不加入分析追蹤器
+與最近路由狀態也可能使用 local storage 或 session storage。在簡易模式首頁自訂的捷徑版面
+會儲存在 local storage 的 simpleLayout，且不會離開瀏覽器。本專案不加入分析追蹤器
 或追蹤 Cookie。
 
 工具狀態僅保存在 local storage，不會寫入 Cookie，因此不會附加在任何送往本站的
@@ -89,3 +90,4 @@ Google Maps 連結時，只有使用者主動導覽才會將座標傳送給 Goog
   同意行為。
 - **2026 年 7 月 30 日：** 更新維護者聯絡方式，並記錄正式的路徑式隱私權路由。
 - **2026 年 9 月 3 日：** 同意設定由對話框改為文件頁面，之後併入 /home/privacy。
+- **2026 年 9 月 3 日：** 揭露可編輯簡易模式版面所使用、僅存在瀏覽器的 simpleLayout 金鑰。

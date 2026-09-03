@@ -15,6 +15,7 @@ import {
   localizeToolMode,
 } from './toolModes.js';
 import { useAppRouting } from './hooks/useAppRouting.js';
+import { useSimpleLayout } from './hooks/useSimpleLayout.js';
 import { useDocumentTitle } from './hooks/useDocumentTitle.js';
 import { readStoredActiveTool, useShellPreferences } from './hooks/useShellPersistence.js';
 import { CATEGORY_DEFINITIONS as categories } from './categoryDefinitions.jsx';
@@ -89,6 +90,9 @@ export default function App() {
       desc: route.description,
       icon: TOOL_ICONS[route.iconKey],
     })), [t]);
+  const navToolIds = useMemo(() => navItems.map((item) => item.id), [navItems]);
+  const simpleLayout = useSimpleLayout(navToolIds);
+  const simpleLayoutIds = new Set(simpleLayout.toolIds);
 
   useDocumentTitle({
     activeTool,
@@ -156,7 +160,10 @@ export default function App() {
   };
 
   // Audience modes filter the home, sidebar, and search; header shortcuts stay complete.
-  const modeNavItems = filterToolsForMode(navItems, toolMode);
+  // The Simple workspace follows the browser's own shortcut layout instead.
+  const modeNavItems = modeProfile.simplified
+    ? navItems.filter((item) => simpleLayoutIds.has(item.id))
+    : filterToolsForMode(navItems, toolMode);
   const searchNavItems = modeProfile.simplified ? navItems : modeNavItems;
   const normalizedQuery = searchQuery.toLocaleLowerCase(i18n.resolvedLanguage).trim();
   const matchesSearch = (item) => item.searchMetadata.some((term) =>
