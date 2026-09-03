@@ -1,0 +1,83 @@
+name: Release deploy
+
+# Cloudflare Pages builds on branch pushes only, and a version tag is created
+# after the commit it points at has already been built. Without this workflow the
+# deployed bundle keeps the tag that existed at build time, so the site shows the
+# previous version. Pushing a version tag therefore asks Pages to rebuild the
+# branch that carries the tagged commit, which bakes in the new version.
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+
+concurrency:
+  group: release-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  rebuild:
+    name: Rebuild deployment for tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Select target branch
+        id: target
+        shell: bash
+        run: |
+          commit="$(git rev-list -n 1 "${GITHUB_REF}")"
+          branch=''
+          for candidate in main develop; do
+            if git merge-base --is-ancestor "${commit}" "origin/${candidate}" 2>/dev/null; then
+              branch="${candidate}"
+              break
+            fi
+          done
+          if [ -z "${branch}" ]; then
+            echo "Tagged commit ${commit} is not on main or develop; nothing to rebuild."
+          fi
+          echo "commit=${commit}" >> "$GITHUB_OUTPUT"
+          echo "branch=${branch}" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger Cloudflare Pages rebuild
+        shell: bash
+        env:
+          BRANCH: ${{ steps.target.outputs.branch }}
+          COMMIT: ${{ steps.target.outputs.commit }}
+          HOOK_MAIN: ${{ secrets.CLOUDFLARE_PAGES_DEPLOY_HOOK_MAIN }}
+          HOOK_DEVELOP: ${{ secrets.CLOUDFLARE_PAGES_DEPLOY_HOOK_DEVELOP }}
+        run: |
+          if [ -z "${BRANCH}" ]; then
+            echo "No deployable branch for ${GITHUB_REF_NAME}; skipping."
+            exit 0
+          fi
+
+          case "${BRANCH}" in
+            main) hook="${HOOK_MAIN}" ;;
+            develop) hook="${HOOK_DEVELOP}" ;;
+          esac
+
+          if [ -z "${hook}" ]; then
+            echo "::warning::No Cloudflare Pages deploy hook secret configured for ${BRANCH};"\
+              "the deployed version will keep lagging behind ${GITHUB_REF_NAME}."
+            exit 0
+          fi
+
+          echo "Requesting a Cloudflare Pages rebuild of ${BRANCH} for ${GITHUB_REF_NAME} (${COMMIT})."
+          status="$(curl --silent --show-error --location --retry 3 --retry-delay 5 \
+            --max-time 30 --request POST --output /dev/null --write-out '%{http_code}' "${hook}")"
+          echo "Deploy hook responded with HTTP ${status}."
+          case "${status}" in
+            2*) ;;
+            *) echo "::error::Deploy hook request failed with HTTP ${status}."; exit 1 ;;
+          esac
