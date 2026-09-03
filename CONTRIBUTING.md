@@ -89,7 +89,12 @@ two independent jobs while preserving the required check names `Verify (22)` and
 `Verify (24)`. Node 24 runs the complete verification, dependency check, security
 audit, Cloudflare integration, Playwright journeys, and build artifact generation;
 the dependency and audit gates run before the more expensive integration/browser
-steps. Node 22 remains a minimum-runtime compatibility gate that runs type checking,
+steps. The security audit blocks whenever a change could have introduced an
+advisory — a branch push, the weekly scheduled run, or a pull request that edits
+`package.json` or `package-lock.json`. A pull request that touches neither cannot
+have introduced one, so a newly published advisory is reported as a warning and a
+job summary there instead of failing an unrelated change; fix it in a
+dependency-only change rather than in the branch that happened to run first. Node 22 remains a minimum-runtime compatibility gate that runs type checking,
 the unit-test suite, and a production build. Both jobs have explicit timeouts, and
 workflow concurrency cancels superseded runs for the same ref. The workflow uses
 `actions/checkout@v7`, `actions/setup-node@v6`, and `actions/upload-artifact@v7`.
