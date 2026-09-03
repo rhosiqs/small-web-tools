@@ -1,10 +1,11 @@
 name: Release deploy
 
-# Cloudflare Pages builds on branch pushes only, and a version tag is created
-# after the commit it points at has already been built. Without this workflow the
-# deployed bundle keeps the tag that existed at build time, so the site shows the
-# previous version. Pushing a version tag therefore asks Pages to rebuild the
-# branch that carries the tagged commit, which bakes in the new version.
+# Cloudflare Pages builds on branch pushes only, so the release order is to push
+# the version tag before merging: the branch push that starts the build then
+# already sees the new tag. This workflow is the safety net for a tag created
+# after its commit was built, where the deployed bundle would otherwise keep the
+# previous version. It asks Pages to rebuild the branch carrying the tagged
+# commit, which requires that branch's deploy hook secret.
 
 on:
   push:
