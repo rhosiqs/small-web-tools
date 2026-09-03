@@ -24,12 +24,12 @@ function expectNoUnacceptedViolations(results) {
   expect(results.violations.filter(({ id }) => !acceptedIds.has(id))).toEqual([]);
 }
 
-test('consent settings page applies changes in place and announces them', async ({ page }) => {
+test('consent settings apply in place on the privacy page and announce the change', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 720 });
   await page.goto('/');
-  await page.getByRole('button', { name: 'Service Consent', exact: true }).click();
-  await expect(page).toHaveURL(/\/home\/consent$/);
-  await expect(page.getByRole('heading', { name: 'Service Consent', level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: 'Privacy', exact: true }).click();
+  await expect(page).toHaveURL(/\/home\/privacy$/);
+  await expect(page.getByRole('heading', { name: 'Privacy', level: 1 })).toBeVisible();
   await expect(page.getByRole('dialog')).toHaveCount(0);
 
   const allowButton = page.getByRole('button', { name: /^Allow / }).first();
@@ -118,7 +118,7 @@ test('mobile navigation has a complete focus and dismissal lifecycle', async ({ 
 
 for (const route of [
   '/home', '/simple', '/simple/color', '/home/currency', '/home/folder-analyzer',
-  '/home/about', '/home/privacy', '/home/consent', '/home/terms', '/home/security', '/home/license',
+  '/home/about', '/home/privacy', '/home/terms', '/home/security', '/home/license',
 ]) {
   test(`${route} has no unaccepted automated accessibility findings`, async ({ page }) => {
     await page.goto(route);

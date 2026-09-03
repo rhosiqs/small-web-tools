@@ -13,7 +13,7 @@
         "heading": "Local-first by design",
         "body": [
           "Most tools run entirely in your browser: the text you paste and the files you select are processed on your own device and are not uploaded.",
-          "A few features genuinely need a server, remote data, or a downloaded runtime. Every one of them is listed on the Privacy & Network Services page, and the ones that require permission stay blocked until you allow them."
+          "A few features genuinely need a server, remote data, or a downloaded runtime. Every one of them is listed on the Privacy page, and the ones that require permission stay blocked until you allow them."
         ]
       },
       {
@@ -40,7 +40,9 @@
   "privacy": {
     "updated": "2026-09-03",
     "intro": "Small Web Tools is local-first: most tool inputs and selected files stay in your browser. Features that need a server, remote data, a runtime asset, or external navigation are listed below.",
-    "consentExplanation": "Explicit-consent services remain blocked until they are allowed on the service consent page. A point-of-use disclosure explains a required request before an action starts. External navigation occurs only when you select a link.",
+    "consentExplanation": "Explicit-consent services remain blocked until they are allowed in the consent settings below. A point-of-use disclosure explains a required request before an action starts. External navigation occurs only when you select a link.",
+    "consentHeading": "Service consent settings",
+    "inventoryHeading": "Network services",
     "heading": {"service": "Service", "purpose": "Purpose and trigger", "data": "Data sent", "mode": "Mode and fallback"},
     "providerPolicy": "Provider policy",
     "consentMode": {
@@ -49,22 +51,19 @@
       "user-navigation": "User navigation",
       "hosting-infrastructure": "Hosting infrastructure"
     },
-    "manageConsent": "Open the service consent settings"
-  },
-  "consent": {
-    "updated": "2026-09-03",
-    "description": "Small Web Tools is local-first. The services below stay blocked until you explicitly allow them. Runtime downloads and external links you select use separate point-of-use disclosures.",
-    "readPolicy": "Read the full Privacy & Network Services policy",
-    "allow": "Allow {{service}}",
-    "revoke": "Revoke {{service}}",
-    "allowed": "Allowed (click to revoke)",
-    "blocked": "Blocked (click to allow)",
-    "allowedAnnouncement": "{{service}} is now allowed.",
-    "blockedAnnouncement": "{{service}} is now blocked.",
-    "fallback": "Fallback: {{fallback}}",
-    "privacyPolicy": "Provider privacy policy",
-    "reset": "Reset all preferences",
-    "resetAnnouncement": "All third-party service preferences were reset."
+    "consent": {
+      "description": "The services below stay blocked until you explicitly allow them. Runtime downloads and external links you select use separate point-of-use disclosures.",
+      "allow": "Allow {{service}}",
+      "revoke": "Revoke {{service}}",
+      "allowed": "Allowed (click to revoke)",
+      "blocked": "Blocked (click to allow)",
+      "allowedAnnouncement": "{{service}} is now allowed.",
+      "blockedAnnouncement": "{{service}} is now blocked.",
+      "fallback": "Fallback: {{fallback}}",
+      "privacyPolicy": "Provider privacy policy",
+      "reset": "Reset all preferences",
+      "resetAnnouncement": "All third-party service preferences were reset."
+    }
   },
   "terms": {
     "updated": "2026-09-03",
@@ -98,7 +97,7 @@
       {
         "heading": "Third-party services",
         "body": [
-          "A few features send requests to external providers. Each one is listed on the Privacy & Network Services page together with the data it sends.",
+          "A few features send requests to external providers. Each one is listed on the Privacy page together with the data it sends.",
           "Those providers operate under their own terms and privacy policies, which are outside the control of this site."
         ]
       },
@@ -112,7 +111,7 @@
         "heading": "Intellectual property",
         "body": [
           "The application source code is released under the MIT License; see the License page. Bundled third-party components remain under their own licences.",
-          "Content you supply to a tool remains yours and is processed as described on the Privacy & Network Services page."
+          "Content you supply to a tool remains yours and is processed as described on the Privacy page."
         ]
       },
       {

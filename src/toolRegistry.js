@@ -46,7 +46,6 @@ const loaders = {
   'tool-wheel': () => import('./components/RandomWheel.jsx'),
   about: () => import('./components/docs/AboutPage.jsx'),
   privacy: () => import('./components/docs/PrivacyPage.jsx'),
-  consent: () => import('./components/docs/ConsentPage.jsx'),
   terms: () => import('./components/docs/TermsPage.jsx'),
   security: () => import('./components/docs/SecurityPage.jsx'),
   license: () => import('./components/docs/LicensePage.jsx'),

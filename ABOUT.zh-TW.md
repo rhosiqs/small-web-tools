@@ -40,8 +40,8 @@ Small Web Tools 是一組免費的小型單一用途網頁工具。每個工具�
 少數功能確實需要伺服器、遠端資料或下載執行階段資產，例如即時匯率、IP 查詢、
 速度測試、網站字型掃描、選用的地圖預覽，以及 FFmpeg WebAssembly 執行階段。這些
 功能全部宣告於 `config/network-services.json`、列在 `/home/privacy` 頁面，並記載於
-[`PRIVACY.zh-TW.md`](PRIVACY.zh-TW.md)。需要授權的服務在 `/home/consent` 頁面允許
-之前都保持封鎖。
+[`PRIVACY.zh-TW.md`](PRIVACY.zh-TW.md)。需要授權的服務在同一個 `/home/privacy` 頁面
+允許之前都保持封鎖。
 
 ## 模式、語言與偏好設定
 

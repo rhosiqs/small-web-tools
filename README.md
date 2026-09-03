@@ -127,10 +127,10 @@ File-focused tools process selected files in the browser whenever possible; file
 - Media Splitter downloads the pinned FFmpeg WebAssembly engine from unpkg on the first processing action and verifies its size and SHA-256 before execution. Media stays in the browser.
 - Camera scanning requires browser camera permission.
 
-The site footer links to six document pages that share one reading layout:
-`/home/about`, `/home/privacy`, `/home/consent`, `/home/terms`, `/home/security`, and
+The site footer links to five document pages that share one reading layout:
+`/home/about`, `/home/privacy`, `/home/terms`, `/home/security`, and
 `/home/license`. `/home/privacy` lists every declared network service, trigger,
-transmitted data, consent mode, and fallback, and `/home/consent` is where each
+transmitted data, consent mode, and fallback, and the same page is where each
 explicit-consent service is allowed or blocked. Review that policy, a tool's own
 labels, and your browser permissions before using sensitive content.
 

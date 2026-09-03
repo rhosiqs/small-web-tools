@@ -262,8 +262,7 @@ public/fonts/MANIFEST.zh-TW.md。應用程式不會自動要求 Google Fonts。
 | tool-qrbarcodescan | QR Code 與條碼掃描器 | QrBarcodeScanner.jsx | 工具 |
 | tool-wheel | 隨機轉盤 | RandomWheel.jsx | 工具 |
 | about | 關於 | docs/AboutPage.jsx | 政策（僅頁尾，不在工具目錄） |
-| privacy | 隱私權與網路服務 | docs/PrivacyPage.jsx | 政策（僅頁尾，不在工具目錄） |
-| consent | 服務同意設定 | docs/ConsentPage.jsx | 政策（僅頁尾，不在工具目錄） |
+| privacy | 隱私權 | docs/PrivacyPage.jsx | 政策（僅頁尾，不在工具目錄）；同時提供網路服務清單與服務同意設定 |
 | terms | 使用條款 | docs/TermsPage.jsx | 政策（僅頁尾，不在工具目錄） |
 | security | 安全性 | docs/SecurityPage.jsx | 政策（僅頁尾，不在工具目錄） |
 | license | 授權條款 | docs/LicensePage.jsx | 政策（僅頁尾，不在工具目錄） |
@@ -465,8 +464,8 @@ Color Converter 提供高對比的 Color Sync pressed toggle。
 ## 網路服務政策
 
 config/network-services.json 是外部供應商、網域、用途、觸發條件、傳送資料、同意模式、
-替代方案與政策連結的機器可讀來源。src/lib/thirdPartyServices.js、/home/consent 同意設定頁面與正式的
-/home/privacy 路由都使用這份清單。舊版 hash 位址只為向後相容的重新導向而接受。
+替代方案與政策連結的機器可讀來源。src/lib/thirdPartyServices.js 與正式的 /home/privacy 路由都使用這份清單，
+該路由會在同一頁呈現服務清單與服務同意設定。舊版 hash 位址只為向後相容的重新導向而接受。
 verify 中的 scripts/check-external-hosts.mjs 會在正式來源主機名稱未宣告時失敗。
 
 ## 相依套件

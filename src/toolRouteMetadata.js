@@ -31,7 +31,6 @@ export const ROUTE_DEFINITIONS = [
   route('tool-wheel', 'utilities', { subGroupKey: 'utilities', staticLayout: true }),
   route('about', 'policy', { navigationVisible: false }),
   route('privacy', 'policy', { navigationVisible: false }),
-  route('consent', 'policy', { navigationVisible: false }),
   route('terms', 'policy', { navigationVisible: false }),
   route('security', 'policy', { navigationVisible: false }),
   route('license', 'policy', { navigationVisible: false }),

@@ -44,7 +44,7 @@ test('IP coordinates do not contact OpenStreetMap before consent and reset remov
 
   await page.getByRole('button', { name: 'Allow IP lookup' }).click();
   await page.getByRole('navigation', { name: 'Site documents' })
-    .getByRole('button', { name: 'Service Consent', exact: true }).click();
+    .getByRole('button', { name: 'Privacy', exact: true }).click();
   await page.getByRole('button', { name: 'Reset all preferences' }).click();
   expect(await page.evaluate(() => window.localStorage.getItem('small_web_tools_consent'))).toBeNull();
 });
