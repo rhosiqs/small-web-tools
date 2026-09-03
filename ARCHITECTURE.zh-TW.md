@@ -302,8 +302,11 @@ src/styles.css 中的 .markdown-html 會補回這些 raw 元素被 Tailwind rese
 GithubHtmlSnippets.jsx 讓使用者在 `/home/github-html` 以堆疊積木的方式，組出 GitHub
 README 需要的原始 HTML —— 置中標題、徽章列、`<details>`、`<kbd>`、圖片表格等。積木以
 無文字的縮圖呈現：每一塊都用預覽渲染器把自己畫出來，而不是寫出名稱，名稱僅透過
-`aria-label` 提供給輔助技術。最常用的幾塊放在上方的積木列，其餘則在 `Cmd`／`Ctrl` + `K`
-面板中開啟。多行積木會疊在游標所在行的下方而非巢狀嵌入，因此連續點擊會依序堆出文件。
+`aria-label` 提供給輔助技術。所有積木都收在 `Cmd`／`Ctrl` + `K` 面板中，由面板本身的
+格線維持縮圖對齊；面板上方除了操作列之外不再放置任何積木。多行積木會疊在游標所在行的
+下方而非巢狀嵌入，因此連續點擊會依序堆出文件。兩側面板都可用共用的 FullscreenPreview
+覆蓋層全螢幕開啟，與 Markdown 預覽器一致；全螢幕開啟期間積木面板的快速鍵會停用，否則
+面板會被蓋在覆蓋層底下。
 
 其領域模組是本工具自己的，與 Markdown 預覽器分開：githubHtml.js 解析 HTML 片段並依
 允許清單過濾，composeDocument.js 將文件切成 HTML 與 Markdown 區段（重用預覽器的
