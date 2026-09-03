@@ -6,7 +6,10 @@ export const MAX_PNG_PIXELS = 32_000_000;
 const SAFE_FILENAME = /[^a-z0-9._-]+/gi;
 const BLOCKED_ELEMENTS = 'script,foreignObject,iframe,object,embed,image,audio,video,canvas';
 const UNSAFE_VALUE = /(?:javascript:|vbscript:|data:text\/html|@import|-moz-binding|expression\s*\()/i;
-const UNSAFE_STYLESHEET = /(?:@import\b|(?:url|image-set|-webkit-image-set|cross-fade)\s*\(|-moz-binding\s*:|expression\s*\()/i;
+const UNSAFE_STYLESHEET = /(?:@import\b|-moz-binding\s*:|expression\s*\()/i;
+const EXTERNAL_RESOURCE_FUNCTION = /(?:image-set|-webkit-image-set|cross-fade)\s*\(/i;
+const RESOURCE_URL = /url\s*\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))\)/gi;
+const FRAGMENT_REFERENCE = /^#[^\s'"()]+$/;
 const CSS_ESCAPE = /\\(?:[0-9a-f]{1,6}\s?|.)/i;
 let mermaidPromise;
 let renderCounter = 0;
@@ -50,10 +53,21 @@ function unwrapLinks(document) {
   }
 }
 
+// `url(#id)` addresses a paint server inside this same SVG, so it loads nothing;
+// every other `url()` target can reach the network and stays blocked.
+function loadsExternalResource(css) {
+  if (EXTERNAL_RESOURCE_FUNCTION.test(css)) return true;
+  for (const match of css.matchAll(RESOURCE_URL)) {
+    const target = (match[1] ?? match[2] ?? match[3] ?? '').trim();
+    if (!FRAGMENT_REFERENCE.test(target)) return true;
+  }
+  return false;
+}
+
 function sanitizeStyleElements(document) {
   for (const style of [...document.querySelectorAll('style')]) {
     const stylesheet = (style.textContent || '').replace(/\/\*[\s\S]*?\*\//g, '');
-    if (UNSAFE_STYLESHEET.test(stylesheet) || CSS_ESCAPE.test(stylesheet)) {
+    if (UNSAFE_STYLESHEET.test(stylesheet) || loadsExternalResource(stylesheet) || CSS_ESCAPE.test(stylesheet)) {
       style.remove();
     }
   }
@@ -76,7 +90,7 @@ function sanitizeAttributes(document) {
         element.removeAttribute(attribute.name);
         continue;
       }
-      if (name === 'style' && /url\s*\(/i.test(value)) {
+      if (name === 'style' && (loadsExternalResource(value) || CSS_ESCAPE.test(value))) {
         element.removeAttribute(attribute.name);
       }
     }
