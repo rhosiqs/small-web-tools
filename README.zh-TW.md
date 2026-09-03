@@ -117,7 +117,7 @@ English 是預設與 fallback 語言。選定的地區設定會以 `small-web-to
 - 媒體分割器會在第一次處理時從 unpkg 下載固定版本的 FFmpeg WebAssembly 引擎，並在執行前驗證其大小與 SHA-256。媒體會保留在瀏覽器中。
 - 相機掃描需要瀏覽器的相機權限。
 
-網站頁尾連結到六個共用同一種閱讀版型的文件頁面：`/home/about`、`/home/privacy`、`/home/consent`、`/home/terms`、`/home/security` 與 `/home/license`。`/home/privacy` 會列出每個宣告的網路服務、觸發條件、傳送資料、同意模式與替代方案，`/home/consent` 則是允許或封鎖各項需要明確同意之服務的地方。處理敏感內容前，請查看該政策、工具本身的標籤與瀏覽器權限。
+網站頁尾連結到五個共用同一種閱讀版型的文件頁面：`/home/about`、`/home/privacy`、`/home/terms`、`/home/security` 與 `/home/license`。`/home/privacy` 會列出每個宣告的網路服務、觸發條件、傳送資料、同意模式與替代方案，同一頁也是允許或封鎖各項需要明確同意之服務的地方。處理敏感內容前，請查看該政策、工具本身的標籤與瀏覽器權限。
 
 ## 在本機執行
 
