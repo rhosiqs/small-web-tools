@@ -13,6 +13,6 @@ describe('document source links', () => {
   });
 
   it('returns null for a route without a repository document', () => {
-    expect(getDocumentSourceUrl('consent', 'en-US')).toBeNull();
+    expect(getDocumentSourceUrl('tool-home', 'en-US')).toBeNull();
   });
 });

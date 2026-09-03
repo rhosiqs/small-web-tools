@@ -27,25 +27,23 @@ test('fresh initial load makes no undeclared or Google Fonts requests', async ({
   ))).toEqual([]);
 });
 
-test('privacy and consent pages expose the shared network inventory', async ({ page }) => {
+test('the privacy page carries the network inventory and the consent settings', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Privacy & Network Services', exact: true }).click();
+  await page.getByRole('button', { name: 'Privacy', exact: true }).click();
   await expect(page).toHaveURL(/\/home\/privacy$/);
-  await expect(page.getByRole('heading', { name: 'Privacy & Network Services', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Privacy', level: 1 })).toBeVisible();
   await expect(page.getByText('FFmpeg WebAssembly Runtime').first()).toBeVisible();
   await expect(page.getByText('Google Fonts Recommendations').first()).toBeVisible();
 
-  await page.getByRole('button', { name: 'Open the service consent settings' }).click();
-  await expect(page).toHaveURL(/\/home\/consent$/);
-  await page.getByRole('button', { name: 'Read the full Privacy & Network Services policy' }).click();
-  await expect(page).toHaveURL(/\/home\/privacy$/);
+  await expect(page.getByRole('heading', { name: 'Service consent settings', level: 2 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Network services', level: 2 })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Allow / }).first()).toBeVisible();
 });
 
 test('every footer document link opens its own page', async ({ page }) => {
   const documents = [
     ['About', '/home/about'],
-    ['Privacy & Network Services', '/home/privacy'],
-    ['Service Consent', '/home/consent'],
+    ['Privacy', '/home/privacy'],
     ['Terms of Use', '/home/terms'],
     ['Security', '/home/security'],
     ['License', '/home/license'],

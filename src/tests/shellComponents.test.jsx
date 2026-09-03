@@ -109,11 +109,11 @@ describe('application shell components', () => {
     const documentLabels = [...documentNav.querySelectorAll('button')].map((button) => button.textContent);
     expect(documentLabels).toEqual(DOCUMENT_ROUTE_IDS.map((id) => `tools:${id}.title`));
 
-    const consentLink = [...documentNav.querySelectorAll('button')].find(
-      (button) => button.textContent === 'tools:consent.title',
+    const privacyLink = [...documentNav.querySelectorAll('button')].find(
+      (button) => button.textContent === 'tools:privacy.title',
     );
-    await act(async () => consentLink.click());
-    expect(callbacks.onSelectDocument).toHaveBeenCalledWith('consent');
+    await act(async () => privacyLink.click());
+    expect(callbacks.onSelectDocument).toHaveBeenCalledWith('privacy');
 
     await act(async () => container.querySelector('[aria-label="Project links"] a').click());
     expect(callbacks.onEmailClick).toHaveBeenCalled();

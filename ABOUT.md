@@ -45,7 +45,7 @@ runtime — live exchange rates, IP lookup, the speed test, the website font sca
 optional map preview, and the FFmpeg WebAssembly runtime among them. Every one of
 them is declared in `config/network-services.json`, listed on the `/home/privacy`
 page, and described in [`PRIVACY.md`](PRIVACY.md). Services that require permission
-stay blocked until they are allowed on the `/home/consent` page.
+stay blocked until they are allowed on that same `/home/privacy` page.
 
 ## Modes, languages, and preferences
 

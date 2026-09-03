@@ -11,14 +11,14 @@ describe('documentation consistency helpers', () => {
       route('tool-home', 'home', loader),
       route("tool-markdown", 'developer', loader),
       route('privacy', 'policy', loader),
-      route('consent', 'policy', loader),
+      route('terms', 'policy', loader),
     `;
 
     expect(extractRegistryRouteIds(source)).toEqual([
       'tool-home',
       'tool-markdown',
       'privacy',
-      'consent',
+      'terms',
     ]);
   });
 

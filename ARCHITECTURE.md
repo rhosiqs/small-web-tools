@@ -306,8 +306,7 @@ Prefer the shared primitives and existing design tokens. Add global CSS only for
 | `tool-qrbarcodescan` | QR & Barcode Scanner | `QrBarcodeScanner.jsx` | Utilities |
 | `tool-wheel` | Random Wheel | `RandomWheel.jsx` | Utilities |
 | `about` | About | `docs/AboutPage.jsx` | Policy (footer only, not in tool catalog) |
-| `privacy` | Privacy & Network Services | `docs/PrivacyPage.jsx` | Policy (footer only, not in tool catalog) |
-| `consent` | Service Consent | `docs/ConsentPage.jsx` | Policy (footer only, not in tool catalog) |
+| `privacy` | Privacy | `docs/PrivacyPage.jsx` | Policy (footer only, not in tool catalog); carries the network inventory and the service consent settings |
 | `terms` | Terms of Use | `docs/TermsPage.jsx` | Policy (footer only, not in tool catalog) |
 | `security` | Security | `docs/SecurityPage.jsx` | Policy (footer only, not in tool catalog) |
 | `license` | License | `docs/LicensePage.jsx` | Policy (footer only, not in tool catalog) |
@@ -541,7 +540,7 @@ pluralized messages use platform `Intl` APIs or i18next interpolation.
 
 ## Network-service policy
 
-`config/network-services.json` is the machine-readable source of truth for external providers, domains, purposes, triggers, transmitted data, consent modes, fallbacks, and policy links. `src/lib/thirdPartyServices.js`, the `/home/consent` settings page, and the canonical `/home/privacy` route consume this inventory. Legacy hash addresses are accepted only for backward-compatible redirects. `scripts/check-external-hosts.mjs`, included in `npm run verify`, fails when a production source hostname is not declared.
+`config/network-services.json` is the machine-readable source of truth for external providers, domains, purposes, triggers, transmitted data, consent modes, fallbacks, and policy links. `src/lib/thirdPartyServices.js` and the canonical `/home/privacy` route, which shows the inventory and the service consent settings on one page, consume it. Legacy hash addresses are accepted only for backward-compatible redirects. `scripts/check-external-hosts.mjs`, included in `npm run verify`, fails when a production source hostname is not declared.
 
 ## Dependencies
 
