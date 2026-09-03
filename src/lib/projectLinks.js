@@ -5,7 +5,7 @@
  * repository keeps the complete document. These helpers point one at the other
  * so the site never hard-codes a repository path in more than one place.
  */
-export const PROJECT_REPOSITORY_URL = 'https://github.com/hhter2/small-web-tools';
+export const PROJECT_REPOSITORY_URL = 'https://github.com/rhosiqs/small-web-tools';
 
 const SOURCE_FILES = {
   about: { 'en-US': 'ABOUT.md', 'zh-TW': 'ABOUT.zh-TW.md' },

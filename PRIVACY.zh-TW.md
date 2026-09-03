@@ -12,7 +12,7 @@
 
 **應用程式內政策：** /home/privacy（同意設定：/home/consent）
 
-**原始碼儲存庫：** [github.com/hhter2/small-web-tools](https://github.com/hhter2/small-web-tools)（MIT 授權；可能需要 GitHub 存取權）
+**原始碼儲存庫：** [github.com/rhosiqs/small-web-tools](https://github.com/rhosiqs/small-web-tools)（MIT 授權；可能需要 GitHub 存取權）
 
 **維護者聯絡方式：** Rhosiqs（emailforvirtualmachine@gmail.com）
 

@@ -10,7 +10,7 @@
 
 **In-app page:** `/home/about`
 
-**Source repository:** [github.com/hhter2/small-web-tools](https://github.com/hhter2/small-web-tools) (MIT License; GitHub access may be required)
+**Source repository:** [github.com/rhosiqs/small-web-tools](https://github.com/rhosiqs/small-web-tools) (MIT License; GitHub access may be required)
 
 **Maintainer Contact:** Rhosiqs (<emailforvirtualmachine@gmail.com>)
 

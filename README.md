@@ -19,9 +19,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hhter2/small-web-tools/tags"><img src="https://img.shields.io/github/v/tag/hhter2/small-web-tools?sort=semver&amp;label=version" alt="Version: latest Git tag"></a>
-  <a href="https://github.com/hhter2/small-web-tools/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/hhter2/small-web-tools/ci.yml?branch=develop&amp;label=CI" alt="CI status"></a>
-  <a href="https://github.com/hhter2/small-web-tools/blob/develop/LICENSE"><img src="https://img.shields.io/badge/license-MIT-16a34a" alt="MIT license"></a>
+  <a href="https://github.com/rhosiqs/small-web-tools/tags"><img src="https://img.shields.io/github/v/tag/rhosiqs/small-web-tools?sort=semver&amp;label=version" alt="Version: latest Git tag"></a>
+  <a href="https://github.com/rhosiqs/small-web-tools/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/rhosiqs/small-web-tools/ci.yml?branch=develop&amp;label=CI" alt="CI status"></a>
+  <a href="https://github.com/rhosiqs/small-web-tools/blob/develop/LICENSE"><img src="https://img.shields.io/badge/license-MIT-16a34a" alt="MIT license"></a>
 </p>
 
 Small Web Tools is a browser-based collection of everyday utilities for text, developer work, files, media, networking, bioinformatics, and quick calculations. It is a single-page React application: selecting a tool changes the view without a full page load.
