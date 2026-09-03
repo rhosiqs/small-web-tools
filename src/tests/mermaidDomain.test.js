@@ -47,6 +47,18 @@ describe('Mermaid converter domain', () => {
     expect(result.svg).not.toMatch(/data-unsafe|data-obfuscated|@import|example\.com|u\\72l/i);
   });
 
+  it('keeps stylesheets and styles that reference same-document paint servers', () => {
+    // Mermaid 11 ships `stroke:url(#<id>-gradient)` in its generated stylesheet;
+    // dropping it leaves every CSS-styled shape with the default black fill.
+    const diagram = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80">
+      <style>#d [data-look="neo"].node polygon { stroke: url(#d-gradient); }</style>
+      <rect class="node" width="10" height="10" style="fill:url(#d-gradient)" />
+    </svg>`;
+    const result = sanitizeMermaidSvg(diagram);
+    expect(result.svg).toContain('url(#d-gradient)');
+    expect(result.svg).toContain('style="fill:url(#d-gradient)"');
+  });
+
   it('preserves a transparent background without adding a rectangle', () => {
     const result = sanitizeMermaidSvg('<svg xmlns="http://www.w3.org/2000/svg" width="10" height="20"></svg>', { background: 'transparent' });
     expect(result.background).toBe('transparent');
