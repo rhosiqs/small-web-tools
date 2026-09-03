@@ -21,6 +21,49 @@ const TRANSPARENT_TAGS = new Set(['picture', 'source']);
 
 const ALERT_PATTERN = /^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*/;
 
+/** Elements a browser parser tidies up before it builds their children. */
+const TABLE_CONTEXT_TAGS = new Set(['table', 'thead', 'tbody', 'tfoot', 'tr', 'colgroup']);
+
+/**
+ * Applies the two table fix-ups a browser parser performs and React does not.
+ *
+ * Sanitized markup keeps the line breaks and indentation the author typed, and
+ * `<table>` followed by an indented `<tr>` is the shape every table block in the
+ * catalogue has. Rendered as-is, React reports the whitespace between the tags
+ * and the row that sits directly under `<table>` as invalid nesting, so the
+ * whitespace is dropped and loose rows are collected into a `<tbody>` — exactly
+ * what the browser does with the same markup, and what GitHub therefore shows.
+ *
+ * @param {string} tag lowercase tag of the element about to be created
+ * @param {object[]} children its sanitized child nodes
+ * @param {(child: object) => string | undefined} tagOf reads a child's tag, which the two node shapes spell differently
+ * @param {(rows: object[]) => object} rowSection builds the wrapping `<tbody>` in the caller's node shape
+ * @returns {object[]} children that nest validly
+ */
+function tableSafeChildren(tag, children, tagOf, rowSection) {
+  if (!TABLE_CONTEXT_TAGS.has(tag)) return children;
+
+  const kept = children.filter((child) => child.type !== 'text' || child.value.trim() !== '');
+  if (tag !== 'table') return kept;
+
+  const grouped = [];
+  let rows = null;
+  for (const child of kept) {
+    if (tagOf(child) === 'tr') {
+      if (!rows) rows = [];
+      rows.push(child);
+      continue;
+    }
+    if (rows) {
+      grouped.push(rowSection(rows));
+      rows = null;
+    }
+    grouped.push(child);
+  }
+  if (rows) grouped.push(rowSection(rows));
+  return grouped;
+}
+
 function ImagePlaceholder({ alt }) {
   const { t } = useTranslation('tools');
   return (
@@ -96,11 +139,18 @@ function DomainHtmlNode({ node }) {
     return node.children?.map((child, index) => <DomainHtmlNode key={index} node={child} />);
   }
 
+  const children = tableSafeChildren(
+    node.name,
+    node.children || [],
+    (child) => child.name,
+    (rows) => ({ type: 'element', name: 'tbody', attributes: {}, children: rows }),
+  );
+
   return React.createElement(
     node.name,
     reactProps(node.name, node.attributes),
-    node.children?.length
-      ? node.children.map((child, index) => <DomainHtmlNode key={index} node={child} />)
+    children.length > 0
+      ? children.map((child, index) => <DomainHtmlNode key={index} node={child} />)
       : undefined,
   );
 }
@@ -113,10 +163,17 @@ function HtmlNodes({ nodes }) {
     if (node.tag === 'img') return <ImagePlaceholder key={key} alt={node.attributes.alt} />;
     if (TRANSPARENT_TAGS.has(node.tag)) return <HtmlNodes key={key} nodes={node.children} />;
 
+    const children = tableSafeChildren(
+      node.tag,
+      node.children,
+      (child) => child.tag,
+      (rows) => ({ type: 'element', tag: 'tbody', attributes: {}, children: rows }),
+    );
+
     return React.createElement(
       node.tag,
       { key, ...reactProps(node.tag, node.attributes) },
-      node.children.length > 0 ? <HtmlNodes nodes={node.children} /> : undefined,
+      children.length > 0 ? <HtmlNodes nodes={children} /> : undefined,
     );
   });
 }
