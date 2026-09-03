@@ -39,7 +39,7 @@ structure changes.
 | Routing | In-app state synchronized to `/home` and `/simple` URL paths with `React.lazy()` code splitting; no React Router |
 | Server functions | Cloudflare Pages-compatible handlers in `functions/api/` and shared helpers in `functions/_shared/` |
 
-At build time, `scripts/resolve-version.mjs` selects the newest version-sorted Git tag. It first checks local tags, then queries the repository's remote tags when a deployment build has no local tag refs. Build archives without Git metadata can still use `VITE_VERSION_REPOSITORY` or the repository URL in `package.json`; `VITE_APP_VERSION` remains the final explicit fallback. The npm manifest uses the fixed non-release placeholder `0.0.0-private`, which is never used as the application version or updated for releases. CI checks out full tag history, and `npm run version:check`, included in `verify`, confirms that a Git tag or explicit archive fallback supplied the displayed version.
+At build time, `scripts/resolve-version.mjs` selects the newest version-sorted Git tag. It first checks local tags, then queries the repository's remote tags when a deployment build has no local tag refs. Build archives without Git metadata can still use `VITE_VERSION_REPOSITORY` or the repository URL in `package.json`; `VITE_APP_VERSION` remains the final explicit fallback. The npm manifest uses the fixed non-release placeholder `0.0.0-private`, which is never used as the application version or updated for releases. CI checks out full tag history, and `npm run version:check`, included in `verify`, confirms that a Git tag or explicit archive fallback supplied the displayed version. Cloudflare Pages builds on branch pushes only and never on a tag push, so a tag created after its commit was already built would leave the deployed bundle on the previous version. `.github/workflows/release-deploy.yml` closes that gap: a version-tag push asks Pages to rebuild the branch containing the tagged commit, using the `CLOUDFLARE_PAGES_DEPLOY_HOOK_MAIN` secret for `main` and `CLOUDFLARE_PAGES_DEPLOY_HOOK_DEVELOP` for `develop`. Each secret holds the deploy hook URL created for that branch in the Cloudflare Pages project; when a secret is absent the workflow warns and skips instead of failing, and that branch keeps showing the previous version until it is rebuilt.
 
 ## Repository map
 
@@ -96,7 +96,9 @@ small-web-tools/
 │       └── fix-bug/          Bug-diagnosis workflow skill plus symptom-map and verification references
 ├── .github/
 │   ├── dependabot.yml        Monthly dependency updates, including major versions
-│   └── workflows/ci.yml      GitHub Actions CI pipeline workflow
+│   └── workflows/
+│       ├── ci.yml            GitHub Actions CI pipeline workflow
+│       └── release-deploy.yml Cloudflare Pages rebuild triggered by a version-tag push
 ├── public/
 │   ├── _headers              Cloudflare Pages security response headers
 │   ├── fonts/                Self-hosted WOFF2 UI fonts, licenses, and manifest

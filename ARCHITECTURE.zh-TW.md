@@ -45,7 +45,13 @@ small-web-tools 是一個使用 React 18 與 Vite 的單頁應用程式，提供
 VITE_APP_VERSION 是最後的明確 fallback。npm manifest 使用固定的非 release 佔位版本
 0.0.0-private，這個值不會用作應用程式版本，也不會因 release 更新。CI 會取出完整
 標籤歷史，而 verify 中的 npm run version:check 會確認顯示的版本由 Git 標籤或明確的
-封存檔 fallback 提供。
+封存檔 fallback 提供。Cloudflare Pages 只在分支推送時建置，推送標籤不會觸發建置；
+標籤總是在它指向的 commit 建置完成之後才建立，因此部署出來的 bundle 會停在前一個
+版本。.github/workflows/release-deploy.yml 補上這一步：推送版本標籤時，會請 Pages
+重新建置包含該 commit 的分支，main 使用 CLOUDFLARE_PAGES_DEPLOY_HOOK_MAIN secret，
+develop 使用 CLOUDFLARE_PAGES_DEPLOY_HOOK_DEVELOP。兩個 secret 各自存放在 Cloudflare
+Pages 專案中為該分支建立的 deploy hook URL；secret 不存在時 workflow 會發出警告並跳過
+而不是失敗，該分支也會維持顯示前一個版本，直到重新建置為止。
 
 ## 儲存庫地圖
 
@@ -78,7 +84,8 @@ VITE_APP_VERSION 是最後的明確 fallback。npm manifest 使用固定的非 r
 - config/：network-services.json 網路服務政策來源，以及 ffmpeg-assets.json 固定的
   FFmpeg 資產大小與 SHA-256；rateLimitPolicies.js 是正式的 route、class、binding、
   limit 與 period 政策。
-- .github/：Dependabot 設定與 GitHub Actions CI pipeline。
+- .github/：Dependabot 設定、GitHub Actions CI pipeline，以及在版本標籤推送時觸發
+  Cloudflare Pages 重新建置的 release-deploy.yml。
 - public/：Cloudflare Pages 回應標頭、內建 WOFF2 UI 字型、授權與字型清單，以及 favicon。
 - scripts/：版本、i18n、硬編碼 UI 與文件一致性檢查腳本。
 - docs/：包含 `docs/agents/` 的 issue tracker、triage label 與 domain docs 規則，
