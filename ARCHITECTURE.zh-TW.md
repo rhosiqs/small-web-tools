@@ -211,16 +211,32 @@ App shell、lazy route、持久化、工作區導覽與語言切換的整合覆�
 2. 頁面識別恰好渲染一個 ToolHeader 標題。
 3. 頁面層級描述不要放進 ToolHeader；輔助文字放在需要它的功能內。
 4. 保留共用桌面卡片間距（p-6、gap-4），並讓 styles.css 的行動 .tool-card 規則
-   處理窄螢幕。
+   處理窄螢幕。下述轉換頁面改用較寬的節奏（p-6 sm:p-8、gap-6），這是單一框架
+   版面所需。
 
 src/components/ui/AutoDetectConverter.jsx 為 Slashes、ASCII、Unicode 與 URL 轉換器
 實作此契約。Slashes 與 ASCII 只顯示自動方向偵測；Unicode 與 URL 在方向可能不明確時
 保留明確的 encode/decode 控制。
 
+#### 轉換頁面版面
+
+ASCII、Unicode、URL、Slashes、Casing Switcher、Roman Numeral 與 Phred Scale
+頁面在上述契約之外共用同一套版面：
+
+- 工具 Card 是頁面上唯一的框。各區段以 styles.css 的 .rule-fade 分隔，而不是
+  再套一層有邊框的盒子。
+- ToolHeader 接收 kicker——來自 navigation:categories 命名空間的工具分類——置於
+  較輕、較大的標題之上，並移除自身的分隔線。未傳入 kicker 的工具維持原本
+  有邊框的標題。
+- 輸入欄位是有底線的 .input-rule 控制項而非方框，且寬度大於結果區。
+- 推導出的數值放在帶強調色的區塊：bg-accent-light 搭配 ring-accent-edge 邊緣。
+- 參考資料依其真正的軸線排列——ASCII 依代碼範圍、羅馬數字依位數量級、Phred 依
+  其對數刻度。
+
 ### 樣式與主題
 
-src/styles.css 定義 --bg-app、--bg-card、--text-main、--accent 與 --border-color
-等 light／dark CSS custom properties。tailwind.config.js 將這些 token 暴露為 Tailwind
+src/styles.css 定義 --bg-app、--bg-card、--text-main、--accent、--accent-light、
+--accent-edge 與 --border-color 等 light／dark CSS custom properties。tailwind.config.js 將這些 token 暴露為 Tailwind
 色彩、陰影與字型 utilities。
 
 Inter、JetBrains Mono、Plus Jakarta Sans 與 TASA Orbiter 從 public/fonts/ 提供；版本、
@@ -282,10 +298,10 @@ public/fonts/MANIFEST.zh-TW.md。應用程式不會自動要求 Google Fonts。
 | 檔案 | 角色 |
 | --- | --- |
 | Card.jsx | 工具頁面與儀表板卡片的共用容器。 |
-| ToolHeader.jsx | 路由工具唯一的頁面識別元件。 |
+| ToolHeader.jsx | 路由工具唯一的頁面識別元件；傳入 kicker 即切換為轉換頁面標題。 |
 | Button.jsx | 共用按鈕變體與尺寸。 |
 | FieldInput.jsx | 有標籤的 input 與 textarea helper。 |
-| AutoDetectConverter.jsx | 共用雙面板自動轉換介面。 |
+| AutoDetectConverter.jsx | 共用自動轉換介面：有底線的來源欄位搭配帶強調色的結果區塊。 |
 | ToggleSwitch.jsx、Spinner.jsx、ResultDisplay.jsx | 可重用控制項與回饋 UI。 |
 
 ExternalMapPreview.jsx 是 IP Lookup 與 Image Metadata 共用的 OpenStreetMap 同意邊界。

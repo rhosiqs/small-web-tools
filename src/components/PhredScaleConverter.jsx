@@ -11,9 +11,16 @@ import {
   formatFastqQualityScores,
   formatPhredScore,
   formatProbability,
+  parseFastqQualityScores,
 } from './PhredScaleConverter/lib/phredDomain';
 
-const REFERENCE_SCORES = [10, 20, 30, 40];
+/**
+ * The four-row reference table became the log scale it describes: marks a
+ * decade apart along a slider, so the distance between Q20 and Q30 reads as the
+ * factor of ten it is.
+ */
+const SCALE_MAX = 60;
+const QUALITY_MARKS = [0, 10, 20, 30, 40, 50, 60];
 const OFFSET_OPTIONS = [
   {
     id: 'phred33',
@@ -38,8 +45,12 @@ const PHRED_FORMULA = React.createElement(
   React.createElement('sup', null, '−Q/10'),
 );
 
+const fieldLabelClass = 'block text-xs font-medium text-text-muted';
+const ruleFieldClass =
+  'input-rule w-full px-0 pb-2 pt-0 font-mono text-lg leading-relaxed text-text-main placeholder:text-text-muted';
+
 export default function PhredScaleConverter() {
-  const { t } = useTranslation('tools');
+  const { t, i18n } = useTranslation('tools');
 
   const [scoreInput, setScoreInput] = useState('30');
   const [probabilityInput, setProbabilityInput] = useState('0.001');
@@ -59,6 +70,10 @@ export default function PhredScaleConverter() {
     () => decodeFastqQualityString(fastqInput, offset),
     [fastqInput, offset],
   );
+  const parsedScores = useMemo(
+    () => parseFastqQualityScores(scoreInput, offset),
+    [scoreInput, offset],
+  );
 
   const scoreHasError = Boolean(scoreInput.trim()) && !singleScoreMetrics && encodedQuality === null;
   const probabilityHasError = Boolean(probabilityInput.trim())
@@ -67,6 +82,21 @@ export default function PhredScaleConverter() {
   const fastqEncodingUnavailable = Boolean(scoreInput.trim())
     && Boolean(singleScoreMetrics)
     && encodedQuality === null;
+
+  // The headline readout tracks the first score, so a multi-score paste still
+  // has something to lead with instead of blanking the whole row.
+  const primaryScore = singleScoreMetrics
+    ? singleScoreMetrics.score
+    : parsedScores?.length
+      ? parsedScores[0]
+      : null;
+  const primaryMetrics = primaryScore === null
+    ? null
+    : calculatePhredMetrics('score', String(primaryScore));
+  const sliderValue = primaryScore === null
+    ? 0
+    : Math.min(SCALE_MAX, Math.max(0, Math.round(primaryScore)));
+  const integerScore = primaryScore !== null && Number.isInteger(primaryScore) ? primaryScore : null;
 
   const syncProbabilityFromScores = (value) => {
     const nextMetrics = calculatePhredMetrics('score', value);
@@ -139,80 +169,19 @@ export default function PhredScaleConverter() {
   const selectedOffset = OFFSET_OPTIONS.find((option) => option.offset === offset);
 
   return (
-    <Card id="tool-phred" variant="tool" size="wide" className="max-w-[980px]">
-      <ToolHeader title={t('tool-phred.title')} />
+    <Card id="tool-phred" variant="tool" size="wide" className="max-w-[900px] gap-6 p-6 sm:p-8">
+      <ToolHeader title={t('tool-phred.title')} kicker={t('navigation:categories.bioinfo')} />
 
-      <section className="flex flex-col gap-4 rounded-xl border border-border bg-app/70 p-4">
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="phred-offset" className="text-sm font-bold text-text-main">FASTQ</label>
-          <select
-            id="phred-offset"
-            value={offset}
-            onChange={(event) => handleOffsetChange(Number(event.target.value))}
-            className="w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm font-semibold text-text-main outline-none transition-all hover:border-border-hover focus:border-accent focus:ring-2 focus:ring-focus"
-          >
-            {OFFSET_OPTIONS.map((option) => (
-              <option key={option.id} value={option.offset}>
-                {option.label} — {option.detail}
-              </option>
-            ))}
-          </select>
-          <p className="text-xs text-text-muted">
-            <span className="font-mono font-semibold">{selectedOffset?.label}</span>
-            {' · '}
-            {selectedOffset?.detail}
+      <section className="flex flex-wrap items-end gap-6">
+        <div className="flex-none">
+          <span className={fieldLabelClass}>{t('tool-phred.ui.score')}</span>
+          <p className="m-0 mt-1 font-mono text-[3.5rem] leading-none text-text-main">
+            {primaryScore === null ? '—' : `Q${formatPhredScore(primaryScore)}`}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="phred-fastq-input" className="text-sm font-bold text-text-main">FASTQ</label>
-            <textarea
-              id="phred-fastq-input"
-              rows={6}
-              value={fastqInput}
-              onChange={(event) => handleFastqChange(event.target.value)}
-              spellCheck={false}
-              aria-invalid={fastqHasError || undefined}
-              className={`h-40 min-h-40 w-full resize-y rounded-lg border bg-card px-4 py-3 font-mono text-base font-semibold text-text-main outline-none transition-all focus:ring-2 ${
-                fastqHasError
-                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
-                  : 'border-border hover:border-border-hover focus:border-accent focus:ring-focus'
-              }`}
-            />
-            {fastqHasError && (
-              <p role="alert" className="text-xs text-red-500">ASCII {offset}–126</p>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="phred-score-input" className="text-sm font-bold text-text-main">
-              {t('tool-phred.ui.scoreTab')}
-            </label>
-            <textarea
-              id="phred-score-input"
-              rows={6}
-              value={scoreInput}
-              onChange={(event) => handleScoreChange(event.target.value)}
-              spellCheck={false}
-              aria-invalid={scoreHasError || undefined}
-              className={`h-40 min-h-40 w-full resize-y rounded-lg border bg-card px-4 py-3 font-mono text-base font-semibold text-text-main outline-none transition-all focus:ring-2 ${
-                scoreHasError
-                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
-                  : 'border-border hover:border-border-hover focus:border-accent focus:ring-focus'
-              }`}
-            />
-            {scoreHasError && (
-              <p role="alert" className="text-xs text-red-500">{t('tool-phred.ui.scoreError')}</p>
-            )}
-            {fastqEncodingUnavailable && conversionSource === 'scores' && (
-              <p className="text-xs text-text-muted">{FASTQ_SCORE_RANGE_PREFIX}{126 - offset}</p>
-            )}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="phred-probability-input" className="text-sm font-bold text-text-main">
+        <div className="min-w-[200px] flex-[1_1_220px] rounded-lg bg-accent-light px-4 py-3 ring-1 ring-accent-edge">
+          <label htmlFor="phred-probability-input" className="mb-1.5 block text-xs font-medium text-accent">
             {t('tool-phred.ui.errorProbability')}
           </label>
           <input
@@ -224,62 +193,165 @@ export default function PhredScaleConverter() {
             value={probabilityInput}
             onChange={(event) => handleProbabilityChange(event.target.value)}
             aria-invalid={probabilityHasError || undefined}
-            className={`w-full rounded-lg border bg-card px-4 py-3 font-mono text-base font-semibold text-text-main outline-none transition-all focus:ring-2 ${
-              probabilityHasError
-                ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
-                : 'border-border hover:border-border-hover focus:border-accent focus:ring-focus'
-            }`}
+            aria-describedby={probabilityHasError ? 'phred-probability-error' : undefined}
+            className="input-rule w-full px-0 pb-1.5 pt-0 font-mono text-xl leading-tight text-text-main"
           />
-          {probabilityHasError && (
-            <p role="alert" className="text-xs text-red-500">{t('tool-phred.ui.probabilityError')}</p>
+          {probabilityHasError ? (
+            <p id="phred-probability-error" role="alert" className="m-0 mt-1.5 text-[0.6875rem] text-red-500">
+              {t('tool-phred.ui.probabilityError')}
+            </p>
+          ) : (
+            <p className="m-0 mt-1.5 text-[0.6875rem] text-text-muted">
+              {primaryMetrics
+                ? t('tool-phred.ui.oneIn', {
+                  count: new Intl.NumberFormat(i18n.resolvedLanguage).format(Math.round(primaryMetrics.oneIn)),
+                })
+                : '—'}
+            </p>
           )}
-          <p className="text-sm text-text-muted">{PHRED_FORMULA}</p>
+        </div>
+
+        <div className="flex flex-none gap-6">
+          {OFFSET_OPTIONS.map((option) => (
+            <div key={option.id}>
+              <span className="block font-mono text-[0.5938rem] font-semibold uppercase tracking-[0.08em] text-text-muted">
+                {option.label}
+              </span>
+              <p className="m-0 mt-1.5 font-mono text-2xl leading-none text-accent">
+                {(integerScore === null ? null : fastqCodeForScore(integerScore, option.offset)) ?? '—'}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
-      <section className="flex flex-col gap-3" aria-labelledby="phred-reference-title">
-        <div>
-          <h3 id="phred-reference-title" className="text-sm font-bold text-text-main">
-            {t('tool-phred.ui.referenceTitle')}
-          </h3>
-          <p className="text-xs text-text-muted">{t('tool-phred.ui.referenceDescription')}</p>
+      <section aria-labelledby="phred-scale-title" className="flex flex-col gap-1">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="min-w-0">
+            <h3 id="phred-scale-title" className="m-0 text-[0.9375rem] font-medium text-text-main">
+              {t('tool-phred.ui.referenceTitle')}
+            </h3>
+            <p className="m-0 mt-0.5 text-xs text-text-muted">{t('tool-phred.ui.referenceDescription')}</p>
+          </div>
         </div>
-        <div className="overflow-x-auto rounded-xl border border-border">
-          <table className="w-full min-w-[560px] border-collapse text-sm">
-            <thead className="bg-app text-left text-xs uppercase tracking-wide text-text-muted">
-              <tr>
-                <th className="px-3 py-2">Q</th>
-                <th className="px-3 py-2">{OFFSET_OPTIONS[0].label}</th>
-                <th className="px-3 py-2">{OFFSET_OPTIONS[1].label}</th>
-                <th className="px-3 py-2">{t('tool-phred.ui.errorProbability')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {REFERENCE_SCORES.map((score) => {
-                const row = calculatePhredMetrics('score', String(score));
-                return (
-                  <tr key={score} className="border-t border-border bg-card hover:bg-accent-light/40">
-                    <td className="p-0">
-                      <button
-                        type="button"
-                        onClick={() => applyReferenceScore(score)}
-                        className="w-full px-3 py-2 text-left font-mono font-extrabold text-accent"
-                        aria-label={t('tool-phred.ui.useScoreAria', { score })}
-                      >
-                        {score}
-                      </button>
-                    </td>
-                    <td className="px-3 py-2 font-mono">{fastqCodeForScore(score, FASTQ_PHRED_OFFSETS.phred33)}</td>
-                    <td className="px-3 py-2 font-mono">{fastqCodeForScore(score, FASTQ_PHRED_OFFSETS.phred64)}</td>
-                    <td className="px-3 py-2 font-mono">{formatProbability(row.errorProbability)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+
+        <input
+          id="phred-scale"
+          type="range"
+          min="0"
+          max={SCALE_MAX}
+          step="1"
+          value={sliderValue}
+          onChange={(event) => applyReferenceScore(Number(event.target.value))}
+          aria-label={t('tool-phred.ui.scaleLabel')}
+          className="mt-2 h-6 w-full cursor-pointer bg-transparent accent-[var(--accent)]"
+        />
+
+        <div className="relative h-14">
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-border to-accent-edge"
+          />
+          {QUALITY_MARKS.map((mark) => {
+            const active = mark === sliderValue;
+            return (
+              <button
+                key={mark}
+                type="button"
+                onClick={() => applyReferenceScore(mark)}
+                aria-label={t('tool-phred.ui.useScoreAria', { score: mark })}
+                aria-pressed={active}
+                style={{ left: `${(mark / SCALE_MAX) * 100}%` }}
+                className={`absolute top-0 -translate-x-1/2 whitespace-nowrap border-0 bg-transparent px-2 pt-1.5 transition-colors ${
+                  active ? 'text-accent' : 'text-text-muted hover:text-accent'
+                }`}
+              >
+                <span aria-hidden="true" className="mx-auto mb-1.5 block h-2.5 w-px bg-current" />
+                <span className="block font-mono text-[0.6875rem] leading-none">Q{mark}</span>
+                <span className="mt-1 block font-mono text-[0.5938rem] leading-none opacity-70">
+                  {mark === 0 ? '1' : `1e-${mark / 10}`}
+                </span>
+              </button>
+            );
+          })}
         </div>
-        <p className="text-xs text-text-muted">{t('tool-phred.ui.note')}</p>
       </section>
+
+      <div className="rule-fade" role="presentation" />
+
+      <section className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
+        <div>
+          <label htmlFor="phred-fastq-input" className={`${fieldLabelClass} mb-2`}>
+            {t('tool-phred.ui.fastqString')}
+          </label>
+          <textarea
+            id="phred-fastq-input"
+            rows={2}
+            value={fastqInput}
+            onChange={(event) => handleFastqChange(event.target.value)}
+            spellCheck={false}
+            aria-invalid={fastqHasError || undefined}
+            aria-describedby={fastqHasError ? 'phred-fastq-error' : undefined}
+            className={`${ruleFieldClass} resize-y break-all`}
+          />
+          {fastqHasError && (
+            <p id="phred-fastq-error" role="alert" className="m-0 mt-2 text-xs text-red-500">
+              ASCII {offset}–126
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="phred-score-input" className={`${fieldLabelClass} mb-2`}>
+            {t('tool-phred.ui.scoreTab')}
+          </label>
+          <textarea
+            id="phred-score-input"
+            rows={2}
+            value={scoreInput}
+            onChange={(event) => handleScoreChange(event.target.value)}
+            spellCheck={false}
+            aria-invalid={scoreHasError || undefined}
+            aria-describedby={scoreHasError ? 'phred-score-error' : undefined}
+            className={`${ruleFieldClass} resize-y break-all`}
+          />
+          {scoreHasError && (
+            <p id="phred-score-error" role="alert" className="m-0 mt-2 text-xs text-red-500">
+              {t('tool-phred.ui.scoreError')}
+            </p>
+          )}
+          {fastqEncodingUnavailable && conversionSource === 'scores' && (
+            <p className="m-0 mt-2 text-xs text-text-muted">{FASTQ_SCORE_RANGE_PREFIX}{126 - offset}</p>
+          )}
+        </div>
+      </section>
+
+      <section className="flex flex-wrap items-center gap-x-6 gap-y-3">
+        <p className="m-0 font-mono text-[0.9375rem] leading-loose text-text-muted">{PHRED_FORMULA}</p>
+        <div
+          className="flex rounded border border-border p-0.5"
+          role="group"
+          aria-label={t('tool-phred.ui.offsetGroup')}
+        >
+          {OFFSET_OPTIONS.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => handleOffsetChange(option.offset)}
+              aria-pressed={option.offset === offset}
+              title={option.detail}
+              className={`rounded px-2.5 py-1 text-[0.6875rem] font-semibold transition-colors ${
+                option.offset === offset ? 'bg-accent text-white' : 'text-text-muted hover:text-accent'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <p className="m-0 text-xs text-text-muted">{selectedOffset?.detail}</p>
+      </section>
+
+      <p className="m-0 text-xs text-text-muted">{t('tool-phred.ui.note')}</p>
     </Card>
   );
 }

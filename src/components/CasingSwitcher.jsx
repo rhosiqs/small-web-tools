@@ -1,10 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Card from './ui/Card';
-import Button from './ui/Button';
 import ToolHeader from './ui/ToolHeader';
-import FieldInput from './ui/FieldInput';
-import ToggleSwitch from './ui/ToggleSwitch';
 
 function countWords(text) {
   if (!text) return 0;
@@ -68,107 +65,148 @@ function capitalizeSpecificTerms(str, specificTerms, specificTermsMode) {
   return result;
 }
 
+function restoreExcludedWords(source, draft, excludeWords) {
+  const excludedSet = new Set(
+    excludeWords
+      .split(/,|\n/)
+      .map((word) => word.trim().toLowerCase())
+      .filter(Boolean)
+  );
+  if (excludedSet.size === 0) return draft;
+
+  const tokensInput = source.split(/(\p{L}+(?:['’]\p{L}+)*)/gu);
+  const tokensDraft = draft.split(/(\p{L}+(?:['’]\p{L}+)*)/gu);
+
+  return tokensDraft
+    .map((token, index) => {
+      const originalToken = tokensInput[index];
+      if (!token || !originalToken) return token;
+      if (/\p{L}/u.test(token) && excludedSet.has(originalToken.toLowerCase())) {
+        return originalToken; // Keep the original casing.
+      }
+      return token;
+    })
+    .join('');
+}
+
+const pillClass = (active) =>
+  `rounded px-2 py-1.5 font-mono text-[0.6875rem] font-medium transition-colors ${
+    active ? 'bg-accent text-white' : 'text-text-muted ring-1 ring-inset ring-border hover:text-accent'
+  }`;
+
+const nestedFieldClass =
+  'input-rule w-full px-0 pb-1.5 pt-0 text-[0.8125rem] text-text-main placeholder:text-text-muted';
+
+/**
+ * One step of the casing recipe: a dot that switches the step on, the text as it
+ * stands after that step has run, and whatever options the step carries. The
+ * per-step preview is what replaces the old nested options panel — the effect of
+ * each switch is visible where the switch is, instead of only in the output box.
+ */
+function RecipeStep({ step, children = null }) {
+  return (
+    <div
+      className={`flex items-start gap-4 border-b py-4 ${
+        step.enabled ? 'border-accent-edge' : 'border-border'
+      }`}
+    >
+      <button
+        type="button"
+        role="switch"
+        aria-checked={step.enabled}
+        aria-label={step.title}
+        onClick={step.onToggle}
+        className={`mt-0.5 h-4 w-4 flex-none rounded-full border-0 transition-colors ${
+          step.enabled
+            ? 'bg-accent ring-1 ring-accent'
+            : 'bg-transparent ring-1 ring-text-muted hover:ring-accent'
+        }`}
+      />
+      <div className="min-w-0 flex-1">
+        <p className={`m-0 text-[0.8125rem] font-medium ${step.enabled ? 'text-text-main' : 'text-text-muted'}`}>
+          {step.title}
+        </p>
+        <p
+          className={`m-0 mt-1.5 break-words font-mono text-[0.9375rem] leading-relaxed ${
+            step.enabled ? 'text-text-muted' : 'text-border'
+          }`}
+        >
+          {step.enabled ? step.preview || '—' : '—'}
+        </p>
+        {step.enabled && children && <div className="mt-3 flex flex-col gap-2.5">{children}</div>}
+      </div>
+    </div>
+  );
+}
+
 export default function CasingSwitcher() {
   const { t, i18n } = useTranslation(['tools', 'common']);
   const [input, setInput] = useState('');
-  const [output, setOutput] = useState('');
   const [copied, setCopied] = useState(false);
 
-  // Switch states
   const [enableCaseChange, setEnableCaseChange] = useState(false);
-  const [caseChangeMode, setCaseChangeMode] = useState('invert'); // 'invert', 'upper', 'lower'
+  const [caseChangeMode, setCaseChangeMode] = useState('invert'); // 'invert' | 'upper' | 'lower'
+
+  const [enableTitleCase, setEnableTitleCase] = useState(false);
 
   const [enableSentenceCase, setEnableSentenceCase] = useState(false);
   const [preserveCapitals, setPreserveCapitals] = useState(true);
 
-  const [enableTitleCase, setEnableTitleCase] = useState(false);
-
   const [enableSpecificTerms, setEnableSpecificTerms] = useState(false);
-  const [specificTerms] = useState('react, javascript, node js');
-  const [specificTermsMode, setSpecificTermsMode] = useState('all'); // 'first', 'all'
+  const [specificTerms, setSpecificTerms] = useState('react, javascript, node js');
+  const [specificTermsMode, setSpecificTermsMode] = useState('all'); // 'first' | 'all'
 
-  // Exclude Specific Words state
   const [enableExcludeWords, setEnableExcludeWords] = useState(false);
   const [excludeWords, setExcludeWords] = useState('and, or, but, to, the, a, an, in, of, for, with, I');
 
-  // Run pipeline whenever input or options change
-  useEffect(() => {
-    let result = input;
+  // The pipeline now reports what the text looks like after every step, not just
+  // at the end, so each recipe row can show its own result.
+  const { previews, output } = useMemo(() => {
+    let current = input;
 
-    // 1. All Case Change (if enabled)
     if (enableCaseChange) {
-      if (caseChangeMode === 'invert') {
-        result = swapCase(result);
-      } else if (caseChangeMode === 'upper') {
-        result = result.toUpperCase();
-      } else if (caseChangeMode === 'lower') {
-        result = result.toLowerCase();
-      }
+      if (caseChangeMode === 'invert') current = swapCase(current);
+      else if (caseChangeMode === 'upper') current = current.toUpperCase();
+      else if (caseChangeMode === 'lower') current = current.toLowerCase();
     }
+    const afterCaseChange = current;
 
-    // 2. Title Case / Capitalize Each Word (if enabled)
-    if (enableTitleCase) {
-      result = toTitleCase(result);
-    }
+    if (enableTitleCase) current = toTitleCase(current);
+    const afterTitleCase = current;
 
-    // 3. Sentence Case (if enabled)
-    if (enableSentenceCase) {
-      result = toSentenceCase(result, preserveCapitals);
-    }
+    if (enableSentenceCase) current = toSentenceCase(current, preserveCapitals);
+    const afterSentenceCase = current;
 
-    // 4. Specific Terms (if enabled)
-    if (enableSpecificTerms) {
-      result = capitalizeSpecificTerms(result, specificTerms, specificTermsMode);
-    }
+    if (enableSpecificTerms) current = capitalizeSpecificTerms(current, specificTerms, specificTermsMode);
+    const afterSpecificTerms = current;
 
-    // Post-processing: Restore original case for excluded words globally
     if (enableExcludeWords && excludeWords.trim()) {
-      const excludedSet = new Set(
-        excludeWords
-          .split(/,|\n/)
-          .map((w) => w.trim().toLowerCase())
-          .filter(Boolean)
-      );
-
-      if (excludedSet.size > 0) {
-        const tokensInput = input.split(/(\p{L}+(?:['’]\p{L}+)*)/gu);
-        const tokensDraft = result.split(/(\p{L}+(?:['’]\p{L}+)*)/gu);
-
-        const finalTokens = tokensDraft.map((token, index) => {
-          const originalToken = tokensInput[index];
-          if (!token || !originalToken) return token;
-
-          // Check if it's a word token
-          if (/\p{L}/u.test(token)) {
-            if (excludedSet.has(originalToken.toLowerCase())) {
-              return originalToken; // Keep the original casing
-            }
-          }
-          return token;
-        });
-
-        result = finalTokens.join('');
-      }
+      current = restoreExcludedWords(input, current, excludeWords);
     }
 
-    setOutput(result);
+    return {
+      previews: {
+        caseChange: afterCaseChange,
+        titleCase: afterTitleCase,
+        sentenceCase: afterSentenceCase,
+        specificTerms: afterSpecificTerms,
+        excludeWords: current,
+      },
+      output: current,
+    };
   }, [
     input,
     enableCaseChange,
     caseChangeMode,
+    enableTitleCase,
     enableSentenceCase,
     preserveCapitals,
-    enableTitleCase,
     enableSpecificTerms,
     specificTerms,
     specificTermsMode,
     enableExcludeWords,
     excludeWords,
   ]);
-
-  const handleClear = () => {
-    setInput('');
-  };
 
   const handleCopy = () => {
     if (!output) return;
@@ -178,259 +216,193 @@ export default function CasingSwitcher() {
     });
   };
 
+  const format = (value) => new Intl.NumberFormat(i18n.resolvedLanguage).format(value);
+  const counts = (value) => `${t('tools:tool-casing.ui.words', { count: format(countWords(value)) })} · ${
+    t('tools:tool-casing.ui.characters', { count: format(value.length) })}`;
+
   return (
-    <Card id="tool-casing" variant="tool" size="wide">
-      <ToolHeader 
+    <Card id="tool-casing" variant="tool" size="wide" className="max-w-[920px] gap-6 p-6 sm:p-8">
+      <ToolHeader
         title={t('tools:tool-casing.ui.heading')}
+        kicker={t('navigation:categories.text')}
       />
-      
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-        {/* Left Column: Text Areas */}
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2 w-full">
-            <FieldInput
-              id="casing-input"
-              as="textarea"
-              rows={3}
-              label={t('tools:tool-casing.ui.input')}
-              placeholder={t('tools:tool-casing.ui.inputPlaceholder')}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
+
+      <div>
+        <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-3">
+          <label htmlFor="casing-input" className="text-xs font-medium text-text-muted">
+            {t('tools:tool-casing.ui.input')}
+          </label>
+          <span className="font-mono text-[0.6875rem] text-text-muted">{counts(input)}</span>
+        </div>
+        <textarea
+          id="casing-input"
+          rows={3}
+          spellCheck={false}
+          value={input}
+          onChange={(event) => setInput(event.target.value)}
+          placeholder={t('tools:tool-casing.ui.inputPlaceholder')}
+          className="input-rule w-full resize-y px-0 pb-3 pt-0 text-base leading-relaxed text-text-main placeholder:text-text-muted"
+        />
+        <div className="mt-3">
+          <button
+            id="casing-clear-btn"
+            type="button"
+            onClick={() => setInput('')}
+            disabled={!input}
+            title={t('tools:tool-casing.ui.clearTitle')}
+            className="rounded border border-border bg-transparent px-3 py-2 text-xs font-medium text-text-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-default disabled:opacity-40"
+          >
+            {t('common:actions.clear')}
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-col" aria-label={t('tools:tool-casing.ui.controls')} role="group">
+        <RecipeStep
+          step={{
+            title: t('tools:tool-casing.ui.allCase'),
+            enabled: enableCaseChange,
+            preview: previews.caseChange,
+            onToggle: () => setEnableCaseChange((value) => !value),
+          }}
+        >
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              ['upper', t('tools:tool-casing.ui.uppercase')],
+              ['lower', t('tools:tool-casing.ui.lowercase')],
+              ['invert', t('tools:tool-casing.ui.invert')],
+            ].map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={caseChangeMode === id}
+                onClick={() => setCaseChangeMode(id)}
+                className={pillClass(caseChangeMode === id)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </RecipeStep>
+
+        <RecipeStep
+          step={{
+            title: t('tools:tool-casing.ui.titleCase'),
+            enabled: enableTitleCase,
+            preview: previews.titleCase,
+            onToggle: () => setEnableTitleCase((value) => !value),
+          }}
+        />
+
+        <RecipeStep
+          step={{
+            title: t('tools:tool-casing.ui.sentenceCase'),
+            enabled: enableSentenceCase,
+            preview: previews.sentenceCase,
+            onToggle: () => setEnableSentenceCase((value) => !value),
+          }}
+        >
+          <div className="checkbox-wrapper">
+            <label htmlFor="preserve-capitals" className="checkbox-label text-[0.8125rem]">
+              <input
+                id="preserve-capitals"
+                type="checkbox"
+                checked={preserveCapitals}
+                onChange={(event) => setPreserveCapitals(event.target.checked)}
+              />
+              {t('tools:tool-casing.ui.preserve')}
+            </label>
+          </div>
+        </RecipeStep>
+
+        <RecipeStep
+          step={{
+            title: t('tools:tool-casing.ui.specific'),
+            enabled: enableSpecificTerms,
+            preview: previews.specificTerms,
+            onToggle: () => setEnableSpecificTerms((value) => !value),
+          }}
+        >
+          <div>
+            <label htmlFor="specific-terms-input" className="mb-1 block text-[0.6875rem] text-text-muted">
+              {t('tools:tool-casing.ui.termsLabel')}
+            </label>
+            <input
+              id="specific-terms-input"
+              type="text"
+              value={specificTerms}
+              onChange={(event) => setSpecificTerms(event.target.value)}
+              placeholder={t('tools:tool-casing.ui.termsPlaceholder')}
+              className={nestedFieldClass}
             />
-            <div className="flex justify-between text-xs text-text-muted mt-1">
-              <span>{t('tools:tool-casing.ui.words', { count: new Intl.NumberFormat(i18n.resolvedLanguage).format(countWords(input)) })}</span>
-              <span>{t('tools:tool-casing.ui.characters', { count: new Intl.NumberFormat(i18n.resolvedLanguage).format(input.length) })}</span>
-            </div>
           </div>
-
-          <div className="flex gap-3 mt-1 mb-1">
-            <Button
-              id="casing-clear-btn"
-              variant="secondary"
-              size="sm"
-              onClick={handleClear}
-              disabled={!input}
-              title={t('tools:tool-casing.ui.clearTitle')}
-            >
-              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                <line x1="10" y1="11" x2="10" y2="17"></line>
-                <line x1="14" y1="11" x2="14" y2="17"></line>
-              </svg>
-              <span>{t('common:actions.clear')}</span>
-            </Button>
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              ['first', t('tools:tool-casing.ui.firstTerm')],
+              ['all', t('tools:tool-casing.ui.allTerms')],
+            ].map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={specificTermsMode === id}
+                onClick={() => setSpecificTermsMode(id)}
+                className={pillClass(specificTermsMode === id)}
+              >
+                {label}
+              </button>
+            ))}
           </div>
+        </RecipeStep>
 
-          <div className="flex flex-col gap-2 w-full mt-2">
-            <FieldInput
-              id="casing-output"
-              as="textarea"
-              rows={3}
-              readOnly
-              label={t('tools:tool-casing.ui.output')}
-              placeholder={t('tools:tool-casing.ui.outputPlaceholder')}
-              value={output}
+        <RecipeStep
+          step={{
+            title: t('tools:tool-casing.ui.exclude'),
+            enabled: enableExcludeWords,
+            preview: previews.excludeWords,
+            onToggle: () => setEnableExcludeWords((value) => !value),
+          }}
+        >
+          <div>
+            <label htmlFor="exclude-words-input" className="mb-1 block text-[0.6875rem] text-text-muted">
+              {t('tools:tool-casing.ui.excludeLabel')}
+            </label>
+            <input
+              id="exclude-words-input"
+              type="text"
+              value={excludeWords}
+              onChange={(event) => setExcludeWords(event.target.value)}
+              placeholder={t('tools:tool-casing.ui.excludePlaceholder')}
+              className={nestedFieldClass}
             />
-            <div className="flex justify-between text-xs text-text-muted mt-1">
-              <span>{t('tools:tool-casing.ui.words', { count: new Intl.NumberFormat(i18n.resolvedLanguage).format(countWords(output)) })}</span>
-              <span>{t('tools:tool-casing.ui.characters', { count: new Intl.NumberFormat(i18n.resolvedLanguage).format(output.length) })}</span>
-            </div>
           </div>
+        </RecipeStep>
+      </div>
 
-          <div className="flex gap-3 mt-1 mb-1">
-            <Button
+      <section className="rounded-lg bg-accent-light p-4 ring-1 ring-accent-edge">
+        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-3">
+          <span className="text-xs font-medium text-accent">{t('tools:tool-casing.ui.output')}</span>
+          <div className="flex items-baseline gap-3">
+            <span className="font-mono text-[0.6875rem] text-text-muted">{counts(output)}</span>
+            <button
               id="casing-copy-btn"
-              variant={copied ? 'primary' : 'secondary'}
-              size="sm"
+              type="button"
               onClick={handleCopy}
               disabled={!output}
               title={t('tools:tool-casing.ui.copyTitle')}
+              className="rounded border border-accent-edge bg-transparent px-2 py-1 text-[0.6875rem] font-medium text-accent transition-colors hover:bg-accent-light disabled:cursor-default disabled:opacity-40"
             >
-              {copied ? (
-                <>
-                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                  <span>{t('common:actions.copied')}</span>
-                </>
-              ) : (
-                <>
-                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                  </svg>
-                  <span>{t('tools:tool-casing.ui.copyOutput')}</span>
-                </>
-              )}
-            </Button>
+              {copied ? t('common:actions.copied') : t('tools:tool-casing.ui.copyOutput')}
+            </button>
           </div>
         </div>
-
-        {/* Right Column: Options Panel */}
-        <div className="flex flex-col gap-4">
-          <div className="bg-card border border-border rounded-xl p-5 flex flex-col gap-5">
-            <h3 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-1">{t('tools:tool-casing.ui.controls')}</h3>
-            
-            {/* Global Setting: Exclude Specific Words */}
-            <div className="border-b border-border pb-4">
-              <ToggleSwitch
-                id="enable-exclude-words"
-                checked={enableExcludeWords}
-                onChange={(e) => setEnableExcludeWords(e.target.checked)}
-                label={t('tools:tool-casing.ui.exclude')}
-                labelClassName="font-semibold text-accent"
-              />
-
-              {enableExcludeWords && (
-                <div className="mt-2.5 pl-14 flex flex-col gap-2">
-                  <div className="flex flex-col gap-2 w-full">
-                    <FieldInput
-                      type="text"
-                      id="exclude-words-input"
-                      value={excludeWords}
-                      onChange={(e) => setExcludeWords(e.target.value)}
-                      placeholder={t('tools:tool-casing.ui.excludePlaceholder')}
-                      label={t('tools:tool-casing.ui.excludeLabel')}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Mode 1: Case Change */}
-            <div className="border-b border-border pb-4">
-              <ToggleSwitch
-                id="enable-case-change"
-                checked={enableCaseChange}
-                onChange={(e) => setEnableCaseChange(e.target.checked)}
-                label={t('tools:tool-casing.ui.allCase')}
-              />
-
-              {enableCaseChange && (
-                <div className="mt-2.5 pl-14 flex flex-col gap-2">
-                  <div className="flex flex-col gap-2 items-start radio-group">
-                    <label className="radio-label">
-                      <input
-                        type="radio"
-                        name="caseMode"
-                        value="invert"
-                        checked={caseChangeMode === 'invert'}
-                        onChange={() => setCaseChangeMode('invert')}
-                      />
-                      {t('tools:tool-casing.ui.invert')}
-                    </label>
-                    <label className="radio-label">
-                      <input
-                        type="radio"
-                        name="caseMode"
-                        value="upper"
-                        checked={caseChangeMode === 'upper'}
-                        onChange={() => setCaseChangeMode('upper')}
-                      />
-                      {t('tools:tool-casing.ui.uppercase')}
-                    </label>
-                    <label className="radio-label">
-                      <input
-                        type="radio"
-                        name="caseMode"
-                        value="lower"
-                        checked={caseChangeMode === 'lower'}
-                        onChange={() => setCaseChangeMode('lower')}
-                      />
-                      {t('tools:tool-casing.ui.lowercase')}
-                    </label>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Mode 4: Title Case */}
-            <div className="border-b border-border pb-4">
-              <ToggleSwitch
-                id="enable-title-case"
-                checked={enableTitleCase}
-                onChange={(e) => setEnableTitleCase(e.target.checked)}
-                label={t('tools:tool-casing.ui.titleCase')}
-              />
-            </div>
-
-            {/* Mode 2: Sentence Case */}
-            <div className="border-b border-border pb-4">
-              <ToggleSwitch
-                id="enable-sentence-case"
-                checked={enableSentenceCase}
-                onChange={(e) => setEnableSentenceCase(e.target.checked)}
-                label={t('tools:tool-casing.ui.sentenceCase')}
-              />
-
-              {enableSentenceCase && (
-                <div className="mt-2.5 pl-14 flex flex-col gap-2">
-                  <div className="checkbox-wrapper">
-                    <label htmlFor="preserve-capitals" className="checkbox-label text-[0.85rem]">
-                      <input
-                        id="preserve-capitals"
-                        type="checkbox"
-                        checked={preserveCapitals}
-                        onChange={(e) => setPreserveCapitals(e.target.checked)}
-                      />
-                      {t('tools:tool-casing.ui.preserve')}
-                    </label>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Mode 3: Specific Terms */}
-            <div className="border-b border-border pb-4 last:border-b-0 last:pb-0">
-              <ToggleSwitch
-                id="enable-specific-terms"
-                checked={enableSpecificTerms}
-                onChange={(e) => setEnableSpecificTerms(e.target.checked)}
-                label={t('tools:tool-casing.ui.specific')}
-              />
-
-              {enableSpecificTerms && (
-                <div className="mt-2.5 pl-14 flex flex-col gap-2.5">
-                  <div className="flex flex-col gap-2 w-full">
-                    <FieldInput
-                      type="text"
-                      id="specific-terms-input"
-                      value={specificTerms}
-                      onChange={(e) => setExcludeWords(e.target.value)}
-                      placeholder={t('tools:tool-casing.ui.termsPlaceholder')}
-                      label={t('tools:tool-casing.ui.termsLabel')}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2 items-start radio-group text-[0.85rem]">
-                    <label className="radio-label">
-                      <input
-                        type="radio"
-                        name="termsMode"
-                        value="first"
-                        checked={specificTermsMode === 'first'}
-                        onChange={() => setSpecificTermsMode('first')}
-                      />
-                      {t('tools:tool-casing.ui.firstTerm')}
-                    </label>
-                    <label className="radio-label">
-                      <input
-                        type="radio"
-                        name="termsMode"
-                        value="all"
-                        checked={specificTermsMode === 'all'}
-                        onChange={() => setSpecificTermsMode('all')}
-                      />
-                      {t('tools:tool-casing.ui.allTerms')}
-                    </label>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-          </div>
-        </div>
-      </div>
+        <output
+          id="casing-output"
+          aria-live="polite"
+          className="block min-h-[1.75rem] break-words text-base leading-relaxed text-text-main"
+        >
+          {output || t('tools:tool-casing.ui.outputPlaceholder')}
+        </output>
+      </section>
     </Card>
   );
 }
