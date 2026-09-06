@@ -25,9 +25,9 @@ conflict, say so rather than silently picking one.
 
 Versions live in Git tags only. `scripts/resolve-version.mjs` resolves the app
 version from the newest version-formatted tag, so creating and pushing the tag is
-the whole release step. The format is `vMAJOR.MINOR.PATCH`, with `-beta` appended
-while the major version is still `0` (for example `v0.10.4-beta`); drop the
-suffix once the major version leaves `0`.
+the whole release step. The format is plain `vMAJOR.MINOR.PATCH` (for example
+`v0.13.1`) — no `-beta` or other pre-release suffix, even while the major version
+is still `0`. Older tags still carry `-beta`; leave them as they are.
 
 - **MAJOR** — only when the user explicitly asks for it. Never infer one from the
   size of a change.

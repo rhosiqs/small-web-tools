@@ -337,7 +337,6 @@
   --bg-header: #ffffff;
 
   /* Alert Banner Tokens */
-  --banner-height: 0px;
   --bg-warning-banner: #fffbeb;
   --border-warning-banner: #fde68a;
   --text-warning-banner: #b45309;
@@ -773,31 +772,6 @@ html[data-theme="dark"] .ct-fisc-side-bond {
   .sidebar {
     display: none !important;
   }
-}
-
-/* Warning Banner Styles */
-.has-banner {
-  --banner-height: 36px;
-}
-
-.channel-alert-banner {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 36px;
-  background: var(--bg-warning-banner);
-  border-bottom: 1px solid var(--border-warning-banner);
-  color: var(--text-warning-banner);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  z-index: 9999;
-  padding: 0 16px;
-  box-sizing: border-box;
 }
 
 @keyframes mediasplit-pulse {

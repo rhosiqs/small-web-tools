@@ -6,9 +6,6 @@ import { resolveRepositoryVersion } from './scripts/resolve-version.mjs';
 
 const version = resolveRepositoryVersion();
 
-const showChannelAlert = version.includes('alpha') || version.includes('beta');
-const appChannel = version.includes('alpha') ? 'alpha' : version.includes('beta') ? 'beta' : '';
-
 // Server-side geo lookup — shared provider policy with Node-specific logging.
 async function geoLookup(ip) {
   return lookupIpGeolocation(ip, {
@@ -22,8 +19,6 @@ async function geoLookup(ip) {
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(version),
-    __SHOW_CHANNEL_ALERT__: showChannelAlert,
-    __APP_CHANNEL__: JSON.stringify(appChannel),
   },
   server: {
     host: '127.0.0.1',
