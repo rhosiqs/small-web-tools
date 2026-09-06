@@ -78,9 +78,11 @@ Cloudflare preview account and therefore performs an external deployment. Run it
 only when Cloudflare-runtime CR-009 evidence is required and the operator accepts
 Cloudflare's current Terms and Privacy Policy. The command redacts bearer and claim
 credentials; never paste the global Wrangler configuration or claim URL into logs.
-Its successful JSON output contains the short-lived `gateMetadata` value required
-by production Font Extractor. Re-run it after the compatibility date or fetch
-implementation revision changes and before the metadata expires.
+Its successful JSON output contains a `verifiedPolicy` block. Copy that block into
+`FONT_EXTRACTION_EGRESS_POLICY` in `functions/_shared/fontExtractionCapability.js`,
+and update `FONT_EXTRACTION_EGRESS_POSTURE` in `wrangler.jsonc` to match. Re-run it
+only when the compatibility date or the fetch implementation revision changes;
+there is no expiry and no recurring rotation.
 
 `npm run verify` runs Git-tag version resolution, lint-warning budget, the
 baseline, domain, and UI checkJs projects, coverage, build/bundle, headers, network
