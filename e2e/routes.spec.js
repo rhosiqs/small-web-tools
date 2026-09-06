@@ -63,7 +63,6 @@ test('mobile header, breadcrumb, and tool content do not overlap', async ({ page
   await blockExternalRequests(page);
   await page.goto('/home/iplookup', { waitUntil: 'domcontentloaded' });
 
-  const banner = page.locator('#channel-alert-banner');
   const header = page.locator('#mobile-header');
   const breadcrumb = page.locator('#mobile-breadcrumb');
   const toolCard = page.locator('#tool-iplookup');
@@ -72,7 +71,6 @@ test('mobile header, breadcrumb, and tool content do not overlap', async ({ page
   await expect(breadcrumb).toBeVisible();
   await expect(toolCard).toBeVisible();
 
-  const bannerBox = await banner.isVisible() ? await banner.boundingBox() : null;
   const headerBox = await header.boundingBox();
   const breadcrumbBox = await breadcrumb.boundingBox();
   const toolCardBox = await toolCard.boundingBox();
@@ -84,11 +82,7 @@ test('mobile header, breadcrumb, and tool content do not overlap', async ({ page
   const headerBottom = headerBox.y + headerBox.height;
   const breadcrumbBottom = breadcrumbBox.y + breadcrumbBox.height;
 
-  if (bannerBox) {
-    expect(headerBox.y).toBeGreaterThanOrEqual(bannerBox.y + bannerBox.height - 1);
-  } else {
-    expect(headerBox.y).toBeLessThanOrEqual(1);
-  }
+  expect(headerBox.y).toBeLessThanOrEqual(1);
   expect(breadcrumbBox.y).toBeGreaterThanOrEqual(headerBottom - 1);
   expect(breadcrumbBox.y - headerBottom).toBeLessThanOrEqual(1);
   expect(toolCardBox.y).toBeGreaterThanOrEqual(breadcrumbBottom - 1);
