@@ -182,6 +182,9 @@ export default function App() {
     const componentProps = route.id === 'tool-home'
       ? {
         tools: filteredModeNavItems,
+        // The homepage arrangement covers the whole catalog, so a search or an
+        // audience filter never narrows what an edit is allowed to keep.
+        catalogTools: navItems,
         onSelectTool: handleNavClick,
         activeTab: selectedHomeTab,
         modeId: modeProfile.id,
