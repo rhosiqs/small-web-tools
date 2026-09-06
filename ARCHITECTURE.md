@@ -123,13 +123,14 @@ small-web-tools/
 │   ├── i18n/
 │   │   ├── index.js           Locale resolution, i18next setup, persistence, and document language
 │   │   └── locales/           Paired en-US and zh-TW namespace JSON resources
-│   ├── lib/                  Pure utility helpers (binaryEncoding, passwordStrength, resourceLimits, thirdPartyServices, simpleLayout, projectLinks, licenseText)
-│   ├── hooks/                Routing, persistence, Simple layout, and document-title shell effects
+│   ├── lib/                  Pure utility helpers (binaryEncoding, passwordStrength, resourceLimits, thirdPartyServices, simpleLayout, homeLayout, projectLinks, licenseText)
+│   ├── hooks/                Routing, persistence, Simple layout, homepage layout, and document-title shell effects
 │   ├── tests/                Vitest unit test suites and setup
 │   └── components/
 │       ├── ui/               Shared Card, Button, FieldInput, ToolHeader, and related primitives
 │       ├── docs/             Document pages and their shared DocumentPage reading layout
 │       ├── HomeGrid.jsx      Full and audience dashboard tool grid
+│       ├── HomeGrid/          Homepage group arrangement editor
 │       ├── SimpleHome.jsx    Search-first essential-tool launcher
 │       ├── LanguageSwitcher.jsx Shared responsive locale menu and focus lifecycle
 │       ├── AppHeader.jsx     Desktop brand, category navigation, search, locale, and theme controls
@@ -181,7 +182,7 @@ expanded UI boundary must fix every newly exposed error in the same change.
 - `useAppRouting` initializes `activeTool` from `/home[/<audience>]/<tool-slug>` or `/simple/<tool-slug>` and synchronizes navigation and browser history with the path.
 - `useAppRouting` initializes `toolMode` from the validated `/home` or `/simple` path. The workspace path
   remains in the URL while path navigation changes tools.
-- `useShellPersistence` owns active-tool session state plus theme and sidebar persistence; `useSimpleLayout` owns the browser-stored Simple shortcut layout; `useDocumentTitle` owns title updates independently of storage availability.
+- `useShellPersistence` owns active-tool session state plus theme and sidebar persistence; `useSimpleLayout` owns the browser-stored Simple shortcut layout and `useHomeLayout` the browser-stored homepage group arrangement; `useDocumentTitle` owns title updates independently of storage availability.
 - `renderActiveTool()` resolves the active registry entry and renders its lazy component. Policy-category routes are registered but excluded from the tool catalog, and receive an `onNavigateDocument` callback so document pages can link to one another through the shell router.
 
 The shell supplies a responsive desktop sidebar, mobile drawer, top navigation, breadcrumbs, footer, search, theme control, and a centered tool stage. `AppHeader`, `DesktopCategoryNav`, and `AppFooter` own the desktop header and footer presentation while `App.jsx` passes registry-derived data and navigation callbacks.
@@ -240,8 +241,8 @@ inside the reduced shell.
 Routing uses `/home[/<audience>][/<tool-slug>]` and
 `/simple[/<tool-slug>]`; legacy `/home/simple` addresses redirect to `/simple`.
 Focused coverage lives in `toolModes.test.js`, `homeGrid.test.jsx`,
-`audienceSwitcher.test.jsx`, `simpleHome.test.jsx`, `simpleLayout.test.js`, and
-`App.test.jsx`. Mermaid is
+`audienceSwitcher.test.jsx`, `simpleHome.test.jsx`, `simpleLayout.test.js`,
+`homeLayout.test.js`, and `App.test.jsx`. Mermaid is
 part of the developer audience. Every other navigable tool must appear in at least
 one curated workspace or have a maintained rationale in
 `INTENTIONAL_CURATED_EXCLUSIONS`; `toolModes.test.js` enforces that invariant.
@@ -254,6 +255,22 @@ the shell to that single record, so the editor in `SimpleHome.jsx` and the
 Simple sidebar always show the same shortcuts. An absent or unusable record
 falls back to `SIMPLE_WORKSPACE`, and a browser that blocks Web Storage keeps
 the layout in memory for the session. The layout is never sent to a server.
+
+The complete homepage is arranged the same way. `src/lib/homeLayout.js` owns the
+versioned `homeLayout` local-storage record: an ordered list of groups, each with
+an id, an optional reader-supplied name, and its tool ids, plus the tools pushed
+off the homepage. It sanitizes both against the live registry, caps the layout at
+twelve groups and a forty-character name, and provides the group add, remove,
+rename, and move transforms alongside the tool place, hide, and reorder ones.
+`useHomeLayout` subscribes `HomeGrid.jsx` to that record and writes every edit
+straight through, so `HomeGrid/HomeLayoutEditor.jsx` needs no save step. An absent
+or unusable record falls back to one group per category in `categoryDefinitions.jsx`
+order, and a tool the record never mentioned — anything released after it was
+written — joins its own category group on read, so a stored arrangement never
+hides a new tool. Groups apply to the complete homepage only: an audience
+workspace and a single-category tab stay filtered views, and the default
+Utilities group keeps its sub-group headings until the reader arranges their own
+layout. The record stays in the browser and is never sent to a server.
 
 ### Shared tool-page contract
 

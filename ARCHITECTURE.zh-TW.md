@@ -99,7 +99,7 @@ Pages 專案中為該分支建立的 deploy hook URL；secret 不存在時 workf
 - src/：React 應用程式、工具登錄表、樣式、共用 UI、工具元件與測試。
 - src/components/docs/：文件頁面與其共用的 DocumentPage 閱讀版型。
 - src/lib/：純函式 helper（binaryEncoding、passwordStrength、resourceLimits、
-  thirdPartyServices、simpleLayout、projectLinks、licenseText）。
+  thirdPartyServices、simpleLayout、homeLayout、projectLinks、licenseText）。
 - src/components/LanguageSwitcher.jsx：桌面與行動 header 共用的地區設定選單、鍵盤導覽與焦點生命週期。
 - src/components/MobileDrawer.jsx：行動導覽的焦點、inert、關閉與捲動生命週期。
 - src/i18n/：地區設定解析、i18next 設定、持久化，以及成對的 en-US／zh-TW 命名空間資源。
@@ -139,7 +139,8 @@ src/App.jsx 負責應用程式 shell：
 - toolMode 從經驗證的 /home 或 /simple 路徑初始化。工作區路徑會留在 URL 中，
   路徑導覽則改變工具。
 - useShellPersistence 集中管理 active-tool session state、theme 與 sidebar 持久化；
-  useSimpleLayout 管理儲存在瀏覽器中的 Simple 捷徑版面；
+  useSimpleLayout 管理儲存在瀏覽器中的 Simple 捷徑版面，useHomeLayout 管理儲存在
+  瀏覽器中的首頁群組版面；
   useDocumentTitle 在儲存空間不可用時仍獨立管理頁面標題。
 - renderActiveTool() 解析目前的登錄表項目並渲染其 lazy component。policy 分類的路由
   已登錄但不列入工具目錄，並會取得 onNavigateDocument callback，讓文件頁面之間可以
@@ -190,7 +191,8 @@ AudienceSwitcher.jsx 為完整首頁與五個使用者群組渲染分段控制�
 在縮減後的 shell 中提供所有工具搜尋、精簡捷徑格線與版面編輯器。路由使用
 /home[/&lt;audience&gt;][/&lt;tool-slug&gt;] 與 /simple[/&lt;tool-slug&gt;]；舊版 /home/simple
 位址會重新導向至 /simple。重點測試位於 toolModes.test.js、homeGrid.test.jsx、
-audienceSwitcher.test.jsx、simpleHome.test.jsx 與 simpleLayout.test.js。
+audienceSwitcher.test.jsx、simpleHome.test.jsx、simpleLayout.test.js 與
+homeLayout.test.js。
 
 Mermaid 屬於 developer audience。其他可導覽工具都必須出現在至少一個精選工作區，
 或在 `INTENTIONAL_CURATED_EXCLUSIONS` 中保留明確理由；`toolModes.test.js` 會執行此規則。
@@ -201,6 +203,18 @@ Simple 捷徑可由每個瀏覽器自行編輯。`src/lib/simpleLayout.js` 擁�
 訂閱同一份記錄，因此 `SimpleHome.jsx` 的編輯器與 Simple 側邊欄永遠顯示相同捷徑。
 記錄不存在或無法使用時會回到 `SIMPLE_WORKSPACE`；瀏覽器封鎖 Web Storage 時，版面
 會保留在該工作階段的記憶體中。版面不會傳送到任何伺服器。
+
+完整首頁採用相同做法。`src/lib/homeLayout.js` 擁有帶版本的 `homeLayout` local
+storage 記錄：其中是一份有序的群組清單，每個群組包含 id、選填的自訂名稱與其工具
+id，另外還有被移出首頁的工具。它會依照目前的登錄表清理兩者、限制最多十二個群組與
+四十個字元的名稱，並提供群組的新增、移除、重新命名與移動轉換函式，以及工具的放置、
+隱藏與排序轉換函式。`useHomeLayout` 讓 `HomeGrid.jsx` 訂閱該記錄，並將每次編輯直接
+寫入，因此 `HomeGrid/HomeLayoutEditor.jsx` 不需要另外的儲存步驟。記錄不存在或無法
+使用時，會回到依 `categoryDefinitions.jsx` 順序、每個分類一個群組的預設版面；記錄
+未曾提及的工具（也就是記錄寫入後才發行的工具）會在讀取時加入其所屬分類的群組，
+因此已儲存的版面不會隱藏新工具。群組只套用於完整首頁：使用者群組工作區與單一分類
+分頁仍是各自的篩選檢視，而預設的 Utilities 群組在讀者自訂版面之前會保留其子群組
+標題。記錄只留在瀏覽器中，不會傳送到任何伺服器。
 App shell、lazy route、持久化、工作區導覽與語言切換的整合覆蓋位於 `App.test.jsx`。
 
 ### 共用工具頁面契約
