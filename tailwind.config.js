@@ -30,6 +30,7 @@ export default {
         accent: 'var(--accent)',
         'accent-hover': 'var(--accent-hover)',
         'accent-light': 'var(--accent-light)',
+        'accent-edge': 'var(--accent-edge)',
 
         border: 'var(--border-color)',
         'border-hover': 'var(--border-hover)',

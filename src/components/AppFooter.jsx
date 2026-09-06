@@ -51,7 +51,10 @@ export default function AppFooter({
         </div>
       )}
 
-      <div className="mx-auto w-full max-w-[1200px] px-12 py-4 text-[0.78rem] text-text-muted max-md:px-8 max-[500px]:px-4">
+      {/* The single icon row is shorter than the two text rows it replaced, so a 5.9rem
+          floor keeps the bar at the height it had before the merge and centres the row
+          in it — the same height with the sitemap above it as without. */}
+      <div className="mx-auto flex w-full max-w-[1200px] flex-col justify-center min-h-[5.9rem] px-12 py-4 text-[0.78rem] text-text-muted max-md:px-8 max-[500px]:px-4">
         <div className={`flex flex-wrap items-center justify-between gap-x-8 gap-y-3 max-md:flex-col max-md:items-start ${showSitemap ? 'border-t border-border pt-4' : ''}`}>
           <div className="flex items-center max-md:flex-col max-md:items-start max-md:gap-1">
             <span className="font-display font-bold text-text-main">{t('common:productName')}</span>

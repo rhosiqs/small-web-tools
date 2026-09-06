@@ -262,16 +262,33 @@ Every routed tool page uses the shared visual contract established by Image Meta
 1. Use `Card` with `variant="tool"` as the page container.
 2. Render exactly one `ToolHeader` title for the page identity.
 3. Keep page-level descriptions out of `ToolHeader`; helper text belongs inside the feature that needs it.
-4. Preserve the shared desktop card spacing (`p-6`, `gap-4`) and allow the mobile `.tool-card` rules in `styles.css` to handle compact screens.
+4. Preserve the shared desktop card spacing (`p-6`, `gap-4`) and allow the mobile `.tool-card` rules in `styles.css` to handle compact screens. The conversion screens described below opt into a wider rhythm (`p-6 sm:p-8`, `gap-6`), which the one-frame layout needs.
 
 `src/components/ui/AutoDetectConverter.jsx` implements this contract for the
 Slashes, ASCII, Unicode, and URL converters. Slashes and ASCII expose the
 automatic direction detector only; Unicode and URL retain explicit
 encode/decode controls where direction can be ambiguous.
 
+#### Conversion-screen layout
+
+The ASCII, Unicode, URL, Slashes, Casing Switcher, Roman Numeral, and Phred
+Scale screens share one layout beyond the contract above:
+
+- The tool `Card` is the only frame on the page. Sections separate with the
+  `.rule-fade` rule in `styles.css`, not with another bordered box.
+- `ToolHeader` receives a `kicker` — the tool's category from the
+  `navigation:categories` namespace — set above a lighter, larger title, and
+  drops its own rule. Tools that pass no kicker keep the bordered header.
+- The field you type in is an underlined `.input-rule` control rather than a box,
+  and it is given more width than the result.
+- The derived value sits in an accent-tinted slab: `bg-accent-light` with a
+  `ring-accent-edge` edge.
+- Reference data is laid out along the axis it actually has — ASCII by code
+  range, Roman numerals by order of magnitude, Phred by its logarithmic scale.
+
 ### Styling and theme
 
-`src/styles.css` defines light and dark CSS custom properties such as `--bg-app`, `--bg-card`, `--text-main`, `--accent`, and `--border-color`. `tailwind.config.js` exposes those tokens as Tailwind color, shadow, and font utilities.
+`src/styles.css` defines light and dark CSS custom properties such as `--bg-app`, `--bg-card`, `--text-main`, `--accent`, `--accent-light`, `--accent-edge`, and `--border-color`. `tailwind.config.js` exposes those tokens as Tailwind color, shadow, and font utilities.
 
 Inter, JetBrains Mono, Plus Jakarta Sans, and TASA Orbiter are served from `public/fonts/`; their versions, subsets, and OFL license files are recorded in `public/fonts/MANIFEST.md`. The application makes no automatic Google Fonts request.
 
@@ -329,10 +346,10 @@ Prefer the shared primitives and existing design tokens. Add global CSS only for
 | File | Role |
 | --- | --- |
 | `Card.jsx` | Shared card container for tool pages and dashboard cards. |
-| `ToolHeader.jsx` | The one-title page identity component for routed tools. |
+| `ToolHeader.jsx` | The one-title page identity component for routed tools; an optional `kicker` switches it to the conversion-screen header. |
 | `Button.jsx` | Shared button variants and sizes. |
 | `FieldInput.jsx` | Labeled input and textarea helper. |
-| `AutoDetectConverter.jsx` | Shared two-panel automatic converter interface. |
+| `AutoDetectConverter.jsx` | Shared automatic converter interface: an underlined source field beside an accent-tinted result slab. |
 | `ToggleSwitch.jsx`, `Spinner.jsx`, `ResultDisplay.jsx` | Reusable controls and feedback UI. |
 
 `ExternalMapPreview.jsx` is the shared OpenStreetMap consent boundary for IP Lookup and Image Metadata. It renders coordinate text locally, creates an iframe only while `osm` consent is active, and removes the iframe immediately after revocation or reset.

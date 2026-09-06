@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoDetectConverter from './ui/AutoDetectConverter';
 
@@ -27,49 +27,129 @@ const ASCII_ENTRIES = Array.from({ length: 128 }, (_, code) => {
   return { code, symbol: String.fromCharCode(code), name: `Character ${String.fromCharCode(code)}`, control: false };
 });
 
+/**
+ * The eight ranges the table actually has. Sizing each band to what it holds
+ * turns 128 identical cells into an index — the blueprint's "reference gets a
+ * shape" rule. `wide` marks the ranges whose glyphs are three-letter control
+ * mnemonics rather than a single character.
+ */
+const ASCII_RANGES = [
+  { id: 'control', labelKey: 'control', range: '0–31', from: 0, to: 31, wide: true },
+  { id: 'punctuation', labelKey: 'punctuation', range: '32–47', from: 32, to: 47, wide: true },
+  { id: 'digits', labelKey: 'digits', range: '48–57', from: 48, to: 57, wide: false },
+  { id: 'symbols-low', labelKey: 'symbols', range: '58–64', from: 58, to: 64, wide: false },
+  { id: 'uppercase', labelKey: 'uppercase', range: '65–90', from: 65, to: 90, wide: false },
+  { id: 'symbols-mid', labelKey: 'symbols', range: '91–96', from: 91, to: 96, wide: false },
+  { id: 'lowercase', labelKey: 'lowercase', range: '97–122', from: 97, to: 122, wide: false },
+  { id: 'symbols-high', labelKey: 'symbolsDelete', range: '123–127', from: 123, to: 127, wide: true },
+];
+
+function rangeOf(code) {
+  return ASCII_RANGES.find((band) => code >= band.from && code <= band.to) ?? ASCII_RANGES[0];
+}
+
+function AsciiCell({ entry, selected, dimmed, wide, onPick, label }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={selected}
+      aria-label={label}
+      title={`${entry.code} (0x${entry.code.toString(16).toUpperCase().padStart(2, '0')}) · ${entry.name}`}
+      onClick={() => onPick(String(entry.code))}
+      className={`rounded px-1.5 py-2 text-center transition-colors ${wide ? 'min-w-[54px]' : 'min-w-[42px]'} ${
+        dimmed ? 'opacity-50 hover:opacity-100' : ''
+      } ${
+        selected
+          ? 'bg-accent-light text-accent ring-1 ring-accent'
+          : 'bg-app text-text-main hover:bg-accent-light'
+      }`}
+    >
+      <span className="block font-mono text-sm leading-none">{entry.symbol}</span>
+      <span className="mt-1.5 block font-mono text-[0.5938rem] leading-none opacity-60">{entry.code}</span>
+    </button>
+  );
+}
+
 function AsciiReferenceTable({ input, setInput }) {
   const { t } = useTranslation('tools');
-  const selectedCode = /^\d+$/.test(input.trim()) && Number(input.trim()) <= 127
-    ? Number(input.trim())
-    : null;
+  const trimmed = input.trim();
+  const selectedCode = /^\d+$/.test(trimmed) && Number(trimmed) <= 127 ? Number(trimmed) : null;
+  const [activeRangeId, setActiveRangeId] = useState('digits');
+  const activeId = selectedCode === null ? activeRangeId : rangeOf(selectedCode).id;
+
+  const cellLabel = (entry) => t('tool-ascii.ui.cellLabel', { code: entry.code, name: entry.name });
 
   return (
-    <section className="flex flex-col gap-2" aria-labelledby="ascii-reference-title">
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <h3 id="ascii-reference-title" className="text-sm font-bold text-text-main">{t('tool-ascii.ui.reference')}</h3>
-          <p className="text-xs text-text-muted">{t('tool-ascii.ui.referenceHint')}</p>
+    <section className="flex flex-col gap-3" aria-labelledby="ascii-reference-title">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="min-w-0">
+          <h3 id="ascii-reference-title" className="m-0 text-[0.9375rem] font-medium text-text-main">
+            {t('tool-ascii.ui.reference')}
+          </h3>
+          <p className="m-0 mt-0.5 text-xs text-text-muted">{t('tool-ascii.ui.referenceHint')}</p>
         </div>
-        <span className="text-[0.68rem] font-semibold text-text-muted">{t('tool-ascii.ui.legend')}</span>
+        <span className="font-mono text-[0.6875rem] text-text-muted">0–127</span>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-border bg-app/70 p-1.5">
-        <div className="grid min-w-[760px] grid-cols-[repeat(16,minmax(0,1fr))] gap-1" role="grid" aria-label={t('tool-ascii.ui.gridLabel')}>
-          {ASCII_ENTRIES.map((entry) => {
-            const selected = selectedCode === entry.code;
-            return (
-              <button
-                key={entry.code}
-                type="button"
-                role="gridcell"
-                aria-pressed={selected}
-                aria-label={t('tool-ascii.ui.cellLabel', { code: entry.code, name: entry.name })}
-                title={`${entry.code} (0x${entry.code.toString(16).toUpperCase().padStart(2, '0')}) · ${entry.name}`}
-                onClick={() => setInput(String(entry.code))}
-                className={`group flex min-h-8 min-w-0 items-center justify-between gap-0.5 rounded-md border px-1 py-0.5 font-mono transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${selected
-                  ? 'border-accent bg-accent text-white shadow-[0_2px_8px_var(--accent-light)]'
-                  : 'border-border bg-card text-text-main hover:border-accent hover:bg-accent-light'}`}
-              >
-                <span className={`text-[0.58rem] tabular-nums ${selected ? 'text-white/75' : 'text-text-muted'}`}>
-                  {entry.code}
-                </span>
-                <span className={`truncate text-[0.72rem] font-extrabold ${entry.control && !selected ? 'text-accent' : ''}`}>
-                  {entry.symbol}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+        {ASCII_RANGES.map((band) => {
+          const label = t(`tool-ascii.ui.ranges.${band.labelKey}`);
+          const active = band.id === activeId;
+          return (
+            <button
+              key={band.id}
+              type="button"
+              aria-pressed={active}
+              aria-label={t('tool-ascii.ui.rangeAria', { label, range: band.range })}
+              onClick={() => setActiveRangeId(band.id)}
+              className={`rounded px-3 py-2.5 text-left transition-colors ${
+                active
+                  ? 'bg-accent text-white shadow-[0_0_24px_var(--accent-light)]'
+                  : 'bg-app text-text-muted hover:text-accent'
+              }`}
+            >
+              <span className="mb-1.5 block font-mono text-[0.5938rem] font-semibold tracking-[0.06em] opacity-75">
+                {band.range}
+              </span>
+              <span className="block text-xs font-medium leading-tight">{label}</span>
+              <span className="mt-1.5 block text-[0.625rem] leading-none opacity-60">
+                {t('tool-ascii.ui.rangeCount', { count: band.to - band.from + 1 })}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-2 flex flex-col gap-4">
+        {ASCII_RANGES.map((band) => {
+          const active = band.id === activeId;
+          const label = t(`tool-ascii.ui.ranges.${band.labelKey}`);
+          return (
+            <div key={band.id} className={active ? '' : 'hidden sm:block'}>
+              <div className="mb-2 flex items-baseline gap-2">
+                <span
+                  aria-hidden="true"
+                  className={`block h-0.5 ${active ? 'w-[18px] bg-accent' : 'w-2 bg-border'}`}
+                />
+                <span className="text-xs font-medium text-text-main">{label}</span>
+                <span className="font-mono text-[0.625rem] text-text-muted">{band.range}</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {ASCII_ENTRIES.slice(band.from, band.to + 1).map((entry) => (
+                  <AsciiCell
+                    key={entry.code}
+                    entry={entry}
+                    wide={band.wide}
+                    selected={selectedCode === entry.code}
+                    dimmed={!active}
+                    onPick={setInput}
+                    label={cellLabel(entry)}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
@@ -168,12 +248,13 @@ export default function AsciiConverter() {
   return (
     <AutoDetectConverter
       toolId="tool-ascii"
+      kicker={t('navigation:categories.developer')}
       title={t('tool-ascii.title')}
       inputPlaceholder={t('tool-ascii.ui.placeholder')}
       emptyTargetLabel={t('tool-ascii.ui.converted')}
       analyze={(input, mode) => analyzeAscii(input, mode, t)}
-      editorMinHeightClass="min-h-[76px] md:min-h-[84px]"
-      editorRows={3}
+      editorMinHeightClass="min-h-[96px]"
+      editorRows={4}
       renderSupplementary={(props) => <AsciiReferenceTable {...props} />}
       showManualModes={false}
     />

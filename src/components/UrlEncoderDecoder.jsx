@@ -6,21 +6,21 @@ import { analyzeUrl } from './UrlEncoderDecoder/lib/urlDomain';
 function ScopeSelector({ scope, setScope }) {
   const { t } = useTranslation('tools');
   return (
-    <section className="rounded-xl border border-border bg-app/70 p-4" aria-labelledby="url-scope-title">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h3 id="url-scope-title" className="text-sm font-bold text-text-main">{t('tool-url.ui.scope')}</h3>
-          <p className="mt-1 text-xs text-text-muted">
+    <section className="flex flex-col gap-2" aria-labelledby="url-scope-title">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 id="url-scope-title" className="m-0 text-[0.9375rem] font-medium text-text-main">{t('tool-url.ui.scope')}</h3>
+          <p className="m-0 mt-0.5 text-xs text-text-muted">
             {t('tool-url.ui.scopeHint')}
           </p>
         </div>
-        <div className="flex rounded-lg border border-border bg-card p-1" role="group" aria-label={t('tool-url.ui.scopeLabel')}>
+        <div className="flex flex-none rounded border border-border p-0.5" role="group" aria-label={t('tool-url.ui.scopeLabel')}>
           <button
             type="button"
             aria-pressed={scope === 'full'}
             onClick={() => setScope('full')}
-            className={`rounded-md px-3 py-1.5 text-xs font-bold transition-colors ${
-              scope === 'full' ? 'bg-accent text-white' : 'text-text-muted hover:text-text-main'
+            className={`rounded px-2.5 py-1 text-[0.6875rem] font-semibold transition-colors ${
+              scope === 'full' ? 'bg-accent text-white' : 'text-text-muted hover:text-accent'
             }`}
           >
             {t('tool-url.ui.fullUrl')}
@@ -29,15 +29,15 @@ function ScopeSelector({ scope, setScope }) {
             type="button"
             aria-pressed={scope === 'component'}
             onClick={() => setScope('component')}
-            className={`rounded-md px-3 py-1.5 text-xs font-bold transition-colors ${
-              scope === 'component' ? 'bg-accent text-white' : 'text-text-muted hover:text-text-main'
+            className={`rounded px-2.5 py-1 text-[0.6875rem] font-semibold transition-colors ${
+              scope === 'component' ? 'bg-accent text-white' : 'text-text-muted hover:text-accent'
             }`}
           >
             {t('tool-url.ui.component')}
           </button>
         </div>
       </div>
-      <p className="mt-3 text-xs text-text-muted">
+      <p className="m-0 text-xs text-text-muted">
         {scope === 'full'
           ? t('tool-url.ui.fullHint')
           : t('tool-url.ui.componentHint')}
@@ -66,6 +66,7 @@ export default function UrlEncoderDecoder() {
   return (
     <AutoDetectConverter
       toolId="tool-url"
+      kicker={t('navigation:categories.developer')}
       title={t('tool-url.title')}
       inputPlaceholder={t('tool-url.ui.placeholder')}
       emptyTargetLabel={t('tool-url.ui.converted')}
