@@ -120,7 +120,7 @@ essentials. Tools opened there remain in the reduced shell at addresses such as
 File-focused tools process selected files in the browser whenever possible; files are not sent to this project for analysis. Some capabilities necessarily use network access:
 
 - IP Lookup queries a server-side lookup endpoint and external IP providers.
-- Website Font Extractor scans bounded public HTML and CSS through a same-origin endpoint and returns declaration metadata only; it does not preview or download discovered font files. Production scanning stays unavailable unless current Cloudflare-runtime egress verification metadata matches the deployed compatibility date and fetch implementation.
+- Website Font Extractor scans bounded public HTML and CSS through a same-origin endpoint and returns declaration metadata only; it does not preview or download discovered font files. Production scanning stays unavailable unless the deployment declares the Cloudflare egress posture that the recorded runtime verification covered.
 - Network Speed Test measures real network traffic.
 - Currency Converter requests live rates only after consent; manual rates remain local.
 - Image and IP maps contact OpenStreetMap only after map consent; coordinates remain available without the embed.
