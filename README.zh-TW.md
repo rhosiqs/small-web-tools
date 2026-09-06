@@ -12,12 +12,16 @@
   <a href="ARCHITECTURE.zh-TW.md">架構</a>
   &nbsp;·&nbsp;
   <a href="PRIVACY.zh-TW.md">隱私權</a>
+  &nbsp;·&nbsp;
+  <a href="ABOUT.zh-TW.md">關於</a>
+  &nbsp;·&nbsp;
+  <a href="TERMS.zh-TW.md">使用條款</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/hhter2/small-web-tools/tags"><img src="https://img.shields.io/github/v/tag/hhter2/small-web-tools?sort=semver&amp;label=version" alt="版本：最新 Git 標籤"></a>
-  <a href="https://github.com/hhter2/small-web-tools/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/hhter2/small-web-tools/ci.yml?branch=develop&amp;label=CI" alt="CI 狀態"></a>
-  <a href="https://github.com/hhter2/small-web-tools/blob/develop/LICENSE"><img src="https://img.shields.io/badge/license-MIT-16a34a" alt="MIT 授權條款"></a>
+  <a href="https://github.com/rhosiqs/small-web-tools/tags"><img src="https://img.shields.io/github/v/tag/rhosiqs/small-web-tools?sort=semver&amp;label=version" alt="版本：最新 Git 標籤"></a>
+  <a href="https://github.com/rhosiqs/small-web-tools/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/rhosiqs/small-web-tools/ci.yml?branch=develop&amp;label=CI" alt="CI 狀態"></a>
+  <a href="https://github.com/rhosiqs/small-web-tools/blob/develop/LICENSE"><img src="https://img.shields.io/badge/license-MIT-16a34a" alt="MIT 授權條款"></a>
 </p>
 
 Small Web Tools 是一套以瀏覽器為基礎的日常工具集合，涵蓋文字、開發工作、檔案、媒體、網路、生物資訊與快速計算。它是一個單頁 React 應用程式：選取工具時只會切換目前畫面，不需要重新載入整個頁面。
@@ -106,14 +110,14 @@ English 是預設與 fallback 語言。選定的地區設定會以 `small-web-to
 以檔案為主的工具會盡可能在瀏覽器中處理所選檔案；檔案不會傳送到本專案進行分析。部分功能必須使用網路存取：
 
 - IP 查詢會查詢伺服器端的查詢端點與外部 IP 服務供應商。
-- 網站字型擷取器會透過同源端點掃描受限制的公開 HTML 與 CSS，只回傳宣告中的中繼資料；不會預覽或下載找到的字型檔案。正式環境只有在目前的 Cloudflare runtime 對外連線驗證 metadata 與部署的 compatibility date 及 fetch 實作相符時才會提供掃描。
+- 網站字型擷取器會透過同源端點掃描受限制的公開 HTML 與 CSS，只回傳宣告中的中繼資料；不會預覽或下載找到的字型檔案。正式環境只有在部署宣告的 Cloudflare 對外連線 posture 與已記錄的 runtime 驗證相符時才會提供掃描。
 - 網路速度測試會測量實際網路流量。
 - 貨幣轉換器只會在取得同意後要求即時匯率；手動匯率仍保留在本機。
 - 圖片與 IP 地圖只會在取得地圖同意後連線至 OpenStreetMap；即使不嵌入地圖，座標仍可使用。
 - 媒體分割器會在第一次處理時從 unpkg 下載固定版本的 FFmpeg WebAssembly 引擎，並在執行前驗證其大小與 SHA-256。媒體會保留在瀏覽器中。
 - 相機掃描需要瀏覽器的相機權限。
 
-頁尾的 **隱私權**路由 `/home/privacy` 會列出每個宣告的網路服務、觸發條件、傳送資料、同意模式與替代方案。處理敏感內容前，請查看該政策、工具本身的標籤與瀏覽器權限。
+網站頁尾連結到五個共用同一種閱讀版型的文件頁面：`/home/about`、`/home/privacy`、`/home/terms`、`/home/security` 與 `/home/license`。`/home/privacy` 會列出每個宣告的網路服務、觸發條件、傳送資料、同意模式與替代方案，同一頁也是允許或封鎖各項需要明確同意之服務的地方。處理敏感內容前，請查看該政策、工具本身的標籤與瀏覽器權限。
 
 ## 在本機執行
 
@@ -162,8 +166,10 @@ DEPLOYED_BASE_URL=https://small-web-tools.pages.dev npm run test:e2e:deployed
 維護中的說明文件以英文檔案搭配 .zh-TW.md 結尾的繁體中文對照檔。每份文件頂端的語言連結會維持同一種語言的導覽。TODO.md 特別維持英文單一版本。
 
 - [CONTRIBUTING.zh-TW.md](CONTRIBUTING.zh-TW.md) — 工程標準與本機執行說明。
+- [ABOUT.zh-TW.md](ABOUT.zh-TW.md) — 本站是什麼、如何處理資料，以及由誰維護。
 - [PRIVACY.zh-TW.md](PRIVACY.zh-TW.md) — 隱私權政策與網路服務揭露。
-- [SECURITY.md](SECURITY.md) — 支援版本與私密漏洞通報管道。
+- [TERMS.zh-TW.md](TERMS.zh-TW.md) — 託管網站的使用條款。
+- [SECURITY.zh-TW.md](SECURITY.zh-TW.md) — 支援版本與私密漏洞通報管道。
 - [TODO.md](TODO.md) — 目前待辦事項、已完成工作與專案更新流程（僅提供英文）。
 - [ARCHITECTURE.zh-TW.md](ARCHITECTURE.zh-TW.md) — 架構、路由清單、共用 UI 慣例與開發人員指南。
 - [.agents/AGENTS.md](.agents/AGENTS.md) — 供 AI agent 使用的儲存庫規則。依任務需要才讀取的

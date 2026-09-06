@@ -61,6 +61,7 @@ export default function SlashesConverter() {
   return (
     <AutoDetectConverter
       toolId="tool-slash"
+      kicker={t('navigation:categories.developer')}
       title={t('tool-slash.title')}
       inputPlaceholder={t('tool-slash.ui.placeholder')}
       emptyTargetLabel={t('tool-slash.ui.convertedPath')}

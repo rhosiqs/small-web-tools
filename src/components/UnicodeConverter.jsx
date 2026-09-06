@@ -99,6 +99,7 @@ export default function UnicodeConverter() {
   return (
     <AutoDetectConverter
       toolId="tool-unicode"
+      kicker={t('navigation:categories.developer')}
       title={t('tool-unicode.title')}
       inputPlaceholder={t('tool-unicode.ui.placeholder')}
       emptyTargetLabel={t('tool-unicode.ui.converted')}

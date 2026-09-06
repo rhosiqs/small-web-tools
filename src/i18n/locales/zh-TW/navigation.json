@@ -11,14 +11,13 @@
   },
   "search": { "placeholder": "搜尋工具…", "label": "搜尋工具", "noResults": "找不到工具" },
   "audience": { "choose": "選擇使用者類型", "showAll": "顯示所有工具", "switchTo": "切換至{{audience}}", "short": { "all": "首頁", "daily": "日常", "developer": "開發者", "bioinformatics": "生物資訊", "designer": "設計師", "student": "學生" } },
-  "homeGrid": { "categoryTools": "{{category}}工具", "recommended": "推薦給{{audience}}", "toolCount_one": "{{count}} 個工具", "toolCount_other": "{{count}} 個工具" },
-  "simpleHome": { "eyebrow": "簡易模式", "heading": "找到工具，立即開始", "description": "搜尋完整工具組，或開啟下方的日常必備工具。", "searchLabel": "搜尋所有工具", "searchPlaceholder": "搜尋所有工具…", "noResults": "找不到工具。", "essentials": "日常必備工具" },
+  "homeGrid": { "categoryTools": "{{category}}工具", "recommended": "推薦給{{audience}}", "toolCount_one": "{{count}} 個工具", "toolCount_other": "{{count}} 個工具", "edit": "自訂版面", "editDone": "完成", "editHint": "重新命名、排序與調整首頁群組的工具，也可以自行新增群組。所有變更只會儲存在這個瀏覽器，不會上傳。", "resetLayout": "重設為預設值", "addGroup": "新增群組", "groupLimit": "首頁最多可放 {{count}} 個群組。", "untitledGroup": "未命名群組", "groupName": "{{group}} 的名稱", "moveGroupEarlier": "將 {{group}} 上移", "moveGroupLater": "將 {{group}} 下移", "removeGroup": "移除 {{group}}", "removeGroupHint": "移除群組後，群組內的工具會移到隱藏清單。", "keepOneGroup": "請至少保留一個群組。", "emptyGroup": "這個群組是空的。請將工具移到這裡，或從下方的隱藏工具中加入。", "moveToolEarlier": "將 {{name}} 前移", "moveToolLater": "將 {{name}} 後移", "toolGroup": "{{name}} 所屬的群組", "hideTool": "從首頁隱藏 {{name}}", "hiddenHeading": "隱藏的工具", "hiddenNone": "所有工具都已顯示在首頁。", "restoreTool": "加入群組…", "restoreToolLabel": "將 {{name}} 加入群組" },
+  "simpleHome": { "eyebrow": "簡易模式", "heading": "找到工具，立即開始", "description": "搜尋完整工具組，或開啟下方的日常必備工具。", "searchLabel": "搜尋所有工具", "searchPlaceholder": "搜尋所有工具…", "noResults": "找不到工具。", "essentials": "日常必備工具", "edit": "編輯版面", "editDone": "完成", "editHint": "可新增、移除或調整捷徑順序。版面只會儲存在這個瀏覽器，不會上傳。", "resetLayout": "還原預設", "moveEarlier": "將 {{name}} 往前移", "moveLater": "將 {{name}} 往後移", "removeTool": "移除 {{name}}", "keepOne": "請至少保留一個捷徑。", "addHeading": "新增捷徑", "addSearchLabel": "搜尋要新增的工具", "addSearchPlaceholder": "搜尋要新增的工具…", "addTool": "新增 {{name}}", "addNone": "沒有可新增的工具。", "limitReached": "簡易模式最多可放 {{count}} 個捷徑，請先移除一個再新增。" },
   "sidebar": { "toggle": "切換側邊欄", "collapse": "收合側邊欄", "close": "關閉導覽", "navigationLabel": "工具導覽" },
   "home": "首頁", "goHome": "前往首頁", "backHome": "返回首頁",
   "simpleMode": "簡易模式", "exitSimpleMode": "離開簡易模式",
   "theme": "佈景主題", "toggleTheme": "切換深色／淺色模式",
-  "footer": { "tagline": "本機優先的工具。", "copyright": "本機優先的工具。© Rhosiqs · {{year}} · {{version}}", "website": "個人網站", "email": "寄信給 Rhosiqs；複製地址並開啟郵件程式", "consent": "管理第三方服務同意設定", "privacy": "閱讀隱私權與網路服務說明", "github": "GitHub 儲存庫" },
+  "footer": {"tagline": "本機優先的工具。", "copyright": "本機優先的工具。© Rhosiqs · {{year}} · {{version}}", "documents": "站內文件", "external": "專案連結", "website": "個人網站", "email": "寄信給 Rhosiqs；複製地址並開啟郵件程式", "github": "GitHub 儲存庫"},
   "toast": { "emailCopied": "已將電子郵件地址複製到剪貼簿！" },
-  "banner": { "label": "預發行版本提示", "desktop": "本站目前執行 {{channel}} 版本（{{version}}），可能提供不正確的資訊，使用前請先確認。", "mobile": "{{channel}} 版本（{{version}}）— 本站資訊可能不正確。" },
   "titles": { "default": "Small Web Tools — 簡單、隱私優先的瀏覽器工具", "tool": "{{tool}} — Small Web Tools" }
 }

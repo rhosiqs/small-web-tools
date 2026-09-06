@@ -46,6 +46,7 @@ coverage/
 Thumbs.db
 
 # Temporary/test development files
+testing_file/
 test-*.js
 test-results/
 playwright-report/

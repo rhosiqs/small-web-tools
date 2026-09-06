@@ -8,11 +8,11 @@
 
 **First Published:** July 19, 2026
 
-**Last Updated:** July 30, 2026
+**Last Updated:** September 3, 2026
 
-**In-app policy:** `/home/privacy`
+**In-app policy:** `/home/privacy` (the same page carries the service consent settings)
 
-**Source repository:** [github.com/hhter2/small-web-tools](https://github.com/hhter2/small-web-tools) (MIT License; GitHub access may be required)
+**Source repository:** [github.com/rhosiqs/small-web-tools](https://github.com/rhosiqs/small-web-tools) (MIT License; GitHub access may be required)
 
 **Maintainer Contact:** Rhosiqs (<emailforvirtualmachine@gmail.com>)
 
@@ -33,6 +33,7 @@ Local-first does not mean offline-only. The hosted application, named network-de
 | Cloudflare Speed Test | User-started latency/download/upload measurement | IP, request metadata, and generated measurement traffic | Explicit consent | No remote measurement |
 | Website Font Extractor | Bounded public HTML/CSS scan after consent and URL submission | Target URL; target servers receive Function request metadata | Explicit consent | Do not scan |
 | OpenStreetMap | Optional coordinate map after map consent | Coordinates and standard browser request metadata | Explicit consent | Coordinate text without an iframe |
+| Markdown badge images | Badge and screenshot images in a previewed Markdown document, after the reader turns badge images on | Image URL and standard browser request metadata; the image host learns the reader IP address | Explicit consent | Every image stays a placeholder |
 | unpkg FFmpeg 0.12.6 | Download pinned JS/WASM on the first processing action | Standard browser request metadata only; media and outputs remain local | Point-of-use disclosure | Do not process with FFmpeg |
 | Google Fonts recommendations | Open a specimen after the user selects a link | Standard navigation metadata | User navigation | Read the recommendation without opening it |
 | Google Maps | Open coordinates after the user selects a link | Coordinates and standard navigation metadata | User navigation | Read coordinates locally |
@@ -47,7 +48,7 @@ The FFmpeg JavaScript and WebAssembly assets remain pinned to `@ffmpeg/core` 0.1
 
 ## 4. Consent and browser storage
 
-The consent manager stores explicit service choices under `small_web_tools_consent`. Theme, collapsed navigation, and recent route state may also use local or session storage. The project does not add analytics trackers or tracking cookies.
+The consent settings on `/home/privacy` store explicit service choices under `small_web_tools_consent`. Theme, collapsed navigation, and recent route state may also use local or session storage. A Simple mode shortcut layout customized on the Simple home page is stored under `simpleLayout` in local storage, and a homepage group arrangement customized on `/home` is stored under `homeLayout`; neither leaves the browser. The project does not add analytics trackers or tracking cookies.
 
 Tool state stays in local storage and is never written to a cookie, so it is not attached to any request to the origin. Earlier versions of the Color Converter also mirrored a custom palette into a `customPresets` cookie. That cookie is no longer written; an existing one is read once so a saved palette survives, migrated to local storage, and then cleared.
 
@@ -69,3 +70,6 @@ the source repository.
 - **July 22, 2026:** Added data-flow disclosure, local fallbacks, and consent keys.
 - **July 23, 2026:** Added the in-app policy, machine-readable inventory, self-hosted UI fonts, metadata-only Font Extractor, integrity-verified FFmpeg disclosure, and shared OSM consent behavior.
 - **July 30, 2026:** Updated the maintainer contact and documented the canonical path-based privacy route.
+- **September 3, 2026:** Moved consent settings from a dialog to a document page, then merged that page into `/home/privacy`.
+- **September 3, 2026:** Disclosed the browser-only `simpleLayout` key behind the editable Simple mode layout.
+- **September 6, 2026:** Disclosed the browser-only `homeLayout` key behind the editable homepage groups.

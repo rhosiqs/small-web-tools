@@ -14,6 +14,7 @@ export const ROUTE_DEFINITIONS = [
   route('tool-ascii', 'developer', { staticLayout: true }), route('tool-unicode', 'developer', { staticLayout: true }),
   route('tool-url', 'developer'), route('tool-markdown', 'developer'),
   route('tool-mermaid', 'developer', { iconKey: 'tool-markdown' }), route('tool-code-preview', 'developer'),
+  route('tool-github-html', 'developer'),
   route('tool-fontextractor', 'developer', { staticLayout: true }), route('tool-base', 'developer', { staticLayout: true }),
   route('tool-folder-analyzer', 'developer'), route('tool-dna', 'bioinfo', { staticLayout: true }),
   route('tool-codon', 'bioinfo'), route('tool-phred', 'bioinfo'), route('tool-iplookup', 'network'),
@@ -28,10 +29,17 @@ export const ROUTE_DEFINITIONS = [
   route('tool-qrcode', 'utilities', { subGroupKey: 'utilities', componentProps: { initialTab: 'qr' }, staticLayout: true }),
   route('tool-qrbarcodescan', 'utilities', { subGroupKey: 'utilities', staticLayout: true }),
   route('tool-wheel', 'utilities', { subGroupKey: 'utilities', staticLayout: true }),
-  route('privacy', 'policy', { navigationVisible: false, staticLayout: true }),
+  route('about', 'policy', { navigationVisible: false }),
+  route('privacy', 'policy', { navigationVisible: false }),
+  route('terms', 'policy', { navigationVisible: false }),
+  route('security', 'policy', { navigationVisible: false }),
+  route('license', 'policy', { navigationVisible: false }),
 ];
 
 export const PUBLIC_ROUTE_IDS = ROUTE_DEFINITIONS.flatMap((item) => [item.id, ...item.aliases]);
+// Footer document pages: every policy-category route, in registry order.
+export const DOCUMENT_ROUTE_IDS = ROUTE_DEFINITIONS
+  .filter((item) => item.category === 'policy').map((item) => item.id);
 export const STATIC_LAYOUT_IDS = new Set(ROUTE_DEFINITIONS.flatMap((item) => item.staticLayout ? [item.id, ...item.aliases] : []));
 
 const metadataById = new Map(ROUTE_DEFINITIONS.flatMap((item) => [item.id, ...item.aliases].map((id) => [id, item])));

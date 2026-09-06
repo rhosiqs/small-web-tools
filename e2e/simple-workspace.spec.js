@@ -6,9 +6,37 @@ test('Simple mode opens the separate simple launcher', async ({ page }) => {
 
   await expect(page).toHaveURL(/\/simple$/);
   await expect(page.getByRole('heading', { name: 'Find a tool and get started' })).toBeVisible();
-  await expect(page.locator('[aria-labelledby="simple-essentials-heading"] button')).toHaveCount(8);
+  await expect(page.locator('#simple-essentials-grid > *')).toHaveCount(8);
+  await expect(page.getByRole('button', { name: /Random Wheel/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Word Counter/ })).toHaveCount(0);
   await expect(page.getByRole('navigation', { name: 'Choose audience' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Exit Simple mode' })).toBeVisible();
+});
+
+test('the simple layout editor keeps its shortcuts in this browser', async ({ page }) => {
+  await page.goto('/simple');
+  await page.getByRole('button', { name: 'Edit layout' }).click();
+  await page.getByRole('button', { name: 'Remove Currency Converter' }).click();
+  await page.getByRole('searchbox', { name: 'Search tools to add' }).fill('word counter');
+  await page.getByRole('button', { name: 'Add Word Counter' }).click();
+  await page.getByRole('button', { name: 'Move Word Counter earlier' }).click();
+
+  await page.reload();
+  const shortcuts = page.locator('#simple-essentials-grid > *');
+  await expect(shortcuts).toHaveCount(8);
+  await expect(shortcuts.nth(6)).toContainText('Word Counter');
+  await expect(page.getByRole('button', { name: /Currency Converter/ })).toHaveCount(0);
+
+  // The reduced navigation must follow the same stored layout.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole('button', { name: 'Toggle sidebar' }).click();
+  await expect(page.locator('#mobile-navigation-drawer button[data-tool="tool-wc"]')).toHaveCount(1);
+  await expect(page.locator('#mobile-navigation-drawer button[data-tool="tool-currency"]')).toHaveCount(0);
+
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Edit layout' }).click();
+  await page.getByRole('button', { name: 'Reset to default' }).click();
+  await expect(page.getByRole('button', { name: 'Remove Currency Converter' })).toBeVisible();
 });
 
 test('all-tool search keeps advanced tools in the simple shell', async ({ page }) => {

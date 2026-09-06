@@ -316,6 +316,8 @@
   --accent: #047857;
   --accent-hover: #065f46;
   --accent-light: rgba(4, 120, 87, 0.08);
+  /* Accent as an edge: the ring around result slabs and outlined accent controls. */
+  --accent-edge: rgba(4, 120, 87, 0.25);
   --accent-gradient: linear-gradient(135deg, #047857 0%, #065f46 100%);
   --accent-mint: #047857;
   --accent-mint-light: rgba(4, 120, 87, 0.1);
@@ -335,7 +337,6 @@
   --bg-header: #ffffff;
 
   /* Alert Banner Tokens */
-  --banner-height: 0px;
   --bg-warning-banner: #fffbeb;
   --border-warning-banner: #fde68a;
   --text-warning-banner: #b45309;
@@ -356,6 +357,7 @@ html[data-theme="dark"] {
   --accent: #10b981;
   --accent-hover: #059669;
   --accent-light: rgba(16, 185, 129, 0.15);
+  --accent-edge: rgba(16, 185, 129, 0.35);
   --accent-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);
   --accent-mint: #10b981;
   --accent-mint-light: rgba(16, 185, 129, 0.15);
@@ -651,6 +653,116 @@ html[data-theme="dark"] .ct-fisc-side-bond {
 }
 
 /* ==========================================================================
+   Markdown preview: raw HTML kept from the document
+   ==========================================================================
+   The previewer renders an allow-listed subset of the HTML a README contains.
+   Those elements arrive without utility classes, so the base styles they lose
+   to the Tailwind reset are restored here, scoped to the preview surface. */
+
+.markdown-html {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.markdown-html :is(h1, h2, h3, h4, h5, h6) {
+  margin: 0.6em 0 0.35em;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--text-main);
+}
+
+.markdown-html h1 { font-size: 1.75rem; }
+.markdown-html h2 { font-size: 1.4rem; }
+.markdown-html h3 { font-size: 1.2rem; }
+.markdown-html :is(h4, h5, h6) { font-size: 1rem; }
+
+.markdown-html p {
+  margin: 0.5em 0;
+}
+
+.markdown-html :is(ul, ol) {
+  margin: 0.4em 0;
+  padding-left: 1.5rem;
+}
+
+.markdown-html ul { list-style: disc; }
+.markdown-html ol { list-style: decimal; }
+
+.markdown-html a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.markdown-html img {
+  display: inline-block;
+  max-width: 100%;
+  height: auto;
+}
+
+.markdown-html table {
+  border-collapse: collapse;
+  margin: 0.5em 0;
+}
+
+.markdown-html :is(th, td) {
+  border: 1px solid var(--border-color);
+  padding: 0.35rem 0.6rem;
+}
+
+.markdown-html blockquote {
+  margin: 0.5em 0;
+  padding: 0.25rem 0.9rem;
+  border-left: 3px solid var(--accent);
+  color: var(--text-muted);
+}
+
+.markdown-html :is(code, kbd, samp) {
+  padding: 0.05rem 0.3rem;
+  border-radius: 0.25rem;
+  background: var(--bg-app);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+
+.markdown-html kbd {
+  border: 1px solid var(--border-color);
+  border-bottom-width: 2px;
+}
+
+.markdown-html details {
+  margin: 0.5em 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+}
+
+.markdown-html summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.markdown-html hr {
+  margin: 0.75em 0;
+  border-color: var(--border-color);
+}
+
+.markdown-html sub,
+.markdown-html sup {
+  font-size: 0.75em;
+  line-height: 0;
+}
+
+.markdown-html sup { vertical-align: super; }
+.markdown-html sub { vertical-align: sub; }
+
+.markdown-html :is(b, strong) { font-weight: 700; }
+.markdown-html :is(i, em, cite, q) { font-style: italic; }
+.markdown-html mark { background: var(--accent-light); color: var(--text-main); }
+.markdown-html small { font-size: 0.85em; }
+
+/* ==========================================================================
    Header and Footer Modification Overrides
    ========================================================================== */
 
@@ -660,31 +772,6 @@ html[data-theme="dark"] .ct-fisc-side-bond {
   .sidebar {
     display: none !important;
   }
-}
-
-/* Warning Banner Styles */
-.has-banner {
-  --banner-height: 36px;
-}
-
-.channel-alert-banner {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 36px;
-  background: var(--bg-warning-banner);
-  border-bottom: 1px solid var(--border-warning-banner);
-  color: var(--text-warning-banner);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  z-index: 9999;
-  padding: 0 16px;
-  box-sizing: border-box;
 }
 
 @keyframes mediasplit-pulse {
@@ -731,28 +818,8 @@ html[data-theme="dark"] .ct-fisc-side-bond {
 }
 /* Keep dense reference tools fully visible on common 768px-high laptop screens. */
 @media (min-width: 768px) and (max-height: 820px) {
-  #tool-ascii [aria-label="Source"] header,
-  #tool-ascii [aria-label="Result"] header {
-    min-height: 2rem;
-    padding-bottom: 0.35rem;
-    padding-top: 0.35rem;
-  }
-
   #tool-ascii textarea {
     min-height: 3.35rem;
-    padding-bottom: 0.45rem;
-    padding-top: 0.45rem;
-  }
-
-  #tool-ascii [aria-label="ASCII codes 0 through 127"] {
-    gap: 0.125rem;
-  }
-
-  #tool-ascii [aria-label="ASCII codes 0 through 127"] [role="gridcell"] {
-    line-height: 1;
-    min-height: 1.35rem;
-    padding-bottom: 0;
-    padding-top: 0;
   }
 
   #tool-base > section {
@@ -810,5 +877,85 @@ html[data-theme="dark"] .ct-fisc-side-bond {
 
   #tool-base [aria-label="Common base conversions for decimal 0 through 15"] [role="columnheader"] {
     min-height: 1.1rem;
+  }
+}
+
+/*
+ * Conversion-tool blueprint primitives (Nocturne handoff).
+ *
+ * Two things the Tailwind utility set cannot express clearly, shared by the
+ * converter screens that moved to the one-frame layout: a section rule that
+ * fades out at both ends instead of stopping cleanly, and the underlined
+ * field that replaces the boxed input. Both read from the theme variables, so
+ * light and dark need no extra work.
+ */
+.rule-fade {
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--border-color) 48px,
+    var(--border-color) calc(100% - 48px),
+    transparent
+  );
+}
+
+/*
+ * The element-level input rules above are attribute-qualified, so these are
+ * element-qualified too — otherwise `textarea[readonly]` and
+ * `input[type="text"]:focus` would win and put the box back.
+ */
+textarea.input-rule,
+input.input-rule {
+  border: 0;
+  border-bottom: 1px solid var(--border-color);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+textarea.input-rule:hover,
+input.input-rule:hover,
+textarea.input-rule:focus,
+input.input-rule:focus {
+  background: transparent;
+  box-shadow: none;
+}
+
+textarea.input-rule:focus,
+input.input-rule:focus {
+  border-bottom-color: var(--accent);
+}
+
+textarea.input-rule[aria-invalid="true"],
+input.input-rule[aria-invalid="true"] {
+  border-bottom-color: #ef4444;
+}
+
+/* The result slab paints its own tint; the field inside it stays invisible. */
+textarea.slab-output,
+textarea.slab-output[readonly],
+textarea.slab-output[readonly]:focus {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  opacity: 1;
+}
+
+@media (max-width: 640px) {
+  .rule-fade {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--border-color) 28px,
+      var(--border-color) calc(100% - 28px),
+      transparent
+    );
   }
 }

@@ -17,9 +17,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hhter2/small-web-tools/tags"><img src="https://img.shields.io/github/v/tag/hhter2/small-web-tools?sort=semver&amp;label=version" alt="版本：最新 Git 標籤"></a>
-  <a href="https://github.com/hhter2/small-web-tools/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/hhter2/small-web-tools/ci.yml?branch=develop&amp;label=CI" alt="CI 狀態"></a>
-  <a href="https://github.com/hhter2/small-web-tools/blob/develop/LICENSE"><img src="https://img.shields.io/badge/license-MIT-16a34a" alt="MIT 授權條款"></a>
+  <a href="https://github.com/rhosiqs/small-web-tools/tags"><img src="https://img.shields.io/github/v/tag/rhosiqs/small-web-tools?sort=semver&amp;label=version" alt="版本：最新 Git 標籤"></a>
+  <a href="https://github.com/rhosiqs/small-web-tools/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/rhosiqs/small-web-tools/ci.yml?branch=develop&amp;label=CI" alt="CI 狀態"></a>
+  <a href="https://github.com/rhosiqs/small-web-tools/blob/develop/LICENSE"><img src="https://img.shields.io/badge/license-MIT-16a34a" alt="MIT 授權條款"></a>
 </p>
 
 這個隔離的 Worker 僅用於 CR-009 的部署證據。使用測試操作者擁有的主機名稱設定

@@ -20,7 +20,7 @@
     }
   },
   "tool-color": { "title": "Color Converter", "tooltip": "Color Converter", "description": "Convert and select colors in HEX, RGB, HSL, and other formats.", "search": ["HEX", "RGB", "HSL", "palette"], "ui": { "title": "Color Code Converter & HSL Selector", "enterColor": "Enter a HEX, RGB, HSL, HSB, CMYK, or LAB color.", "invalidFormat": "Invalid color format.", "duplicateColor": "This color is already in the standard palette.", "invalidPalette": "Invalid file format. The JSON file must contain an array of HEX color strings, such as [\"#FF0000\", \"#00FF00\"].", "parseFailed": "The JSON file could not be parsed.", "hue": "Hue", "saturation": "Saturation", "brightness": "Brightness", "luminance": "Luminance", "red": "Red", "green": "Green", "blue": "Blue", "cyan": "Cyan", "magenta": "Magenta", "yellow": "Yellow", "key": "Key", "greenRed": "Green–Red", "blueYellow": "Blue–Yellow", "sliderModelAria": "Color slider model", "pickScreen": "Pick a color from the screen", "copyCode": "Copy color code", "converter": "Code Converter", "codeLabel": "HEX, RGB, or HSL code", "hslSwatches": "HSL Swatches", "disconnectSync": "Disconnect from the spectrum picker", "connectSync": "Synchronize with the spectrum picker", "syncOn": "COLOR SYNC: ON", "syncOff": "COLOR SYNC: OFF", "standardPalettes": "Standard palettes", "customize": "Customize", "done": "Done", "resetTitle": "Reset to the default 12 colors", "reset": "Reset", "exportTitle": "Export palette as JSON", "export": "Export", "importTitle": "Import palette from JSON", "import": "Import", "deleteColor": "Delete color", "addCurrent": "Add current color ({{color}})", "hslSpectrum": "HSL Spectrum", "lightness": "Lightness", "recentColors": "Recent colors", "clear": "Clear" } },
-  "tool-ascii": { "title": "ASCII Converter", "tooltip": "ASCII Converter", "description": "Convert text to ASCII codes and ASCII codes to text.", "search": ["character code", "decimal code"], "ui": { "reference": "ASCII reference", "referenceHint": "Select any character to use its decimal code as the input.", "legend": "DEC · Character", "gridLabel": "ASCII codes 0 through 127", "cellLabel": "ASCII {{code}}: {{name}}", "outsideAscii": "The character “{{character}}” is outside the ASCII range. Use Unicode Converter for non-ASCII text.", "notDecimal": "“{{value}}” is not a decimal ASCII code.", "outsideRange": "ASCII code {{value}} is outside the allowed range of 0 to 127.", "plainText": "Plain text", "codes": "ASCII codes", "textOrCodes": "Text or ASCII codes", "converted": "Converted result", "placeholder": "Hello\nor\n72 101 108 108 111" } },
+  "tool-ascii": { "title": "ASCII Converter", "tooltip": "ASCII Converter", "description": "Convert text to ASCII codes and ASCII codes to text.", "search": ["character code", "decimal code"], "ui": { "reference": "ASCII reference", "referenceHint": "All 128 codes, grouped into eight ranges. Select a band to focus it, or a code to load it into the converter.", "cellLabel": "ASCII {{code}}: {{name}}", "outsideAscii": "The character “{{character}}” is outside the ASCII range. Use Unicode Converter for non-ASCII text.", "notDecimal": "“{{value}}” is not a decimal ASCII code.", "outsideRange": "ASCII code {{value}} is outside the allowed range of 0 to 127.", "plainText": "Plain text", "codes": "ASCII codes", "textOrCodes": "Text or ASCII codes", "converted": "Converted result", "placeholder": "Hello\nor\n72 101 108 108 111", "rangeCount": "{{count}} codes", "rangeAria": "Show the {{label}} range, {{range}}", "ranges": { "control": "Control", "punctuation": "Space & punctuation", "digits": "Digits", "symbols": "Symbols", "uppercase": "Uppercase", "lowercase": "Lowercase", "symbolsDelete": "Symbols & DEL" } } },
   "tool-unicode": { "title": "Unicode Converter", "tooltip": "Unicode Converter", "description": "Convert text to Unicode escapes and Unicode escapes to text.", "search": ["code point", "escape sequence"], "ui": { "notHex": "“{{value}}” is not a hexadecimal Unicode code point.", "invalidScalar": "“{{value}}” is not a valid Unicode scalar value.", "plainText": "Plain text", "codePoints": "Unicode code points", "textOrCodePoints": "Text or code points", "convertedPlaceholder": "The converted result appears here.", "pointsPlaceholder": "Unicode code points appear here.", "decodedPlaceholder": "Decoded text appears here.", "converted": "Converted result", "placeholder": "Hello 🌍\nor\nU+0048 U+0065 U+006C U+006C U+006F" } },
   "tool-url": { "title": "URL Encoder & Decoder", "tooltip": "URL Encoder & Decoder", "description": "Encode or decode URLs and non-ASCII addresses with UTF-8 percent-encoding.", "search": ["percent encoding", "URI", "UTF-8 URL"], "ui": { "scope": "Encoding scope", "scopeHint": "UTF-8 percent-encoding is used; conversion stays in this browser.", "scopeLabel": "URL encoding scope", "fullUrl": "Full URL", "component": "URL component", "fullHint": "Preserves URL structure such as : / ? & = and # while encoding non-ASCII characters and spaces.", "componentHint": "Encodes every reserved separator, suitable for an address or other value placed inside a query parameter.", "placeholder": "Paste a URL, non-ASCII address, or percent-encoded value", "converted": "Converted URL", "urlOrEncoded": "URL or encoded URL", "decoded": "Decoded URL", "encoded": "Percent-encoded URL", "convertedPlaceholder": "The converted URL appears here.", "decodedPlaceholder": "Decoded URL appears here.", "encodedPlaceholder": "Encoded URL appears here.", "invalidUnicode": "The source contains an invalid Unicode sequence that cannot be URL-encoded.", "malformedEncoding": "The source contains malformed or incomplete percent-encoding." } },
   "tool-markdown": {
@@ -29,7 +29,14 @@
     "description": "Edit, upload, preview, and download Markdown files locally.",
     "search": ["Markdown editor", "MD preview"],
     "ui": {
-      "imagePlaceholder": "Image: {{alt}}",
+      "imagePlaceholder": {
+        "consent": "Image not loaded: {{alt}}",
+        "blockedHost": "Image from an unsupported host: {{alt}}",
+        "relative": "Image with a relative path: {{alt}}",
+        "unsupported": "Image could not be shown: {{alt}}"
+      },
+      "untitledImage": "untitled",
+      "remoteImages": { "enable": "Load badge images", "disable": "Stop loading badge images" },
       "previewAria": "Markdown preview",
       "emptyPreview": "The rendered preview will appear here.",
       "completedTask": "Completed task",
@@ -54,7 +61,7 @@
       "editorAria": "Markdown editor",
       "editorPlaceholder": "Type or paste Markdown here...",
       "previewTitle": "Preview",
-      "privacyNote": "Preview stays in your browser. Raw HTML and external images are not rendered.",
+      "privacyNote": "Preview stays in your browser. Raw HTML is sanitized, and images load only from the badge hosts you allow.",
       "status": {
         "formatApplied": "Formatting applied.",
         "pasted": "Pasted Markdown from the clipboard.",
@@ -64,7 +71,9 @@
         "loaded": "Loaded {{filename}}.",
         "readFailed": "The Markdown file could not be read.",
         "downloaded": "Downloaded {{filename}}.",
-        "cleared": "Editor cleared."
+        "cleared": "Editor cleared.",
+        "remoteImagesEnabled": "Badge images will load from img.shields.io, badgen.net, github.com, raw.githubusercontent.com, and user-images.githubusercontent.com.",
+        "remoteImagesDisabled": "Badge images are no longer loaded."
       }
     }
   },
@@ -75,6 +84,122 @@
       "lineCount_one": "{{formattedCount}} line", "lineCount_other": "{{formattedCount}} lines", "editorAria": "VS Code editor", "openFullscreen": "Open fullscreen code preview", "placeholder": "Type or paste code here…", "codeEditorAria": "Code editor", "privacyNote": "Edit directly in the highlighted window. Code stays in your browser and is never executed.",
       "appearanceTitle": "Editor appearance", "appearanceDescription": "Choose a preset or adjust individual colors.", "close": "Close", "editorTheme": "Editor theme", "theme": { "system": "System", "light": "Light", "dark": "Dark" }, "accent": "Accent", "background": "Background", "foreground": "Foreground", "codeFont": "Code font", "colorAria": "{{label}} color", "fullscreenTitle": "Code fullscreen preview", "fullscreenCodeAria": "Fullscreen highlighted code",
       "status": { "pasted": "Pasted code from the clipboard.", "pasteDenied": "Clipboard access was denied. Paste into the editor manually.", "copied": "Copied code to the clipboard.", "copyDenied": "Clipboard access was denied. Select and copy the code manually.", "fileTooLarge": "The code file must be 2 MiB or smaller.", "loaded": "Loaded {{filename}}.", "readFailed": "The selected file could not be read.", "downloaded": "Downloaded {{filename}}.", "preparingPng": "Preparing PNG…", "pngFailed": "PNG export failed. Try a shorter code sample or another browser.", "cleared": "Editor cleared." }
+    }
+  },
+  "tool-github-html": {
+    "title": "GitHub HTML Blocks",
+    "tooltip": "GitHub README HTML block builder",
+    "description": "Stack the raw HTML a GitHub README needs, and see what GitHub keeps.",
+    "search": [
+      "readme",
+      "github html",
+      "details collapsible",
+      "shields badge",
+      "kbd tag"
+    ],
+    "blocks": {
+      "center-block": "Centred block",
+      "center-title": "Centred title and tagline",
+      "align-right": "Right-aligned block",
+      "two-column": "Two-column image table",
+      "line-break": "Hard line break",
+      "rule": "Horizontal rule",
+      "details": "Collapsible section",
+      "details-open": "Collapsible section, open by default",
+      "details-code": "Collapsible code block",
+      "badge-link": "Linked badge",
+      "badge-row": "Centred badge row",
+      "kbd": "Keyboard key",
+      "subscript": "Subscript",
+      "superscript": "Superscript",
+      "sample-output": "Program output",
+      "underline": "Underline",
+      "highlight": "Highlight",
+      "coloured-text": "Coloured text",
+      "inline-style": "Inline style attribute",
+      "sized-image": "Image with a set width",
+      "theme-image": "Light and dark image pair",
+      "floated-image": "Image floated beside text",
+      "video": "Video player",
+      "anchor": "Anchor target",
+      "back-to-top": "Back-to-top link",
+      "alert-note": "Note callout",
+      "alert-warning": "Warning callout",
+      "quote": "Block quote"
+    },
+    "slots": {
+      "center-title": {
+        "tagline": "One line about what this project does."
+      },
+      "two-column": {
+        "left": "Light",
+        "right": "Dark"
+      },
+      "details": {
+        "body": "Hidden content goes here. Markdown works after the blank line."
+      },
+      "details-open": {
+        "body": "Visible until the reader collapses it."
+      },
+      "badge-link": {
+        "alt": "Build status"
+      },
+      "sized-image": {
+        "alt": "Screenshot"
+      },
+      "theme-image": {
+        "alt": "Project logo"
+      },
+      "floated-image": {
+        "alt": "Project icon"
+      },
+      "back-to-top": {
+        "label": "Back to top"
+      }
+    },
+    "ui": {
+      "sampleText": "Text",
+      "removedByGithub": "GitHub removes this",
+      "openPalette": "Add a block",
+      "copy": "Copy",
+      "clear": "Clear",
+      "editorTitle": "Markdown",
+      "previewTitle": "Preview",
+      "editorAria": "README editor",
+      "editorPlaceholder": "Add a block, or type here…",
+      "openEditorFullscreen": "Open the editor fullscreen",
+      "openPreviewFullscreen": "Open the preview fullscreen",
+      "characterCount": "{{count}} characters",
+      "previewAria": "Rendered README preview",
+      "emptyPreview": "Stack a block to see it here.",
+      "imagePlaceholder": "Image: {{alt}}",
+      "untitledImage": "untitled",
+      "untitledLink": "link",
+      "githubDrops": "GitHub removes: {{items}}",
+      "privacyNote": "Everything is composed in your browser. Images are never loaded.",
+      "paletteTitle": "Block palette",
+      "paletteSearchLabel": "Search blocks",
+      "paletteSearchPlaceholder": "Type to narrow the blocks…",
+      "paletteEmpty": "No block matches that.",
+      "paletteHintMove": "Arrow keys move",
+      "paletteHintInsert": "Enter adds",
+      "paletteHintClose": "Esc closes",
+      "completedTask": "Completed task",
+      "incompleteTask": "Incomplete task",
+      "alert": {
+        "note": "Note",
+        "tip": "Tip",
+        "important": "Important",
+        "warning": "Warning",
+        "caution": "Caution"
+      },
+      "status": {
+        "stacked": "Stacked {{block}}.",
+        "inserted": "Inserted {{block}}.",
+        "copied": "Copied the document to the clipboard.",
+        "copyDenied": "Clipboard access was denied. Select and copy the text manually.",
+        "cleared": "Cleared the document."
+      }
     }
   },
   "tool-fontextractor": { "title": "Font Extractor", "tooltip": "Website Font Extractor", "description": "Inspect bounded font declarations from a public website without downloading font files.", "search": ["web font", "font family", "CSS font"], "ui": { "heading": "Website Font Extractor", "weight": "Weight", "style": "Style", "stretch": "Stretch", "variable": "Variable", "sourceHost": "Source host", "unicodeRange": "Unicode range", "unknown": "unknown", "yes": "Yes", "no": "No", "embedded": "Embedded declaration", "similar": "Similar fonts", "similarHint": "Heuristic alternatives. Links open Google Fonts only after you select them.", "blocked": "Website analysis is blocked until you allow the disclosed external service.", "required": "Please enter a website URL.", "error": "Error: {{message}}", "failed": "Extraction failed.", "noneDetailed": "No web font declarations were found. The site may use system fonts or dynamic loading.", "unavailable": "Website analysis is currently unavailable.", "unknownFamily": "Unknown family", "consentDisclosure": "Analysis sends the target URL to this site's server, which fetches bounded public HTML and CSS. Font files are not fetched.", "allow": "Allow website analysis", "websiteUrl": "Website URL", "placeholder": "Enter a website URL (e.g., stripe.com)", "scanning": "Scanning…", "scan": "Scan declarations", "try": "Try:", "fetching": "Fetching bounded HTML and CSS…", "summary": "{{families}} families, {{faces}} faces found", "truncated": "Results may be incomplete because the scan reached its safe {{reasons}} limit.", "faceCount_one": "({{count}} face)", "faceCount_other": "({{count}} faces)", "none": "No web font declarations were found.", "disclaimer": "This scan reports declarations found in bounded public HTML and CSS; it does not prove a font was rendered. Dynamically loaded or authenticated styles may not be detected. Recommendations are local heuristics." } },
@@ -101,7 +226,7 @@
     "sideChainName": { "Phe": "Benzyl", "Leu": "Isobutyl", "Ile": "Sec-butyl", "Met": "Thioether", "Val": "Isopropyl", "Ser": "Hydroxymethyl", "Pro": "Pyrrolidine ring", "Thr": "Hydroxyethyl", "Ala": "Methyl", "Tyr": "p-Hydroxybenzyl", "His": "Imidazole", "Gln": "Carboxamide", "Asn": "Carboxamide", "Lys": "Amino", "Asp": "Carboxylate", "Glu": "Carboxylate", "Cys": "Thiol", "Trp": "Indole", "Arg": "Guanidinium", "Gly": "Hydrogen" },
     "groupType": { "Phe": "Aromatic, nonpolar", "Leu": "Aliphatic, nonpolar", "Ile": "Aliphatic, nonpolar", "Met": "Sulfur-containing, nonpolar", "Val": "Aliphatic, nonpolar", "Ser": "Polar, uncharged", "Pro": "Cyclic, nonpolar", "Thr": "Polar, uncharged", "Ala": "Aliphatic, nonpolar", "Tyr": "Aromatic, polar", "His": "Basic, aromatic", "Gln": "Polar, uncharged", "Asn": "Polar, uncharged", "Lys": "Basic, positively charged", "Asp": "Acidic, negatively charged", "Glu": "Acidic, negatively charged", "Cys": "Sulfur-containing, polar", "Trp": "Aromatic, nonpolar", "Arg": "Basic, positively charged", "Gly": "Nonpolar" }
   } },
-  "tool-phred": { "title": "Phred Scale Converter", "tooltip": "Mapping Quality & Phred Scale Converter", "description": "Convert base-call and mapping-quality Phred scores to error probabilities.", "search": ["mapping quality", "SNP calling", "base quality", "error probability"], "ui": { "inputTypeAria": "Phred input type", "scoreTab": "Phred score (Q)", "probabilityTab": "Error probability (P)", "scoreLabel": "Phred score (0–300)", "probabilityLabel": "Error probability (greater than 0, up to 1)", "scoreError": "Enter a Phred score from 0 to 300.", "probabilityError": "Enter an error probability greater than 0 and no greater than 1.", "score": "Phred score", "errorProbability": "Error probability", "callAccuracy": "Call accuracy", "expectedFrequency": "Expected frequency", "oneIn": "1 in {{count}}", "referenceTitle": "Common Phred scores", "referenceDescription": "Select a score to inspect its error rate and accuracy.", "accuracy": "Accuracy", "expectedErrors": "Expected errors", "useScoreAria": "Use Phred score {{score}}", "note": "Mapping quality estimates whether a read is placed incorrectly; base quality estimates whether an individual base call is incorrect. Both commonly use the same Phred transformation." } },
+  "tool-phred": { "title": "Phred Scale Converter", "tooltip": "Mapping Quality & Phred Scale Converter", "description": "Convert base-call and mapping-quality Phred scores to error probabilities.", "search": ["mapping quality", "SNP calling", "base quality", "error probability"], "ui": { "inputTypeAria": "Phred input type", "scoreTab": "Phred score (Q)", "probabilityTab": "Error probability (P)", "scoreLabel": "Phred score (0–300)", "probabilityLabel": "Error probability (greater than 0, up to 1)", "scoreError": "Enter a Phred score from 0 to 300.", "probabilityError": "Enter an error probability greater than 0 and no greater than 1.", "score": "Phred score", "errorProbability": "Error probability", "callAccuracy": "Call accuracy", "expectedFrequency": "Expected frequency", "oneIn": "1 in {{count}}", "referenceTitle": "Common Phred scores", "referenceDescription": "The scale is logarithmic — every ten points is another factor of ten. Select a mark to load it.", "accuracy": "Accuracy", "expectedErrors": "Expected errors", "useScoreAria": "Use Phred score {{score}}", "note": "Mapping quality estimates whether a read is placed incorrectly; base quality estimates whether an individual base call is incorrect. Both commonly use the same Phred transformation.", "offsetGroup": "FASTQ offset", "scaleLabel": "Phred score scale, Q0 to Q60", "fastqString": "FASTQ quality string" } },
   "tool-iplookup": { "title": "IP Lookup", "tooltip": "IP Lookup", "description": "Look up geographical location, time zone, ISP, and coordinates for an IP address.", "search": ["IP address", "geolocation", "ISP", "time zone"], "ui": { "heading": "IP Address Lookup", "disclosure": "Lookup sends the requested IP through this site to a geolocation provider; the map separately contacts OpenStreetMap only after permission.", "consentDisclosure": "Lookup sends the requested IP to this site's server, which contacts a geolocation provider.", "allow": "Allow IP lookup", "blocked": "IP lookup is blocked until you allow the disclosed third-party service.", "error": "Error: {{message}}", "serverError": "Server-side IP lookup failed", "required": "IP address is required", "invalidSyntax": "Invalid IP address syntax", "invalidAddress": "Invalid IPv4 or IPv6 address", "ipAddress": "IP address", "placeholder": "Enter an IP address (leave blank for your current IP)…", "lookup": "Lookup", "fetching": "Fetching IP details…", "unknown": "Unknown", "copied": "Copied!", "copy": "Copy", "location": "Location (city / postal code)", "regionCountry": "Region & country", "organization": "Organization (ISP)", "timezone": "Time zone", "coordinates": "Coordinates", "mapTitle": "IP location" } },
   "tool-speedtest": {
     "title": "Speed Test", "tooltip": "Network Speed Test", "description": "Measure network latency, download speed, and upload speed.", "search": ["latency", "download", "upload", "bandwidth"],
@@ -122,7 +247,7 @@
   "tool-barcode": { "title": "Barcode Generator", "tooltip": "Barcode Generator", "description": "Generate barcodes in multiple formats.", "search": ["CODE128", "EAN", "UPC", "barcode"] },
   "tool-currency": { "title": "Currency Converter", "tooltip": "Currency Converter & Counter", "description": "Convert currencies with a manual rate or consented live rates.", "search": ["exchange rate", "money", "foreign currency"], "ui": { "description": "Live mode contacts an exchange-rate provider through this site. Manual Rate Override remains fully local.", "quickConvert": "Quick Convert", "bulkConvert": "Bulk Convert & Count", "rateSource": "Rate Source", "localManualRate": "Local manual rate", "consentRequired": "Consent required", "loading": "Loading", "liveApi": "Live API", "staleSource": "{{provider}} (stale)", "offline": "Offline", "lastUpdated": "Last Updated", "notAvailable": "N/A", "exchangeProvider": "Exchange rate provider", "ratesUnavailable": "Rates Unavailable (Offline)", "apiError": "Unable to retrieve live exchange rates. Enable Manual Rate Override below for local calculations.", "consentDescription": "Live rates contact the configured exchange-rate provider through this site’s server. You can decline and use Manual Rate Override without any request.", "allowLiveRates": "Allow live rates", "enableManualRate": "Enable Manual Rate Override", "manualRateError": "Manual rate must be a finite number greater than zero.", "manualRateSwapError": "Enter a valid manual rate greater than zero before swapping.", "rate": "Rate", "amount": "Amount", "from": "From", "to": "To", "swap": "Swap Currencies", "rateUnavailable": "Rate unavailable", "provideRate": "Provide a valid manual rate or load valid live rates.", "sourceCurrency": "Source Currency", "targetCurrency": "Target Currency", "amounts": "Amounts (one per line)", "numberFormat": "Number format", "autoStrict": "Auto (strict)", "total": "Total ({{currency}})", "linesCounted": "Lines Counted", "lineBreakdown": "Line Breakdown", "lineError": "Line {{line}}: {{error}}", "lineValue": "Line {{line}}: {{value}}", "numberError": { "empty": "Empty line", "single-number": "Use one number with at most one currency symbol or code", "ambiguous": "Ambiguous separator; choose a number format", "invalid": "Invalid number for the selected format" } } },
   "tool-date": { "title": "Date & Time Counter", "tooltip": "Date & Time Counter", "description": "Calculate differences between dates or times.", "search": ["date difference", "duration", "time counter"], "ui": { "selectDates": "Select both dates.", "dateDifference_one": "{{formattedCount}} day (end - start)", "dateDifference_other": "{{formattedCount}} days (end - start)", "selectTimes": "Select both times.", "timeDifference": "{{sign}}{{hours}}h {{minutes}}m {{seconds}}s (end - start{{nextDay}})", "nextDay": ", next day", "modeAria": "Counter mode", "dateCounter": "Date Counter", "timeCounter": "Time Counter", "startDate": "Start date", "endDate": "End date", "startTime": "Start time", "endTime": "End time", "endNextDay": "End time is on the next day" } },
-  "tool-roman": { "title": "Roman Numeral Converter", "tooltip": "Roman Numeral Converter", "description": "Convert between decimal numbers and canonical Roman numerals.", "search": ["Roman numbers", "Arabic numbers", "decimal to Roman"], "ui": { "label": { "decimalOrRoman": "Decimal or Roman numeral", "convertedValue": "Converted value", "decimalNumber": "Decimal number", "romanNumeral": "Roman numeral" }, "error": { "decimalRange": "Enter a whole number from 1 to 3999.", "invalidRoman": "Enter a canonical Roman numeral using I, V, X, L, C, D, and M." }, "clear": "Clear", "retryCopyAria": "Retry copying converted value", "copyAria": "Copy converted value", "copied": "Copied", "retry": "Retry", "copy": "Copy", "referenceTitle": "Roman numeral reference", "referenceDescription": "Select a value to load it into the converter.", "convertAria": "Convert {{decimal}} to {{roman}}", "note": "Standard Roman numerals support whole numbers from 1 to 3999. Subtractive pairs are IV, IX, XL, XC, CD, and CM." } },
+  "tool-roman": { "title": "Roman Numeral Converter", "tooltip": "Roman Numeral Converter", "description": "Convert between decimal numbers and canonical Roman numerals.", "search": ["Roman numbers", "Arabic numbers", "decimal to Roman"], "ui": { "label": { "decimalOrRoman": "Decimal or Roman numeral", "convertedValue": "Converted value", "decimalNumber": "Decimal number", "romanNumeral": "Roman numeral" }, "error": { "decimalRange": "Enter a whole number from 1 to 3999.", "invalidRoman": "Enter a canonical Roman numeral using I, V, X, L, C, D, and M." }, "clear": "Clear", "retryCopyAria": "Retry copying converted value", "copyAria": "Copy converted value", "copied": "Copied", "retry": "Retry", "copy": "Copy", "referenceTitle": "Roman numeral reference", "referenceDescription": "One row per order of magnitude. Select a value to load it into the converter.", "convertAria": "Convert {{decimal}} to {{roman}}", "note": "Standard Roman numerals support whole numbers from 1 to 3999. Subtractive pairs are IV, IX, XL, XC, CD, and CM.", "magnitudes": { "ones": "ONES", "tens": "TENS", "hundreds": "HUNDREDS", "thousands": "THOUSANDS" } } },
   "tool-password": { "title": "Password Generator", "tooltip": "Secure Password Generator", "description": "Generate secure passwords with a cryptographically secure random source.", "search": ["secure password", "CSPRNG", "random password"], "ui": {
     "title": "Secure Password Utility", "generatorTab": "Password Generator", "checkerTab": "Strength Checker", "hidePassword": "Hide password", "showPassword": "Show password", "hide": "Hide", "show": "Show", "copyTitle": "Copy to clipboard", "copied": "Copied", "copy": "Copy", "generateTitle": "Generate a new password", "refresh": "Refresh", "configuration": "Configuration", "passwordLength": "Password length", "commonSpecial": "Common special characters", "rareSpecial": "Rare special characters", "allows": "Allows:", "securityStrength": "Security & Strength", "strengthLabel": "Strength:", "entropy": "Theoretical random entropy:", "bits": "{{value}} bits", "estimatedCrackTime": "Estimated offline crack time:", "securityLevel": "Security level:", "notAvailable": "N/A", "instantly": "Instantly", "billionsOfYears": "Billions of years (extremely high complexity)", "checkPlaceholder": "Type a password to test its strength…", "analysis": "Password analysis", "minimumLength": "Minimum length (8+ characters)", "currentLength": "Current length: {{count}} characters", "lowercase": "Lowercase letters (a–z)", "uppercase": "Uppercase letters (A–Z)", "numbers": "Numbers (0–9)", "commonSymbols": "Common symbols (!@#$%^&*()-_=+)", "rareSymbols": "Rare symbols ([]{}|;:',.<>?/~)", "estimatedFastAttack": "Estimated fast offline attack:",
     "time": { "seconds": "{{count}} seconds", "minutes": "{{count}} minutes", "hours": "{{count}} hours", "days": "{{count}} days", "years": "{{count}} years", "millennia": "{{count}} millennia", "millionYears": "{{count}} million years" },
@@ -134,16 +259,9 @@
   "tool-qrcode": { "title": "QR Code Generator", "tooltip": "QR Code Generator", "description": "Create a customizable QR code locally.", "search": ["QR", "matrix code", "download QR"] },
   "tool-qrbarcodescan": { "title": "QR & Barcode Scanner", "tooltip": "QR & Barcode Scanner", "description": "Scan QR codes and barcodes from a camera or image file.", "search": ["camera scanner", "image scanner", "QR reader"], "ui": { "title": "QR & Barcode Scanner", "urlDetected": "URL detected", "openLink": "Open link", "copied": "Copied!", "copy": "Copy", "wifiNetwork": "Wi-Fi network", "networkSsid": "Network (SSID)", "hiddenValue": "(hidden)", "security": "Security", "none": "None", "password": "Password", "hide": "Hide", "show": "Show", "copyPassword": "Copy password", "hidden": "Hidden", "yes": "Yes", "emailDetected": "Email detected", "to": "To", "subject": "Subject", "body": "Body", "composeEmail": "Compose email", "phoneNumber": "Phone number", "call": "Call", "copyNumber": "Copy number", "smsMessage": "SMS message", "message": "Message", "sendSms": "Send SMS", "textData": "Text / Data", "copyText": "Copy text", "noCameras": "No cameras were detected on this device.", "cameraDenied": "Camera access was denied or is unavailable.", "cameraStartFailed": "The camera could not be started.", "fileTooLarge": "The selected image exceeds the allowed file size.", "selectImage": "Select an image file such as JPEG, PNG, GIF, WebP, or BMP.", "notFound": "No QR code or barcode was found in this image.", "cameraScan": "Camera scan", "uploadImage": "Upload image", "cameraRequired": "Camera access required", "cameraPrivacy": "Allow camera access to scan QR codes and barcodes in real time. No data is sent to a server.", "enableCamera": "Enable camera", "cameraFallback": "Camera {{id}}", "stopCamera": "Stop camera", "startCamera": "Start camera", "cameraStopped": "The camera is stopped. Select Start Camera to resume.", "scanningCamera": "Scanning… Point your camera at a QR code or barcode.", "previewAlt": "Uploaded image preview", "scanning": "Scanning…", "dropImage": "Drop an image here", "browseFiles": "or select to browse files", "supportedImages": "Supports JPEG, PNG, GIF, WebP, and BMP", "chooseDifferent": "Choose a different image", "clear": "Clear", "decoded": "Decoded", "clearResult": "Clear result", "noResult": "No result yet", "cameraPrompt": "Start the camera and point it at a QR code or barcode.", "uploadPrompt": "Upload an image containing a QR code or barcode.", "supportedFormats": "Supported formats", "codes2d": "2D codes", "barcodes1d": "1D barcodes", "history": "Scan history", "clickView": "Select to view" } },
   "tool-wheel": { "title": "Random Wheel", "tooltip": "Random Wheel", "description": "Spin a wheel to draw random items with optional single-draw elimination.", "search": ["picker", "random draw", "wheel spinner"], "ui": { "title": "Random Decision Wheel", "defaultTitle": "Random Wheel", "noActiveOptions": "No active options", "addActiveOption": "Add at least one active option before spinning the wheel.", "drawFailed": "The draw could not be created.", "verifiedWinner": "Verified winner: {{winner}}", "invalidRecord": "Invalid record: its contents or winner could not be verified.", "invalidJson": "Invalid record: the JSON could not be parsed.", "spin": "Spin", "winningSelection": "Winning selection", "closeBanner": "Close winner banner", "reset": "Reset", "noOptions": "No options entered. Select Edit to add options.", "optionsPlaceholder": "Enter one option per line…", "allowRepeat": "Allow repeat winners", "titleButton": "Title", "done": "Done", "edit": "Edit", "clear": "Clear", "recorded": "Recorded locally with {{algorithm}}; winner index {{index}}.", "copyRecord": "Copy record", "downloadJson": "Download JSON", "hideVerification": "Hide record verification", "verifyDraw": "Verify a draw record", "recordJsonAria": "Draw record JSON", "recordJsonPlaceholder": "Paste draw record JSON", "verifyRecord": "Verify record", "editTitle": "Edit wheel title", "shortcuts": "Shortcuts: Space spin · E edit · R reset · C clear", "disclaimer": "Recorded draws are reproducible locally. This does not prevent an organizer from discarding a draw and spinning again before publication.", "clearAllTitle": "Clear all options?", "clearAllBody": "Are you sure you want to clear all entered options? This action cannot be undone.", "confirmClear": "Yes, clear all", "cancel": "Cancel" } },
-  "privacy": { "title": "Privacy & Network Services", "tooltip": "Privacy & Network Services", "description": "Network service inventory, consent controls, and privacy policy.", "search": ["Privacy", "Network Services", "Consent"], "ui": { "intro": "Small Web Tools is local-first: most tool inputs and selected files stay in your browser. Features that need a server, remote data, a runtime asset, or external navigation are listed below.", "consentExplanation": "Explicit-consent services remain blocked until allowed in the consent manager. A point-of-use disclosure explains a required request before an action starts. External navigation occurs only when you select a link.", "heading": { "service": "Service", "purpose": "Purpose and trigger", "data": "Data sent", "mode": "Mode and fallback" }, "providerPolicy": "Provider policy", "consentMode": { "explicit-consent": "Explicit consent", "point-of-use-disclosure": "Point-of-use disclosure", "user-navigation": "User navigation", "hosting-infrastructure": "Hosting infrastructure" }, "storageNote": "Consent choices are stored only in this browser. Resetting or revoking consent removes permission for future requests; already completed network requests cannot be recalled.", "services": {
-    "currency": { "name": "Live Exchange Rates", "purpose": "Fetch current USD-based rates through the same-origin exchange-rate Function.", "trigger": "The user enables live rates and starts a conversion.", "data": "Standard edge request metadata; the provider receives a server-side rates request.", "fallback": "Manual rate override stays in the browser." },
-    "iplookup": { "name": "IP Geolocation", "purpose": "Look up location and network details through a same-origin Function.", "trigger": "The user grants consent and presses Lookup.", "data": "The requested IP address and standard server request metadata.", "fallback": "Local IP syntax validation." },
-    "speedtest": { "name": "Network Speed Test", "purpose": "Measure latency, download speed, and upload speed.", "trigger": "The user grants consent and starts a test.", "data": "IP address, standard request metadata, and generated measurement traffic.", "fallback": "No remote speed measurement." },
-    "fontextractor": { "name": "Website Font Extractor", "purpose": "Scan bounded public HTML and CSS for font declarations.", "trigger": "The user grants consent and submits a target URL.", "data": "The target URL; target servers receive the Function's request metadata.", "fallback": "Do not run the website scan." },
-    "osm": { "name": "OpenStreetMap Preview", "purpose": "Render an optional map for coordinates.", "trigger": "The user grants map consent.", "data": "Coordinates and standard browser request metadata.", "fallback": "Coordinates remain visible without a map." },
-    "ffmpeg": { "name": "FFmpeg WebAssembly Runtime", "purpose": "Download the pinned FFmpeg 0.12.6 engine for browser-side media processing.", "trigger": "The first processing action that needs FFmpeg.", "data": "Standard browser request metadata only; selected media and outputs stay in the browser.", "fallback": "Do not start FFmpeg-based processing." },
-    "google-fonts-navigation": { "name": "Google Fonts Recommendations", "purpose": "Open a recommended font specimen in a new tab.", "trigger": "The user selects a recommendation link.", "data": "Standard navigation request metadata.", "fallback": "Read the recommendation name without opening it." },
-    "google-maps-navigation": { "name": "Google Maps Link", "purpose": "Open coordinates in Google Maps.", "trigger": "The user selects the external map link.", "data": "Coordinates and standard navigation request metadata.", "fallback": "Coordinates remain visible locally." },
-    "hosting": { "name": "Application Hosting", "purpose": "Deliver the application and its same-origin API endpoints.", "trigger": "Page loads and same-origin API requests.", "data": "Standard edge request and security metadata.", "fallback": "No hosted application." },
-    "project-links": { "name": "Project and Author Links", "purpose": "Open project source or author information.", "trigger": "The user selects a footer or font-license link.", "data": "Standard navigation request metadata.", "fallback": "Remain in the application." }
-  } } }
+  "about": { "title": "About", "tooltip": "About Small Web Tools", "description": "What this site is, how it handles your data, and who maintains it.", "search": ["About", "Project"] },
+  "privacy": { "title": "Privacy", "tooltip": "Privacy policy, network services, and service consent", "description": "The privacy policy, the network service inventory, and the consent settings for every service that needs a network request.", "search": ["Privacy", "Network Services", "Consent"] },
+  "terms": { "title": "Terms of Use", "tooltip": "Terms of Use", "description": "The terms that apply when you use this site.", "search": ["Terms", "Terms of Use"] },
+  "security": { "title": "Security", "tooltip": "Security and vulnerability reporting", "description": "How to report a vulnerability privately and what is in scope.", "search": ["Security", "Vulnerability"] },
+  "license": { "title": "License", "tooltip": "MIT License", "description": "The MIT License covering this application source code.", "search": ["License", "MIT"] }
 }

@@ -39,13 +39,14 @@ structure changes.
 | Routing | In-app state synchronized to `/home` and `/simple` URL paths with `React.lazy()` code splitting; no React Router |
 | Server functions | Cloudflare Pages-compatible handlers in `functions/api/` and shared helpers in `functions/_shared/` |
 
-At build time, `scripts/resolve-version.mjs` selects the newest version-sorted Git tag. It first checks local tags, then queries the repository's remote tags when a deployment build has no local tag refs. Build archives without Git metadata can still use `VITE_VERSION_REPOSITORY` or the repository URL in `package.json`; `VITE_APP_VERSION` remains the final explicit fallback. The npm manifest uses the fixed non-release placeholder `0.0.0-private`, which is never used as the application version or updated for releases. CI checks out full tag history, and `npm run version:check`, included in `verify`, confirms that a Git tag or explicit archive fallback supplied the displayed version.
+At build time, `scripts/resolve-version.mjs` selects the newest version-sorted Git tag. It first checks local tags, then queries the repository's remote tags when a deployment build has no local tag refs. Build archives without Git metadata can still use `VITE_VERSION_REPOSITORY` or the repository URL in `package.json`; `VITE_APP_VERSION` remains the final explicit fallback. The npm manifest uses the fixed non-release placeholder `0.0.0-private`, which is never used as the application version or updated for releases. CI checks out full tag history, and `npm run version:check`, included in `verify`, confirms that a Git tag or explicit archive fallback supplied the displayed version. Cloudflare Pages builds on branch pushes only and never on a tag push, so a tag created after its commit was already built would leave the deployed bundle on the previous version. `.github/workflows/release-deploy.yml` closes that gap: a version-tag push asks Pages to rebuild the branch containing the tagged commit, using the `CLOUDFLARE_PAGES_DEPLOY_HOOK_MAIN` secret for `main` and `CLOUDFLARE_PAGES_DEPLOY_HOOK_DEVELOP` for `develop`. Each secret holds the deploy hook URL created for that branch in the Cloudflare Pages project; when a secret is absent the workflow warns and skips instead of failing, and that branch keeps showing the previous version until it is rebuilt.
 
 ## Repository map
 
 The maintained documentation pairs are README.md/README.zh-TW.md,
 CONTRIBUTING.md/CONTRIBUTING.zh-TW.md, ARCHITECTURE.md/ARCHITECTURE.zh-TW.md,
-and PRIVACY.md/PRIVACY.zh-TW.md. TODO.md is intentionally English-only.
+PRIVACY.md/PRIVACY.zh-TW.md, ABOUT.md/ABOUT.zh-TW.md, TERMS.md/TERMS.zh-TW.md,
+and SECURITY.md/SECURITY.zh-TW.md. TODO.md is intentionally English-only.
 Supporting explanatory documents are public/fonts/MANIFEST.md with its
 Traditional Chinese companion, the two SSRF harness READMEs, and the
 English-only AI agent instructions in `AGENTS.md` and `.agents/`. The engineering
@@ -62,6 +63,13 @@ small-web-tools/
 ├── CONTRIBUTING.zh-TW.md     Traditional Chinese engineering guide
 ├── PRIVACY.md                English privacy policy and data-flow disclosure
 ├── PRIVACY.zh-TW.md          Traditional Chinese privacy policy
+├── ABOUT.md                  English project description behind the /home/about page
+├── ABOUT.zh-TW.md            Traditional Chinese project description
+├── TERMS.md                  English terms of use behind the /home/terms page
+├── TERMS.zh-TW.md            Traditional Chinese terms of use
+├── SECURITY.md               English vulnerability disclosure policy
+├── SECURITY.zh-TW.md         Traditional Chinese vulnerability disclosure policy
+├── LICENSE                   MIT License, reproduced by the /home/license page
 ├── TODO.md                   Backlog, completed work, and update process
 ├── ARCHITECTURE.md           Architecture and maintenance reference
 ├── ARCHITECTURE.zh-TW.md     Traditional Chinese architecture reference
@@ -96,7 +104,9 @@ small-web-tools/
 │       └── fix-bug/          Bug-diagnosis workflow skill plus symptom-map and verification references
 ├── .github/
 │   ├── dependabot.yml        Monthly dependency updates, including major versions
-│   └── workflows/ci.yml      GitHub Actions CI pipeline workflow
+│   └── workflows/
+│       ├── ci.yml            GitHub Actions CI pipeline workflow
+│       └── release-deploy.yml Cloudflare Pages rebuild triggered by a version-tag push
 ├── public/
 │   ├── _headers              Cloudflare Pages security response headers
 │   ├── fonts/                Self-hosted WOFF2 UI fonts, licenses, and manifest
@@ -113,12 +123,14 @@ small-web-tools/
 │   ├── i18n/
 │   │   ├── index.js           Locale resolution, i18next setup, persistence, and document language
 │   │   └── locales/           Paired en-US and zh-TW namespace JSON resources
-│   ├── lib/                  Pure utility helpers (binaryEncoding, passwordStrength, resourceLimits, thirdPartyServices)
-│   ├── hooks/                Routing, persistence, and document-title shell effects
+│   ├── lib/                  Pure utility helpers (binaryEncoding, passwordStrength, resourceLimits, thirdPartyServices, simpleLayout, homeLayout, projectLinks, licenseText)
+│   ├── hooks/                Routing, persistence, Simple layout, homepage layout, and document-title shell effects
 │   ├── tests/                Vitest unit test suites and setup
 │   └── components/
 │       ├── ui/               Shared Card, Button, FieldInput, ToolHeader, and related primitives
+│       ├── docs/             Document pages and their shared DocumentPage reading layout
 │       ├── HomeGrid.jsx      Full and audience dashboard tool grid
+│       ├── HomeGrid/          Homepage group arrangement editor
 │       ├── SimpleHome.jsx    Search-first essential-tool launcher
 │       ├── LanguageSwitcher.jsx Shared responsive locale menu and focus lifecycle
 │       ├── AppHeader.jsx     Desktop brand, category navigation, search, locale, and theme controls
@@ -126,6 +138,7 @@ small-web-tools/
 │       ├── DesktopCategoryNav.jsx Pointer shortcut navigation derived from the registry
 │       ├── MobileDrawer.jsx  Mobile navigation focus, inert, dismissal, and scroll lifecycle
 │       ├── MarkdownPreviewer/ Markdown parsing and validation domain logic
+│       ├── GithubHtmlSnippets/ README HTML allow-list, block catalogue, and preview
 │       ├── *.jsx             Individual tool components
 │       ├── useMediaSeparator.js
 │       └── mediaSeparatorEngine.js
@@ -169,8 +182,8 @@ expanded UI boundary must fix every newly exposed error in the same change.
 - `useAppRouting` initializes `activeTool` from `/home[/<audience>]/<tool-slug>` or `/simple/<tool-slug>` and synchronizes navigation and browser history with the path.
 - `useAppRouting` initializes `toolMode` from the validated `/home` or `/simple` path. The workspace path
   remains in the URL while path navigation changes tools.
-- `useShellPersistence` owns active-tool session state plus theme and sidebar persistence; `useDocumentTitle` owns title updates independently of storage availability.
-- `renderActiveTool()` resolves the active registry entry and renders its lazy component. The `privacy` route is registered but excluded from the tool catalog.
+- `useShellPersistence` owns active-tool session state plus theme and sidebar persistence; `useSimpleLayout` owns the browser-stored Simple shortcut layout and `useHomeLayout` the browser-stored homepage group arrangement; `useDocumentTitle` owns title updates independently of storage availability.
+- `renderActiveTool()` resolves the active registry entry and renders its lazy component. Policy-category routes are registered but excluded from the tool catalog, and receive an `onNavigateDocument` callback so document pages can link to one another through the shell router.
 
 The shell supplies a responsive desktop sidebar, mobile drawer, top navigation, breadcrumbs, footer, search, theme control, and a centered tool stage. `AppHeader`, `DesktopCategoryNav`, and `AppFooter` own the desktop header and footer presentation while `App.jsx` passes registry-derived data and navigation callbacks.
 
@@ -214,23 +227,50 @@ runtime and resource tests are in `src/tests/i18n.test.js`,
 
 `src/toolModes.js` defines the complete dashboard plus five audience profiles:
 daily users, developers, bioinformatics researchers, designers, and students.
-The separate `SIMPLE_WORKSPACE` defines eight high-frequency tools. App-level
-filtering applies audience profiles consistently to dashboard cards, sidebar,
-and search; the Simple sidebar remains limited to its essentials while Simple
-search can open any registered tool.
+The separate `SIMPLE_WORKSPACE` defines the eight default Simple shortcuts.
+App-level filtering applies audience profiles consistently to dashboard cards,
+sidebar, and search; the Simple sidebar remains limited to the shortcuts this
+browser keeps while Simple search can open any registered tool.
 
 `AudienceSwitcher.jsx` renders the homepage segmented control for the complete
 homepage and five audience profiles. `HomeGrid.jsx` places it beside the
 introduction while preserving the complete
 categorized dashboard and renders flat audience recommendations. `SimpleHome.jsx`
-provides an all-tool search and eight compact shortcuts inside the reduced shell.
+provides an all-tool search, the compact shortcut grid, and the layout editor
+inside the reduced shell.
 Routing uses `/home[/<audience>][/<tool-slug>]` and
 `/simple[/<tool-slug>]`; legacy `/home/simple` addresses redirect to `/simple`.
 Focused coverage lives in `toolModes.test.js`, `homeGrid.test.jsx`,
-`audienceSwitcher.test.jsx`, `simpleHome.test.jsx`, and `App.test.jsx`. Mermaid is
+`audienceSwitcher.test.jsx`, `simpleHome.test.jsx`, `simpleLayout.test.js`,
+`homeLayout.test.js`, and `App.test.jsx`. Mermaid is
 part of the developer audience. Every other navigable tool must appear in at least
 one curated workspace or have a maintained rationale in
 `INTENTIONAL_CURATED_EXCLUSIONS`; `toolModes.test.js` enforces that invariant.
+
+Simple shortcuts are editable per browser. `src/lib/simpleLayout.js` owns the
+versioned `simpleLayout` local-storage record: it sanitizes stored ids against
+the live registry, enforces the one-to-twelve shortcut budget, and provides the
+add, remove, and move transforms. `useSimpleLayout` subscribes the launcher and
+the shell to that single record, so the editor in `SimpleHome.jsx` and the
+Simple sidebar always show the same shortcuts. An absent or unusable record
+falls back to `SIMPLE_WORKSPACE`, and a browser that blocks Web Storage keeps
+the layout in memory for the session. The layout is never sent to a server.
+
+The complete homepage is arranged the same way. `src/lib/homeLayout.js` owns the
+versioned `homeLayout` local-storage record: an ordered list of groups, each with
+an id, an optional reader-supplied name, and its tool ids, plus the tools pushed
+off the homepage. It sanitizes both against the live registry, caps the layout at
+twelve groups and a forty-character name, and provides the group add, remove,
+rename, and move transforms alongside the tool place, hide, and reorder ones.
+`useHomeLayout` subscribes `HomeGrid.jsx` to that record and writes every edit
+straight through, so `HomeGrid/HomeLayoutEditor.jsx` needs no save step. An absent
+or unusable record falls back to one group per category in `categoryDefinitions.jsx`
+order, and a tool the record never mentioned — anything released after it was
+written — joins its own category group on read, so a stored arrangement never
+hides a new tool. Groups apply to the complete homepage only: an audience
+workspace and a single-category tab stay filtered views, and the default
+Utilities group keeps its sub-group headings until the reader arranges their own
+layout. The record stays in the browser and is never sent to a server.
 
 ### Shared tool-page contract
 
@@ -239,16 +279,33 @@ Every routed tool page uses the shared visual contract established by Image Meta
 1. Use `Card` with `variant="tool"` as the page container.
 2. Render exactly one `ToolHeader` title for the page identity.
 3. Keep page-level descriptions out of `ToolHeader`; helper text belongs inside the feature that needs it.
-4. Preserve the shared desktop card spacing (`p-6`, `gap-4`) and allow the mobile `.tool-card` rules in `styles.css` to handle compact screens.
+4. Preserve the shared desktop card spacing (`p-6`, `gap-4`) and allow the mobile `.tool-card` rules in `styles.css` to handle compact screens. The conversion screens described below opt into a wider rhythm (`p-6 sm:p-8`, `gap-6`), which the one-frame layout needs.
 
 `src/components/ui/AutoDetectConverter.jsx` implements this contract for the
 Slashes, ASCII, Unicode, and URL converters. Slashes and ASCII expose the
 automatic direction detector only; Unicode and URL retain explicit
 encode/decode controls where direction can be ambiguous.
 
+#### Conversion-screen layout
+
+The ASCII, Unicode, URL, Slashes, Casing Switcher, Roman Numeral, and Phred
+Scale screens share one layout beyond the contract above:
+
+- The tool `Card` is the only frame on the page. Sections separate with the
+  `.rule-fade` rule in `styles.css`, not with another bordered box.
+- `ToolHeader` receives a `kicker` — the tool's category from the
+  `navigation:categories` namespace — set above a lighter, larger title, and
+  drops its own rule. Tools that pass no kicker keep the bordered header.
+- The field you type in is an underlined `.input-rule` control rather than a box,
+  and it is given more width than the result.
+- The derived value sits in an accent-tinted slab: `bg-accent-light` with a
+  `ring-accent-edge` edge.
+- Reference data is laid out along the axis it actually has — ASCII by code
+  range, Roman numerals by order of magnitude, Phred by its logarithmic scale.
+
 ### Styling and theme
 
-`src/styles.css` defines light and dark CSS custom properties such as `--bg-app`, `--bg-card`, `--text-main`, `--accent`, and `--border-color`. `tailwind.config.js` exposes those tokens as Tailwind color, shadow, and font utilities.
+`src/styles.css` defines light and dark CSS custom properties such as `--bg-app`, `--bg-card`, `--text-main`, `--accent`, `--accent-light`, `--accent-edge`, and `--border-color`. `tailwind.config.js` exposes those tokens as Tailwind color, shadow, and font utilities.
 
 Inter, JetBrains Mono, Plus Jakarta Sans, and TASA Orbiter are served from `public/fonts/`; their versions, subsets, and OFL license files are recorded in `public/fonts/MANIFEST.md`. The application makes no automatic Google Fonts request.
 
@@ -268,6 +325,7 @@ Prefer the shared primitives and existing design tokens. Add global CSS only for
 | `tool-markdown` | Markdown Previewer | `MarkdownPreviewer.jsx` | Developer |
 | `tool-mermaid` | Mermaid Converter | `MermaidConverter.jsx` | Developer |
 | `tool-code-preview` | VS Code Preview | `CodePreviewer.jsx` | Developer |
+| `tool-github-html` | GitHub HTML Blocks | `GithubHtmlSnippets.jsx` | Developer |
 | `tool-fontextractor` | Font Extractor | `WebsiteFontExtractor.jsx` | Developer |
 | `tool-base` | Base Converter | `BaseConverter.jsx` | Developer |
 | `tool-folder-analyzer` | Folder Analyzer | `FolderAnalyzer.jsx` | Developer |
@@ -292,7 +350,11 @@ Prefer the shared primitives and existing design tokens. Add global CSS only for
 | `tool-qrcode` | QR Code Generator | `QrBarcodeGenerator.jsx` (`qr` tab) | Utilities |
 | `tool-qrbarcodescan` | QR & Barcode Scanner | `QrBarcodeScanner.jsx` | Utilities |
 | `tool-wheel` | Random Wheel | `RandomWheel.jsx` | Utilities |
-| `privacy` | Privacy & Network Services | `PrivacyPolicy.jsx` | Policy (not in tool catalog) |
+| `about` | About | `docs/AboutPage.jsx` | Policy (footer only, not in tool catalog) |
+| `privacy` | Privacy | `docs/PrivacyPage.jsx` | Policy (footer only, not in tool catalog); carries the network inventory and the service consent settings |
+| `terms` | Terms of Use | `docs/TermsPage.jsx` | Policy (footer only, not in tool catalog) |
+| `security` | Security | `docs/SecurityPage.jsx` | Policy (footer only, not in tool catalog) |
+| `license` | License | `docs/LicensePage.jsx` | Policy (footer only, not in tool catalog) |
 
 ## Component groups
 
@@ -301,10 +363,10 @@ Prefer the shared primitives and existing design tokens. Add global CSS only for
 | File | Role |
 | --- | --- |
 | `Card.jsx` | Shared card container for tool pages and dashboard cards. |
-| `ToolHeader.jsx` | The one-title page identity component for routed tools. |
+| `ToolHeader.jsx` | The one-title page identity component for routed tools; an optional `kicker` switches it to the conversion-screen header. |
 | `Button.jsx` | Shared button variants and sizes. |
 | `FieldInput.jsx` | Labeled input and textarea helper. |
-| `AutoDetectConverter.jsx` | Shared two-panel automatic converter interface. |
+| `AutoDetectConverter.jsx` | Shared automatic converter interface: an underlined source field beside an accent-tinted result slab. |
 | `ToggleSwitch.jsx`, `Spinner.jsx`, `ResultDisplay.jsx` | Reusable controls and feedback UI. |
 
 `ExternalMapPreview.jsx` is the shared OpenStreetMap consent boundary for IP Lookup and Image Metadata. It renders coordinate text locally, creates an iframe only while `osm` consent is active, and removes the iframe immediately after revocation or reset.
@@ -313,12 +375,45 @@ Prefer the shared primitives and existing design tokens. Add global CSS only for
 
 `MarkdownPreviewer.jsx` provides a browser-local editor, `.md`/`.markdown`
 upload, live preview, formatting helpers, and Markdown download. Its domain
-module parses common block and inline syntax into safe React-rendered tokens;
-raw HTML and external images are not rendered, and unsafe URL schemes are
-discarded. Source-line metadata keeps the independently scrollable editor and
-preview aligned in both directions without collapsing fenced-code content.
-Focused parser and interaction coverage lives in
+module parses common block and inline syntax into safe React-rendered tokens,
+and unsafe URL schemes are discarded. Raw HTML in the document is scanned into a
+node tree, filtered against a tag and attribute allow list, and rendered as React
+elements; no markup string ever reaches `innerHTML`. An HTML block runs to its
+matching closing tag rather than the first blank line, so the centred header
+common to README files survives, and unclosed markup stops at the next heading
+or fence. Images stay placeholders until the reader grants the `markdownimages`
+consent, and then load only from the badge hosts declared in
+`config/network-services.json` and allowed by the `img-src` directive in
+`public/_headers`. `.markdown-html` in `src/styles.css` restores the base styles
+those raw elements lose to the Tailwind reset. Source-line metadata keeps the
+independently scrollable editor and preview aligned in both directions without
+collapsing fenced-code content. Focused parser and interaction coverage lives in
 `markdownDomain.test.js` and `markdownPreviewer.test.jsx`.
+
+### GitHub HTML Blocks
+
+`GithubHtmlSnippets.jsx` composes the raw HTML a GitHub README needs — centred
+headers, badge rows, `<details>`, `<kbd>`, image tables — by stacking blocks at
+`/home/github-html`. Blocks are chosen from wordless thumbnails: each tile draws
+the block through the preview renderer instead of naming it, and the name reaches
+assistive technology through `aria-label` only. Every block lives in the
+`Cmd`/`Ctrl` + `K` palette, whose grid keeps the thumbnails aligned; nothing but
+the action row sits above the panes. A multi-line block is stacked below
+the caret's line rather than nested, so repeated clicks build a document in order.
+Either pane opens in the shared `FullscreenPreview` overlay, as in the Markdown
+Previewer; the palette shortcut is inert while a pane is fullscreen, since the
+palette would otherwise open behind that overlay.
+
+Its domain modules are the tool's own, separate from the Markdown Previewer's:
+`githubHtml.js` parses an HTML fragment and filters it against an allow-list,
+`composeDocument.js` splits a document into HTML and Markdown segments — reusing
+the Previewer's `parseMarkdown` rather than carrying a second Markdown parser —
+and `blockCatalog.js` holds the language-neutral block templates plus the pure
+placement rules. The preview renders sanitized nodes as React elements with no
+`dangerouslySetInnerHTML`, and images are never fetched, so the tool makes no
+third-party request. Because the allow-list mirrors what GitHub itself keeps, the
+sanitizer's own removals drive the "GitHub removes" warning and the per-tile dot.
+Coverage lives in `githubHtmlDomain.test.js` and `githubHtmlSnippets.test.jsx`.
 
 ### VS Code Preview
 
@@ -381,7 +476,7 @@ Targeted `*.test.js` suites live in `functions/api/tests/`. `vitest.config.js`
 includes `functions/api/**` in the coverage gate with the same thresholds as
 the shared server and client libraries.
 
-`functions/_shared/requestPolicy.js` owns Font Extractor's 4 KiB request cap and aggregate job limits (HTML/CSS/total bytes, stylesheet count, import depth, face count, concurrency, and deadline). `functions/_shared/fontExtractionCapability.js` fails production extraction closed unless short-lived runtime evidence matches the configured Cloudflare compatibility date, fetch implementation revision, and required scenario set. `vite.config.js` mirrors only IP lookup (`/api/iplookup`) for local Vite development. Use a Cloudflare Pages local runtime when testing the other Functions.
+`functions/_shared/requestPolicy.js` owns Font Extractor's 4 KiB request cap and aggregate job limits (HTML/CSS/total bytes, stylesheet count, import depth, face count, concurrency, and deadline). `functions/_shared/fontExtractionCapability.js` fails production extraction closed unless the deployment's `FONT_EXTRACTION_EGRESS_POSTURE` variable matches the compatibility date, public-egress compatibility flag, and fetch implementation revision that the recorded runtime verification covered. The posture is declared in `wrangler.jsonc` beside the settings it describes, and `scripts/check-cloudflare-config.mjs` fails the build if the two disagree or if the deployed posture no longer matches the verified record. Nothing in the gate expires, so the tool cannot go dark without an actual runtime change. `vite.config.js` mirrors only IP lookup (`/api/iplookup`) for local Vite development. Use a Cloudflare Pages local runtime when testing the other Functions.
 
 Font extraction treats HTML `rel` values as case-insensitive token lists and returns
 every remote `url()` candidate in each font-face source list in declared order.
@@ -401,9 +496,11 @@ still returning the same fail-closed 503 response.
 isolated Cloudflare-runtime fixtures for the outbound-fetch boundary. Run
 `npm run test:ssrf-runtime` only when temporary Cloudflare deployment is intended;
 it uses an unclaimed, auto-expiring preview account and prints no token or claim URL.
-Successful output includes machine-readable, 30-day gate metadata tied to the
-compatibility date and fetch implementation revision; missing, mismatched,
-incomplete, or expired metadata leaves production extraction disabled.
+Successful output includes a `verifiedPolicy` block recording the compatibility
+date, public-egress flag, and fetch implementation revision that were exercised.
+Copy it into `FONT_EXTRACTION_EGRESS_POLICY` after changing either of those, so
+the gate can compare the deployed posture against a runtime someone actually
+tested. A missing or mismatched posture leaves production extraction disabled.
 
 ### Local completion and deferred Cloudflare operations
 
@@ -490,7 +587,7 @@ pluralized messages use platform `Intl` APIs or i18next interpolation.
 
 ## Network-service policy
 
-`config/network-services.json` is the machine-readable source of truth for external providers, domains, purposes, triggers, transmitted data, consent modes, fallbacks, and policy links. `src/lib/thirdPartyServices.js`, the consent manager, and the canonical `/home/privacy` route consume this inventory. Legacy hash addresses are accepted only for backward-compatible redirects. `scripts/check-external-hosts.mjs`, included in `npm run verify`, fails when a production source hostname is not declared.
+`config/network-services.json` is the machine-readable source of truth for external providers, domains, purposes, triggers, transmitted data, consent modes, fallbacks, and policy links. `src/lib/thirdPartyServices.js` and the canonical `/home/privacy` route, which shows the inventory and the service consent settings on one page, consume it. Legacy hash addresses are accepted only for backward-compatible redirects. `scripts/check-external-hosts.mjs`, included in `npm run verify`, fails when a production source hostname is not declared.
 
 ## Dependencies
 

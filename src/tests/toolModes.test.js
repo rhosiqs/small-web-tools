@@ -12,6 +12,7 @@ import {
   getToolMode,
   isToolPath,
 } from '../toolModes.js';
+import { DOCUMENT_ROUTE_IDS } from '../toolRouteMetadata.js';
 
 describe('tool modes', () => {
   it('keeps the requested audiences separate from the simplified workspace', () => {
@@ -25,6 +26,9 @@ describe('tool modes', () => {
     ]);
     expect(SIMPLE_WORKSPACE.simplified).toBe(true);
     expect(SIMPLE_WORKSPACE.toolIds).toHaveLength(8);
+    // Default shortcuts only; each browser can store its own Simple layout.
+    expect(SIMPLE_WORKSPACE.toolIds).toContain('tool-wheel');
+    expect(SIMPLE_WORKSPACE.toolIds).not.toContain('tool-wc');
     expect(getToolMode('simple')).toBe(SIMPLE_WORKSPACE);
     expect(getToolMode('unknown').id).toBe('all');
     expect(AUDIENCE_MODES.map(({ id }) => id)).toEqual([
@@ -91,6 +95,10 @@ describe('tool modes', () => {
     expect(getRouteIdFromLocation('/simple/color')).toBe('tool-color');
     expect(getRouteIdFromLocation('/home/simple/color')).toBe('tool-color');
     expect(getRouteIdFromLocation('/', '#tool-wc')).toBe('tool-wc');
+    for (const documentId of DOCUMENT_ROUTE_IDS) {
+      expect(getRouteIdFromLocation(`/home/${documentId}`)).toBe(documentId);
+      expect(getRouteIdFromLocation(`/simple/${documentId}`)).toBe(documentId);
+    }
     expect(isToolPath('/home/developer/code-preview')).toBe(true);
     expect(isToolPath('/simple/code-preview')).toBe(true);
     expect(isToolPath('/')).toBe(false);

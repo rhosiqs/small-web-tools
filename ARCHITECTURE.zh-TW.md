@@ -45,7 +45,13 @@ small-web-tools 是一個使用 React 18 與 Vite 的單頁應用程式，提供
 VITE_APP_VERSION 是最後的明確 fallback。npm manifest 使用固定的非 release 佔位版本
 0.0.0-private，這個值不會用作應用程式版本，也不會因 release 更新。CI 會取出完整
 標籤歷史，而 verify 中的 npm run version:check 會確認顯示的版本由 Git 標籤或明確的
-封存檔 fallback 提供。
+封存檔 fallback 提供。Cloudflare Pages 只在分支推送時建置，推送標籤不會觸發建置；
+標籤總是在它指向的 commit 建置完成之後才建立，因此部署出來的 bundle 會停在前一個
+版本。.github/workflows/release-deploy.yml 補上這一步：推送版本標籤時，會請 Pages
+重新建置包含該 commit 的分支，main 使用 CLOUDFLARE_PAGES_DEPLOY_HOOK_MAIN secret，
+develop 使用 CLOUDFLARE_PAGES_DEPLOY_HOOK_DEVELOP。兩個 secret 各自存放在 Cloudflare
+Pages 專案中為該分支建立的 deploy hook URL；secret 不存在時 workflow 會發出警告並跳過
+而不是失敗，該分支也會維持顯示前一個版本，直到重新建置為止。
 
 ## 儲存庫地圖
 
@@ -54,6 +60,10 @@ VITE_APP_VERSION 是最後的明確 fallback。npm manifest 使用固定的非 r
 - README.md／README.zh-TW.md：英文與繁中使用者手冊。
 - CONTRIBUTING.md／CONTRIBUTING.zh-TW.md：工程與本機執行指南。
 - PRIVACY.md／PRIVACY.zh-TW.md：隱私權政策與資料流揭露。
+- ABOUT.md／ABOUT.zh-TW.md：/home/about 頁面背後的專案說明。
+- TERMS.md／TERMS.zh-TW.md：/home/terms 頁面背後的使用條款。
+- SECURITY.md／SECURITY.zh-TW.md：漏洞揭露政策。
+- LICENSE：MIT 授權條款，由 /home/license 頁面原文呈現。
 - TODO.md：英文待辦事項、已完成工作與更新流程。
 - ARCHITECTURE.md／ARCHITECTURE.zh-TW.md：英文與繁中架構參考。
 - Dockerfile.dev：供容器化 Vite 開發使用的 Node.js 22 image。
@@ -78,7 +88,8 @@ VITE_APP_VERSION 是最後的明確 fallback。npm manifest 使用固定的非 r
 - config/：network-services.json 網路服務政策來源，以及 ffmpeg-assets.json 固定的
   FFmpeg 資產大小與 SHA-256；rateLimitPolicies.js 是正式的 route、class、binding、
   limit 與 period 政策。
-- .github/：Dependabot 設定與 GitHub Actions CI pipeline。
+- .github/：Dependabot 設定、GitHub Actions CI pipeline，以及在版本標籤推送時觸發
+  Cloudflare Pages 重新建置的 release-deploy.yml。
 - public/：Cloudflare Pages 回應標頭、內建 WOFF2 UI 字型、授權與字型清單，以及 favicon。
 - scripts/：版本、i18n、硬編碼 UI 與文件一致性檢查腳本。
 - docs/：包含 `docs/agents/` 的 issue tracker、triage label 與 domain docs 規則，
@@ -86,6 +97,9 @@ VITE_APP_VERSION 是最後的明確 fallback。npm manifest 使用固定的非 r
 - .claude/：Claude Code 進入點 CLAUDE.md，以及 `.claude/skills/` 中的儲存庫 skills；
   fix-bug 另附 symptom-map 與 verification 兩份參考文件。
 - src/：React 應用程式、工具登錄表、樣式、共用 UI、工具元件與測試。
+- src/components/docs/：文件頁面與其共用的 DocumentPage 閱讀版型。
+- src/lib/：純函式 helper（binaryEncoding、passwordStrength、resourceLimits、
+  thirdPartyServices、simpleLayout、homeLayout、projectLinks、licenseText）。
 - src/components/LanguageSwitcher.jsx：桌面與行動 header 共用的地區設定選單、鍵盤導覽與焦點生命週期。
 - src/components/MobileDrawer.jsx：行動導覽的焦點、inert、關閉與捲動生命週期。
 - src/i18n/：地區設定解析、i18next 設定、持久化，以及成對的 en-US／zh-TW 命名空間資源。
@@ -125,9 +139,12 @@ src/App.jsx 負責應用程式 shell：
 - toolMode 從經驗證的 /home 或 /simple 路徑初始化。工作區路徑會留在 URL 中，
   路徑導覽則改變工具。
 - useShellPersistence 集中管理 active-tool session state、theme 與 sidebar 持久化；
+  useSimpleLayout 管理儲存在瀏覽器中的 Simple 捷徑版面，useHomeLayout 管理儲存在
+  瀏覽器中的首頁群組版面；
   useDocumentTitle 在儲存空間不可用時仍獨立管理頁面標題。
-- renderActiveTool() 解析目前的登錄表項目並渲染其 lazy component。privacy 路由已登錄，
-  但不列入工具目錄。
+- renderActiveTool() 解析目前的登錄表項目並渲染其 lazy component。policy 分類的路由
+  已登錄但不列入工具目錄，並會取得 onNavigateDocument callback，讓文件頁面之間可以
+  透過 shell 路由互相連結。
 
 Shell 提供可回應式的桌面側邊欄、行動抽屜、頂端導覽、麵包屑、footer、搜尋、主題控制項
 與置中的工具工作區。
@@ -165,19 +182,39 @@ fallback，繁體中文 (`zh-TW`) 是第二個支援地區設定。
 ### Audience 與 Simple 工作區
 
 src/toolModes.js 定義完整儀表板與五個使用者群組：一般使用者、開發人員、生物資訊
-研究人員、設計師與學生。獨立的 SIMPLE_WORKSPACE 定義八個高頻工具。應用程式層級的
-篩選會一致套用到儀表板卡片、側邊欄與搜尋；Simple 側邊欄只保留必要工具，但 Simple
-搜尋可以開啟任何已登錄工具。
+研究人員、設計師與學生。獨立的 SIMPLE_WORKSPACE 定義八個預設的 Simple 捷徑。應用
+程式層級的篩選會一致套用到儀表板卡片、側邊欄與搜尋；Simple 側邊欄只保留這個瀏覽器
+目前的捷徑，但 Simple 搜尋可以開啟任何已登錄工具。
 
 AudienceSwitcher.jsx 為完整首頁與五個使用者群組渲染分段控制項。HomeGrid.jsx 將它
 放在介紹旁，保留完整的分類儀表板，並渲染平面的使用者群組建議。SimpleHome.jsx
-在縮減後的 shell 中提供所有工具搜尋與八個精簡捷徑。路由使用
+在縮減後的 shell 中提供所有工具搜尋、精簡捷徑格線與版面編輯器。路由使用
 /home[/&lt;audience&gt;][/&lt;tool-slug&gt;] 與 /simple[/&lt;tool-slug&gt;]；舊版 /home/simple
 位址會重新導向至 /simple。重點測試位於 toolModes.test.js、homeGrid.test.jsx、
-audienceSwitcher.test.jsx 與 simpleHome.test.jsx。
+audienceSwitcher.test.jsx、simpleHome.test.jsx、simpleLayout.test.js 與
+homeLayout.test.js。
 
 Mermaid 屬於 developer audience。其他可導覽工具都必須出現在至少一個精選工作區，
 或在 `INTENTIONAL_CURATED_EXCLUSIONS` 中保留明確理由；`toolModes.test.js` 會執行此規則。
+
+Simple 捷徑可由每個瀏覽器自行編輯。`src/lib/simpleLayout.js` 擁有帶版本的
+`simpleLayout` local storage 記錄：它會依照目前的登錄表清理已儲存的 id、限制一到
+十二個捷徑，並提供新增、移除與移動的轉換函式。`useSimpleLayout` 讓啟動頁與 shell
+訂閱同一份記錄，因此 `SimpleHome.jsx` 的編輯器與 Simple 側邊欄永遠顯示相同捷徑。
+記錄不存在或無法使用時會回到 `SIMPLE_WORKSPACE`；瀏覽器封鎖 Web Storage 時，版面
+會保留在該工作階段的記憶體中。版面不會傳送到任何伺服器。
+
+完整首頁採用相同做法。`src/lib/homeLayout.js` 擁有帶版本的 `homeLayout` local
+storage 記錄：其中是一份有序的群組清單，每個群組包含 id、選填的自訂名稱與其工具
+id，另外還有被移出首頁的工具。它會依照目前的登錄表清理兩者、限制最多十二個群組與
+四十個字元的名稱，並提供群組的新增、移除、重新命名與移動轉換函式，以及工具的放置、
+隱藏與排序轉換函式。`useHomeLayout` 讓 `HomeGrid.jsx` 訂閱該記錄，並將每次編輯直接
+寫入，因此 `HomeGrid/HomeLayoutEditor.jsx` 不需要另外的儲存步驟。記錄不存在或無法
+使用時，會回到依 `categoryDefinitions.jsx` 順序、每個分類一個群組的預設版面；記錄
+未曾提及的工具（也就是記錄寫入後才發行的工具）會在讀取時加入其所屬分類的群組，
+因此已儲存的版面不會隱藏新工具。群組只套用於完整首頁：使用者群組工作區與單一分類
+分頁仍是各自的篩選檢視，而預設的 Utilities 群組在讀者自訂版面之前會保留其子群組
+標題。記錄只留在瀏覽器中，不會傳送到任何伺服器。
 App shell、lazy route、持久化、工作區導覽與語言切換的整合覆蓋位於 `App.test.jsx`。
 
 ### 共用工具頁面契約
@@ -188,16 +225,32 @@ App shell、lazy route、持久化、工作區導覽與語言切換的整合覆�
 2. 頁面識別恰好渲染一個 ToolHeader 標題。
 3. 頁面層級描述不要放進 ToolHeader；輔助文字放在需要它的功能內。
 4. 保留共用桌面卡片間距（p-6、gap-4），並讓 styles.css 的行動 .tool-card 規則
-   處理窄螢幕。
+   處理窄螢幕。下述轉換頁面改用較寬的節奏（p-6 sm:p-8、gap-6），這是單一框架
+   版面所需。
 
 src/components/ui/AutoDetectConverter.jsx 為 Slashes、ASCII、Unicode 與 URL 轉換器
 實作此契約。Slashes 與 ASCII 只顯示自動方向偵測；Unicode 與 URL 在方向可能不明確時
 保留明確的 encode/decode 控制。
 
+#### 轉換頁面版面
+
+ASCII、Unicode、URL、Slashes、Casing Switcher、Roman Numeral 與 Phred Scale
+頁面在上述契約之外共用同一套版面：
+
+- 工具 Card 是頁面上唯一的框。各區段以 styles.css 的 .rule-fade 分隔，而不是
+  再套一層有邊框的盒子。
+- ToolHeader 接收 kicker——來自 navigation:categories 命名空間的工具分類——置於
+  較輕、較大的標題之上，並移除自身的分隔線。未傳入 kicker 的工具維持原本
+  有邊框的標題。
+- 輸入欄位是有底線的 .input-rule 控制項而非方框，且寬度大於結果區。
+- 推導出的數值放在帶強調色的區塊：bg-accent-light 搭配 ring-accent-edge 邊緣。
+- 參考資料依其真正的軸線排列——ASCII 依代碼範圍、羅馬數字依位數量級、Phred 依
+  其對數刻度。
+
 ### 樣式與主題
 
-src/styles.css 定義 --bg-app、--bg-card、--text-main、--accent 與 --border-color
-等 light／dark CSS custom properties。tailwind.config.js 將這些 token 暴露為 Tailwind
+src/styles.css 定義 --bg-app、--bg-card、--text-main、--accent、--accent-light、
+--accent-edge 與 --border-color 等 light／dark CSS custom properties。tailwind.config.js 將這些 token 暴露為 Tailwind
 色彩、陰影與字型 utilities。
 
 Inter、JetBrains Mono、Plus Jakarta Sans 與 TASA Orbiter 從 public/fonts/ 提供；版本、
@@ -221,6 +274,7 @@ public/fonts/MANIFEST.zh-TW.md。應用程式不會自動要求 Google Fonts。
 | tool-markdown | Markdown 預覽器 | MarkdownPreviewer.jsx | 開發 |
 | tool-mermaid | Mermaid 轉換器 | MermaidConverter.jsx | 開發 |
 | tool-code-preview | VS Code 預覽器 | CodePreviewer.jsx | 開發 |
+| tool-github-html | GitHub HTML 積木 | GithubHtmlSnippets.jsx | 開發 |
 | tool-fontextractor | 網站字型擷取器 | WebsiteFontExtractor.jsx | 開發 |
 | tool-base | 進位轉換器 | BaseConverter.jsx | 開發 |
 | tool-folder-analyzer | 資料夾分析器 | FolderAnalyzer.jsx | 開發 |
@@ -245,7 +299,11 @@ public/fonts/MANIFEST.zh-TW.md。應用程式不會自動要求 Google Fonts。
 | tool-qrcode | QR Code 產生器 | QrBarcodeGenerator.jsx（qr 分頁） | 工具 |
 | tool-qrbarcodescan | QR Code 與條碼掃描器 | QrBarcodeScanner.jsx | 工具 |
 | tool-wheel | 隨機轉盤 | RandomWheel.jsx | 工具 |
-| privacy | 隱私權與網路服務 | PrivacyPolicy.jsx | 政策（不在工具目錄） |
+| about | 關於 | docs/AboutPage.jsx | 政策（僅頁尾，不在工具目錄） |
+| privacy | 隱私權 | docs/PrivacyPage.jsx | 政策（僅頁尾，不在工具目錄）；同時提供網路服務清單與服務同意設定 |
+| terms | 使用條款 | docs/TermsPage.jsx | 政策（僅頁尾，不在工具目錄） |
+| security | 安全性 | docs/SecurityPage.jsx | 政策（僅頁尾，不在工具目錄） |
+| license | 授權條款 | docs/LicensePage.jsx | 政策（僅頁尾，不在工具目錄） |
 
 ## 元件群組
 
@@ -254,10 +312,10 @@ public/fonts/MANIFEST.zh-TW.md。應用程式不會自動要求 Google Fonts。
 | 檔案 | 角色 |
 | --- | --- |
 | Card.jsx | 工具頁面與儀表板卡片的共用容器。 |
-| ToolHeader.jsx | 路由工具唯一的頁面識別元件。 |
+| ToolHeader.jsx | 路由工具唯一的頁面識別元件；傳入 kicker 即切換為轉換頁面標題。 |
 | Button.jsx | 共用按鈕變體與尺寸。 |
 | FieldInput.jsx | 有標籤的 input 與 textarea helper。 |
-| AutoDetectConverter.jsx | 共用雙面板自動轉換介面。 |
+| AutoDetectConverter.jsx | 共用自動轉換介面：有底線的來源欄位搭配帶強調色的結果區塊。 |
 | ToggleSwitch.jsx、Spinner.jsx、ResultDisplay.jsx | 可重用控制項與回饋 UI。 |
 
 ExternalMapPreview.jsx 是 IP Lookup 與 Image Metadata 共用的 OpenStreetMap 同意邊界。
@@ -266,10 +324,34 @@ ExternalMapPreview.jsx 是 IP Lookup 與 Image Metadata 共用的 OpenStreetMap 
 ### Markdown 預覽器
 
 MarkdownPreviewer.jsx 提供瀏覽器本機編輯器、.md／.markdown 上傳、即時預覽、格式化
-helper 與 Markdown 下載。其領域模組會將常見區塊與行內語法解析為安全的 React token；
-不會渲染 raw HTML 與外部圖片，並丟棄不安全的 URL scheme。來源行中繼資料讓可獨立捲動
-的編輯器與預覽區能雙向對齊，不會折疊 fenced-code 內容。重點解析器與互動測試位於
-markdownDomain.test.js 與 markdownPreviewer.test.jsx。
+helper 與 Markdown 下載。其領域模組會將常見區塊與行內語法解析為安全的 React token，
+並丟棄不安全的 URL scheme。文件中的 raw HTML 會先掃描成節點樹，依標籤與屬性允許清單
+過濾後算繪為 React 元素；任何標記字串都不會進入 innerHTML。HTML 區塊會延伸到相對應的
+結束標籤而非第一個空行，因此 README 常見的置中標頭得以保留；未閉合的標記則停在下一個
+標題或 fence。圖片在讀者授予 markdownimages 同意前一律顯示佔位，之後也僅從
+config/network-services.json 宣告、且 public/_headers 的 img-src 允許的徽章來源載入。
+src/styles.css 中的 .markdown-html 會補回這些 raw 元素被 Tailwind reset 移除的基本樣式。
+來源行中繼資料讓可獨立捲動的編輯器與預覽區能雙向對齊，不會折疊 fenced-code 內容。
+重點解析器與互動測試位於 markdownDomain.test.js 與 markdownPreviewer.test.jsx。
+
+### GitHub HTML 積木
+
+GithubHtmlSnippets.jsx 讓使用者在 `/home/github-html` 以堆疊積木的方式，組出 GitHub
+README 需要的原始 HTML —— 置中標題、徽章列、`<details>`、`<kbd>`、圖片表格等。積木以
+無文字的縮圖呈現：每一塊都用預覽渲染器把自己畫出來，而不是寫出名稱，名稱僅透過
+`aria-label` 提供給輔助技術。所有積木都收在 `Cmd`／`Ctrl` + `K` 面板中，由面板本身的
+格線維持縮圖對齊；面板上方除了操作列之外不再放置任何積木。多行積木會疊在游標所在行的
+下方而非巢狀嵌入，因此連續點擊會依序堆出文件。兩側面板都可用共用的 FullscreenPreview
+覆蓋層全螢幕開啟，與 Markdown 預覽器一致；全螢幕開啟期間積木面板的快速鍵會停用，否則
+面板會被蓋在覆蓋層底下。
+
+其領域模組是本工具自己的，與 Markdown 預覽器分開：githubHtml.js 解析 HTML 片段並依
+允許清單過濾，composeDocument.js 將文件切成 HTML 與 Markdown 區段（重用預覽器的
+parseMarkdown，而不是再寫一套 Markdown 解析器），blockCatalog.js 則存放語言中立的積木
+範本與純粹的放置規則。預覽會將清理後的節點渲染為 React 元素，完全不使用
+dangerouslySetInnerHTML，也不會載入任何圖片，因此不會產生任何第三方請求。由於允許清單
+對應的正是 GitHub 自身保留的範圍，清理器實際移除的內容便直接驅動「GitHub 會移除」提示
+與每塊積木上的圓點。測試位於 githubHtmlDomain.test.js 與 githubHtmlSnippets.test.jsx。
 
 ### VS Code 預覽器
 
@@ -327,8 +409,12 @@ functions/api/** 納入覆蓋率門檻，與共用 server 與 client library 使
 
 functions/_shared/requestPolicy.js 管理 Font Extractor 的 4 KiB 請求上限與聚合工作
 限制（HTML／CSS／總位元組、樣式表數量、import 深度、face 數量、並行數與 deadline）。
-functions/_shared/fontExtractionCapability.js 會在短期 runtime 證據未符合 Cloudflare
-compatibility date、fetch 實作版本與必要情境集合時，讓正式環境擷取功能故障關閉。
+functions/_shared/fontExtractionCapability.js 會在部署的 FONT_EXTRACTION_EGRESS_POSTURE
+變數未符合已記錄 runtime 驗證所涵蓋的 compatibility date、公開對外連線 compatibility
+flag 與 fetch 實作版本時，讓正式環境擷取功能故障關閉。該 posture 宣告於 wrangler.jsonc
+中，就位於它所描述的設定旁邊；若兩者不一致，或部署的 posture 已不符合驗證紀錄，
+scripts/check-cloudflare-config.mjs 會讓建置失敗。此關卡不含任何到期時間，因此在
+runtime 實際變更之前，工具不會自行停止服務。
 字型擷取會把 HTML `rel` 視為不分大小寫的 token 清單，並依宣告順序回傳每個
 font-face source list 中所有遠端 `url()` 候選。`local()` 與 data source 會被略過，
 但不會遮蔽後續遠端 fallback；候選會依正規化絕對 URL 與 face metadata 去重。
@@ -420,8 +506,8 @@ Color Converter 提供高對比的 Color Sync pressed toggle。
 ## 網路服務政策
 
 config/network-services.json 是外部供應商、網域、用途、觸發條件、傳送資料、同意模式、
-替代方案與政策連結的機器可讀來源。src/lib/thirdPartyServices.js、同意管理器與正式的
-/home/privacy 路由都使用這份清單。舊版 hash 位址只為向後相容的重新導向而接受。
+替代方案與政策連結的機器可讀來源。src/lib/thirdPartyServices.js 與正式的 /home/privacy 路由都使用這份清單，
+該路由會在同一頁呈現服務清單與服務同意設定。舊版 hash 位址只為向後相容的重新導向而接受。
 verify 中的 scripts/check-external-hosts.mjs 會在正式來源主機名稱未宣告時失敗。
 
 ## 相依套件

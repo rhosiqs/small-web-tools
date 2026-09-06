@@ -1,18 +1,72 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from './ui/Button';
 import Card from './ui/Card';
 import FullscreenPreview, { FullscreenPreviewButton } from './ui/FullscreenPreview';
 import ToolHeader from './ui/ToolHeader';
 import { highlightCode, normalizeCodeLanguage } from '../lib/codeHighlighting.js';
+import { grantConsent, hasConsent, revokeConsent } from '../lib/thirdPartyServices';
 import {
   MARKDOWN_FILE_LIMIT_BYTES,
+  REMOTE_IMAGE_SERVICE_ID,
   normalizeMarkdownFilename,
   parseMarkdown,
 } from './MarkdownPreviewer/lib/markdownDomain';
 
-function InlinePreview({ tokens }) {
+const IMAGE_PLACEHOLDER_KEYS = {
+  consent: 'tool-markdown.ui.imagePlaceholder.consent',
+  blockedHost: 'tool-markdown.ui.imagePlaceholder.blockedHost',
+  relative: 'tool-markdown.ui.imagePlaceholder.relative',
+  unsupported: 'tool-markdown.ui.imagePlaceholder.unsupported',
+};
+
+const HTML_PROP_NAMES = { colspan: 'colSpan', rowspan: 'rowSpan' };
+
+function PreviewImage({ image }) {
   const { t } = useTranslation('tools');
+  const alt = image.alt || t('tool-markdown.ui.untitledImage');
+
+  if (image.render) {
+    return <img src={image.href} alt={alt} title={image.title} width={image.width} height={image.height} loading="lazy" referrerPolicy="no-referrer" className="inline-block max-w-full align-middle" />;
+  }
+
+  return (
+    <span title={image.href || undefined} className="inline-flex items-center rounded border border-border bg-app px-2 py-1 text-xs text-text-muted">
+      {t(IMAGE_PLACEHOLDER_KEYS[image.reason] || IMAGE_PLACEHOLDER_KEYS.unsupported, { alt })}
+    </span>
+  );
+}
+
+/**
+ * Render the allow-listed nodes the document's raw HTML produced. Every element
+ * is created here from the sanitized tree, so no markup string is ever injected.
+ */
+function HtmlNodes({ nodes }) {
+  return nodes.map((node, index) => {
+    const key = `${node.type}-${index}`;
+    if (node.type === 'inline') return <InlinePreview key={key} tokens={node.inline} />;
+    if (node.type === 'image') return <PreviewImage key={key} image={node} />;
+
+    const props = { key };
+    for (const [attribute, value] of Object.entries(node.attributes)) {
+      if (attribute === 'align') props.style = { textAlign: value };
+      else if (attribute === 'open') props.open = true;
+      else props[HTML_PROP_NAMES[attribute] || attribute] = value;
+    }
+    if (node.name === 'a' && /^https?:/i.test(node.attributes.href || '')) {
+      props.target = '_blank';
+      props.rel = 'noreferrer';
+    }
+
+    return React.createElement(
+      node.name,
+      props,
+      node.children.length > 0 ? <HtmlNodes nodes={node.children} /> : undefined,
+    );
+  });
+}
+
+function InlinePreview({ tokens }) {
   return tokens.map((token, index) => {
     const key = `${token.type}-${index}`;
     if (token.type === 'code') return <code key={key} className="rounded bg-app px-1.5 py-0.5 font-mono text-[0.9em] text-accent">{token.value}</code>;
@@ -22,7 +76,8 @@ function InlinePreview({ tokens }) {
     if (token.type === 'link') {
       return token.href ? <a key={key} href={token.href} target={/^https?:/i.test(token.href) ? '_blank' : undefined} rel={/^https?:/i.test(token.href) ? 'noreferrer' : undefined} className="font-semibold text-accent underline decoration-accent/40 underline-offset-2 hover:text-accent-hover">{token.value}</a> : <span key={key}>{token.value}</span>;
     }
-    if (token.type === 'image') return <span key={key} className="inline-flex rounded border border-border bg-app px-2 py-1 text-xs text-text-muted">{t('tool-markdown.ui.imagePlaceholder', { alt: token.alt })}</span>;
+    if (token.type === 'image') return <PreviewImage key={key} image={token} />;
+    if (token.type === 'html') return <span key={key} className="markdown-html"><HtmlNodes nodes={[token.node]} /></span>;
     return <React.Fragment key={key}>{token.value}</React.Fragment>;
   });
 }
@@ -45,6 +100,7 @@ function MarkdownPreview({ blocks, previewRef, onScroll = undefined, className =
         if (block.type === 'paragraph') return <p key={key} {...sourceProps} className="whitespace-pre-wrap"><InlinePreview tokens={block.inline} /></p>;
         if (block.type === 'quote') return <blockquote key={key} {...sourceProps} className="whitespace-pre-wrap border-l-4 border-accent bg-accent-light/40 px-4 py-2 text-text-muted"><InlinePreview tokens={block.inline} /></blockquote>;
         if (block.type === 'rule') return <hr key={key} {...sourceProps} className="border-border" />;
+        if (block.type === 'html') return <div key={key} {...sourceProps} className="markdown-html"><HtmlNodes nodes={block.nodes} /></div>;
         if (block.type === 'codeBlock') {
           const language = normalizeCodeLanguage(block.language);
           return (
@@ -89,7 +145,24 @@ export default function MarkdownPreviewer() {
   const activeScrollRef = useRef(null);
   const editorScrollRef = useRef({ top: 0, left: 0 });
   const previewScrollRef = useRef({ top: 0, left: 0 });
-  const blocks = useMemo(() => parseMarkdown(markdown), [markdown]);
+  const [allowRemoteImages, setAllowRemoteImages] = useState(() => hasConsent(REMOTE_IMAGE_SERVICE_ID));
+  const blocks = useMemo(() => parseMarkdown(markdown, { allowRemoteImages }), [markdown, allowRemoteImages]);
+
+  useEffect(() => {
+    const handleConsentUpdate = () => setAllowRemoteImages(hasConsent(REMOTE_IMAGE_SERVICE_ID));
+    window.addEventListener('consent_updated', handleConsentUpdate);
+    return () => window.removeEventListener('consent_updated', handleConsentUpdate);
+  }, []);
+
+  const toggleRemoteImages = () => {
+    if (allowRemoteImages) {
+      revokeConsent(REMOTE_IMAGE_SERVICE_ID);
+      setStatus(t('tool-markdown.ui.status.remoteImagesDisabled'));
+      return;
+    }
+    grantConsent(REMOTE_IMAGE_SERVICE_ID);
+    setStatus(t('tool-markdown.ui.status.remoteImagesEnabled'));
+  };
 
   const syncEditorToPreview = (editor, preview) => {
     if (!editor || !preview || activeScrollRef.current === 'editor') { activeScrollRef.current = null; return; }
@@ -181,7 +254,7 @@ export default function MarkdownPreviewer() {
     <Card id="tool-markdown" variant="tool" size="wide" className="max-w-[1180px]">
       <ToolHeader title={t('tool-markdown.title')} />
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-app/60 p-3">
-        <div className="flex flex-wrap gap-2"><Button type="button" variant="secondary" size="sm" onClick={handlePaste}>{t('tool-markdown.ui.paste')}</Button><Button type="button" variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()}>{t('tool-markdown.ui.upload')}</Button><input ref={fileInputRef} type="file" accept=".md,.markdown,text/markdown,text/plain" onChange={handleFile} className="hidden" aria-label={t('tool-markdown.ui.uploadAria')} /></div>
+        <div className="flex flex-wrap gap-2"><Button type="button" variant="secondary" size="sm" onClick={handlePaste}>{t('tool-markdown.ui.paste')}</Button><Button type="button" variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()}>{t('tool-markdown.ui.upload')}</Button><input ref={fileInputRef} type="file" accept=".md,.markdown,text/markdown,text/plain" onChange={handleFile} className="hidden" aria-label={t('tool-markdown.ui.uploadAria')} /><Button type="button" variant="secondary" size="sm" aria-pressed={allowRemoteImages} onClick={toggleRemoteImages}>{t(allowRemoteImages ? 'tool-markdown.ui.remoteImages.disable' : 'tool-markdown.ui.remoteImages.enable')}</Button></div>
         <div className="flex flex-wrap items-center gap-2"><label htmlFor="markdown-filename" className="sr-only">{t('tool-markdown.ui.downloadFilename')}</label><input id="markdown-filename" value={filename} onChange={(event) => setFilename(event.target.value)} className="w-40 rounded-md border border-border bg-card px-3 py-1.5 text-xs text-text-main outline-none focus:border-accent focus:ring-2 focus:ring-focus" aria-label={t('tool-markdown.ui.downloadFilename')} /><Button type="button" variant="primary" size="sm" onClick={handleDownload} disabled={!markdown}>{t('tool-markdown.ui.download')}</Button><Button type="button" variant="secondary" size="sm" onClick={handleClear} disabled={!markdown}>{t('tool-markdown.ui.clear')}</Button></div>
       </div>
       <div className="flex flex-wrap gap-2" role="toolbar" aria-label={t('tool-markdown.ui.formattingAria')}>{FORMAT_ACTIONS.map((action) => <Button key={action.key} type="button" variant="secondary" size="sm" onClick={() => insertFormat(action)} aria-label={t('tool-markdown.ui.formatAs', { format: t(`tool-markdown.ui.format.${action.key}.label`) })}>{t(`tool-markdown.ui.format.${action.key}.label`)}</Button>)}</div>

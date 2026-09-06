@@ -74,15 +74,22 @@ npm run audit
 因此會進行外部部署。只有在需要 Cloudflare 執行環境的 CR-009 證據，且操作者
 接受 Cloudflare 當前的服務條款與隱私權政策時，才可執行。指令會遮蔽 bearer 與
 認領憑證；絕不要把全域 Wrangler 設定或認領 URL 貼入記錄。成功的 JSON 輸出會
-包含正式環境網站字型擷取器所需的短期 `gateMetadata`。當 compatibility date 或
-fetch 實作版本變更，以及 metadata 到期前，都必須重新執行。
+包含 `verifiedPolicy` 區塊。請將該區塊複製到
+`functions/_shared/fontExtractionCapability.js` 的 `FONT_EXTRACTION_EGRESS_POLICY`，
+並同步更新 `wrangler.jsonc` 中的 `FONT_EXTRACTION_EGRESS_POSTURE`。只有在
+compatibility date 或 fetch 實作版本變更時才需要重新執行；沒有到期時間，也不需要
+定期輪替。
 
 npm run verify 會執行 Git 標籤版本解析、Lint 警告預算、baseline、domain 與 UI
 三個 checkJs 專案、覆蓋率、建置／套件大小、標頭、網路清單、Cloudflare 設定與
 文件一致性檢查。CI 會使用兩個獨立 job，同時保留既有 required check 名稱
 `Verify (22)` 與 `Verify (24)`。Node 24 會執行完整 verify、相依檢查、安全稽核、
 Cloudflare 整合、Playwright 瀏覽器流程與 build artifact 產生；相依與 audit gate
-會先於成本較高的整合與瀏覽器流程執行。Node 22 則保留為最低執行環境相容性 gate，
+會先於成本較高的整合與瀏覽器流程執行。安全稽核只在變更有可能引入弱點時擋下：
+分支推送、每週排程執行，或修改 `package.json`、`package-lock.json` 的 pull
+request。兩個檔案都沒動的 pull request 不可能引入弱點，因此新公布的 advisory 會
+以警告與 job summary 呈現，而不會讓無關的變更失敗；請用只調整相依套件的變更修
+正，而不是由剛好先跑到 CI 的分支承擔。Node 22 則保留為最低執行環境相容性 gate，
 只執行型別檢查、單元測試與正式環境建置。兩個 job 都有明確 timeout，同一 ref 上
 被新提交取代的舊 CI 會由 workflow concurrency 自動取消。workflow 使用
 `actions/checkout@v7`、`actions/setup-node@v6` 與 `actions/upload-artifact@v7`。

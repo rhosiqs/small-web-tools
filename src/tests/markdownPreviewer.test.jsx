@@ -34,6 +34,48 @@ afterEach(async () => {
 });
 
 describe('Markdown Previewer', () => {
+  it('renders allow-listed raw HTML from the document', async () => {
+    const editor = container.querySelector('[aria-label="Markdown editor"]');
+
+    await act(async () => setNativeValue(editor, [
+      '<div align="center">',
+      '  <h1>Small Web Tools</h1>',
+      '  <p><b>Browser only.</b><br>No uploads.</p>',
+      '</div>',
+      '',
+      '<script>document.title = "hijacked";</script>',
+    ].join('\n')));
+
+    const preview = container.querySelector('[aria-label="Markdown preview"]');
+    expect(preview.querySelector('.markdown-html div')).toHaveStyle({ textAlign: 'center' });
+    expect(preview.querySelector('.markdown-html h1')).toHaveTextContent('Small Web Tools');
+    expect(preview.querySelector('.markdown-html br')).toBeInTheDocument();
+    expect(preview.querySelector('script')).toBeNull();
+    expect(preview).not.toHaveTextContent('hijacked');
+  });
+
+  it('loads badge images only after the reader turns them on', async () => {
+    const editor = container.querySelector('[aria-label="Markdown editor"]');
+    await act(async () => setNativeValue(editor, '![Build](https://img.shields.io/badge/build-passing-brightgreen)'));
+
+    const preview = container.querySelector('[aria-label="Markdown preview"]');
+    expect(preview.querySelector('img')).toBeNull();
+    expect(preview).toHaveTextContent('Image not loaded: Build');
+
+    const toggle = [...container.querySelectorAll('button')]
+      .find((button) => button.textContent.trim() === 'Load badge images');
+    await act(async () => toggle.click());
+
+    expect(preview.querySelector('img')).toHaveAttribute('src', 'https://img.shields.io/badge/build-passing-brightgreen');
+    expect(container).toHaveTextContent('Badge images will load from');
+
+    const disable = [...container.querySelectorAll('button')]
+      .find((button) => button.textContent.trim() === 'Stop loading badge images');
+    await act(async () => disable.click());
+
+    expect(preview.querySelector('img')).toBeNull();
+  });
+
   it('pastes Markdown and renders a live preview', async () => {
     const pasteButton = [...container.querySelectorAll('button')]
       .find((button) => button.textContent.trim() === 'Paste');

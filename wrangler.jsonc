@@ -13,6 +13,7 @@
     }
   ],
   "vars": {
-    "RATE_LIMIT_DEVELOPMENT_MODE": "false"
+    "RATE_LIMIT_DEVELOPMENT_MODE": "false",
+    "FONT_EXTRACTION_EGRESS_POSTURE": "compatibility-date=2026-07-23;flags=global_fetch_strictly_public;fetch-implementation=safe-external-fetch-v2"
   }
 }

@@ -9,6 +9,11 @@ on:
     branches:
       - main
       - develop
+  # Weekly canary: advisories published after a branch was merged still surface
+  # here even though they no longer block unrelated pull requests.
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -98,8 +103,39 @@ jobs:
       - name: Dead Code Check
         run: npm run deadcode:check
 
+      # A pull request that does not touch the dependency manifests cannot have
+      # introduced an advisory, so a newly published one is reported without
+      # failing an unrelated change. Dependency changes, branch pushes, and the
+      # weekly schedule keep the gate blocking.
       - name: Security Audit
-        run: npm run audit
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          blocking=true
+          if [ "${GITHUB_EVENT_NAME}" = 'pull_request' ] \
+            && [ -z "$(git diff --name-only "${BASE_SHA}" HEAD -- package.json package-lock.json)" ]; then
+            blocking=false
+          fi
+
+          if npm run audit; then
+            exit 0
+          fi
+
+          if [ "${blocking}" = true ]; then
+            echo "::error::npm audit reported advisories in the dependencies this change touches."
+            exit 1
+          fi
+
+          echo "::warning::npm audit reported advisories that this pull request did not introduce;"\
+            "fix them in a dependency-only change."
+          {
+            echo '### Security audit (advisory)'
+            echo
+            echo 'npm audit reported advisories, but this pull request changes neither'
+            echo '`package.json` nor `package-lock.json`, so the step did not fail. Resolve them'
+            echo 'in a dependency-only change; the weekly scheduled run keeps them visible.'
+          } >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Pages/Worker Rate Limit Integration
         run: npm run platform:integration

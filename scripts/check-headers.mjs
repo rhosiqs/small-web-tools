@@ -17,6 +17,8 @@ const exceptionKeys = new Set(exceptions.map(({ directive, source }) => `${direc
 const expectedExceptionKeys = new Set([
   "script-src 'wasm-unsafe-eval'", 'script-src blob:', "style-src 'unsafe-inline'",
   'font-src data:', 'img-src data:', 'img-src blob:',
+  'img-src https://img.shields.io', 'img-src https://badgen.net', 'img-src https://github.com',
+  'img-src https://raw.githubusercontent.com', 'img-src https://user-images.githubusercontent.com',
   'connect-src https://speed.cloudflare.com', 'connect-src https://unpkg.com',
   'media-src blob:', 'worker-src blob:', 'frame-src https://www.openstreetmap.org',
 ]);

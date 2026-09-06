@@ -1,3 +1,9 @@
+import { DOCUMENT_ROUTE_IDS } from './toolRouteMetadata.js';
+
+// Document pages are the registry routes without the `tool-` slug prefix, so the
+// path parser must recognize them before it rebuilds an id from a URL segment.
+const documentRouteIds = new Set(DOCUMENT_ROUTE_IDS);
+
 const DEFAULT_TOOL_MODE = {
   id: 'all',
   toolIds: null,
@@ -31,6 +37,7 @@ const modeDefinitions = [
       'tool-url',
       'tool-markdown',
       'tool-mermaid',
+      'tool-github-html',
       'tool-code-preview',
       'tool-fontextractor',
       'tool-base',
@@ -90,10 +97,11 @@ export const TOOL_MODES = modeDefinitions.map((mode) => ({
 
 export const AUDIENCE_MODES = [...TOOL_MODES];
 
+// Default shortcuts only: `useSimpleLayout` lets each browser store its own
+// ordering, and this list is what an uncustomized browser sees.
 export const SIMPLE_WORKSPACE = {
   id: 'simple',
   toolIds: [
-    'tool-wc',
     'tool-casing',
     'tool-url',
     'tool-date',
@@ -101,6 +109,7 @@ export const SIMPLE_WORKSPACE = {
     'tool-color',
     'tool-qrcode',
     'tool-password',
+    'tool-wheel',
   ],
   simplified: true,
 };
@@ -176,7 +185,7 @@ export function getRouteIdFromLocation(pathname, hash = '') {
     if (!routeSlug || routeSlug === 'home') {
       return 'tool-home';
     }
-    if (routeSlug === 'privacy' || routeSlug.startsWith('tool-')) {
+    if (documentRouteIds.has(routeSlug) || routeSlug.startsWith('tool-')) {
       return routeSlug;
     }
     return `tool-${routeSlug}`;
@@ -192,7 +201,7 @@ export function getRouteIdFromLocation(pathname, hash = '') {
   if (!routeSlug || routeSlug === 'home') {
     return 'tool-home';
   }
-  if (routeSlug === 'privacy' || routeSlug.startsWith('tool-')) {
+  if (documentRouteIds.has(routeSlug) || routeSlug.startsWith('tool-')) {
     return routeSlug;
   }
   return `tool-${routeSlug}`;

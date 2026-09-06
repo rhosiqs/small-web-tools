@@ -8,11 +8,11 @@
 
 **首次發布：** 2026 年 7 月 19 日
 
-**最後更新：** 2026 年 7 月 30 日
+**最後更新：** 2026 年 9 月 3 日
 
-**應用程式內政策：** /home/privacy
+**應用程式內政策：** /home/privacy（服務同意設定也在同一頁）
 
-**原始碼儲存庫：** [github.com/hhter2/small-web-tools](https://github.com/hhter2/small-web-tools)（MIT 授權；可能需要 GitHub 存取權）
+**原始碼儲存庫：** [github.com/rhosiqs/small-web-tools](https://github.com/rhosiqs/small-web-tools)（MIT 授權；可能需要 GitHub 存取權）
 
 **維護者聯絡方式：** Rhosiqs（emailforvirtualmachine@gmail.com）
 
@@ -38,6 +38,7 @@ config/network-services.json 是機器可讀的政策來源；應用程式內的
 | Cloudflare Speed Test | 使用者開始延遲／下載／上傳測量 | IP、請求中繼資料與產生的測量流量 | 明確同意 | 不進行遠端測量 |
 | 網站字型擷取器 | 同意並提交 URL 後掃描受限制的公開 HTML／CSS | 目標 URL；目標伺服器會收到 Function 請求中繼資料 | 明確同意 | 不掃描 |
 | OpenStreetMap | 地圖同意後顯示選用的座標地圖 | 座標與標準瀏覽器請求中繼資料 | 明確同意 | 不使用 iframe，只顯示座標文字 |
+| Markdown 徽章圖片 | 讀者開啟徽章圖片後，顯示所預覽 Markdown 文件指向的徽章與截圖圖片 | 圖片網址與標準瀏覽器請求中繼資料；圖片主機會得知讀者的 IP 位址 | 明確同意 | 所有圖片維持佔位顯示 |
 | unpkg FFmpeg 0.12.6 | 第一次處理時下載固定版本的 JS／WASM | 只有標準瀏覽器請求中繼資料；媒體與輸出仍留在本機 | 使用時揭露 | 不使用 FFmpeg 處理 |
 | Google Fonts 建議 | 使用者選取連結後開啟字型範例 | 標準導覽中繼資料 | 使用者導覽 | 不開啟連結，直接閱讀建議 |
 | Google Maps | 使用者選取連結後開啟座標 | 座標與標準導覽中繼資料 | 使用者導覽 | 在本機閱讀座標 |
@@ -56,8 +57,10 @@ FFmpeg JavaScript 與 WebAssembly 資產固定使用 unpkg 上的 @ffmpeg/core 0
 
 ## 4. 同意與瀏覽器儲存空間
 
-同意管理器會將明確的服務選擇儲存在 small_web_tools_consent。主題、收合的導覽列
-與最近路由狀態也可能使用 local storage 或 session storage。本專案不加入分析追蹤器
+/home/privacy 上的同意設定會將明確的服務選擇儲存在 small_web_tools_consent。主題、收合的導覽列
+與最近路由狀態也可能使用 local storage 或 session storage。在簡易模式首頁自訂的捷徑版面
+會儲存在 local storage 的 simpleLayout，在 /home 自訂的首頁群組版面則儲存在
+homeLayout，兩者都不會離開瀏覽器。本專案不加入分析追蹤器
 或追蹤 Cookie。
 
 工具狀態僅保存在 local storage，不會寫入 Cookie，因此不會附加在任何送往本站的
@@ -87,3 +90,6 @@ Google Maps 連結時，只有使用者主動導覽才會將座標傳送給 Goog
   僅提供中繼資料的網站字型擷取器、經完整性驗證的 FFmpeg 揭露，以及共用的 OSM
   同意行為。
 - **2026 年 7 月 30 日：** 更新維護者聯絡方式，並記錄正式的路徑式隱私權路由。
+- **2026 年 9 月 3 日：** 同意設定由對話框改為文件頁面，之後併入 /home/privacy。
+- **2026 年 9 月 3 日：** 揭露可編輯簡易模式版面所使用、僅存在瀏覽器的 simpleLayout 金鑰。
+- **2026 年 9 月 6 日：** 揭露可編輯首頁群組所使用、僅存在瀏覽器的 homeLayout 金鑰。

@@ -10,8 +10,6 @@ declare module 'react' {
 
 declare global {
   const __APP_VERSION__: string;
-  const __SHOW_CHANNEL_ALERT__: boolean;
-  const __APP_CHANNEL__: string;
 
   interface Window {
     EyeDropper?: new () => { open: () => Promise<{ sRGBHex: string }> };
