@@ -459,7 +459,7 @@ Targeted `*.test.js` suites live in `functions/api/tests/`. `vitest.config.js`
 includes `functions/api/**` in the coverage gate with the same thresholds as
 the shared server and client libraries.
 
-`functions/_shared/requestPolicy.js` owns Font Extractor's 4 KiB request cap and aggregate job limits (HTML/CSS/total bytes, stylesheet count, import depth, face count, concurrency, and deadline). `functions/_shared/fontExtractionCapability.js` fails production extraction closed unless short-lived runtime evidence matches the configured Cloudflare compatibility date, fetch implementation revision, and required scenario set. `vite.config.js` mirrors only IP lookup (`/api/iplookup`) for local Vite development. Use a Cloudflare Pages local runtime when testing the other Functions.
+`functions/_shared/requestPolicy.js` owns Font Extractor's 4 KiB request cap and aggregate job limits (HTML/CSS/total bytes, stylesheet count, import depth, face count, concurrency, and deadline). `functions/_shared/fontExtractionCapability.js` fails production extraction closed unless the deployment's `FONT_EXTRACTION_EGRESS_POSTURE` variable matches the compatibility date, public-egress compatibility flag, and fetch implementation revision that the recorded runtime verification covered. The posture is declared in `wrangler.jsonc` beside the settings it describes, and `scripts/check-cloudflare-config.mjs` fails the build if the two disagree or if the deployed posture no longer matches the verified record. Nothing in the gate expires, so the tool cannot go dark without an actual runtime change. `vite.config.js` mirrors only IP lookup (`/api/iplookup`) for local Vite development. Use a Cloudflare Pages local runtime when testing the other Functions.
 
 Font extraction treats HTML `rel` values as case-insensitive token lists and returns
 every remote `url()` candidate in each font-face source list in declared order.
@@ -479,9 +479,11 @@ still returning the same fail-closed 503 response.
 isolated Cloudflare-runtime fixtures for the outbound-fetch boundary. Run
 `npm run test:ssrf-runtime` only when temporary Cloudflare deployment is intended;
 it uses an unclaimed, auto-expiring preview account and prints no token or claim URL.
-Successful output includes machine-readable, 30-day gate metadata tied to the
-compatibility date and fetch implementation revision; missing, mismatched,
-incomplete, or expired metadata leaves production extraction disabled.
+Successful output includes a `verifiedPolicy` block recording the compatibility
+date, public-egress flag, and fetch implementation revision that were exercised.
+Copy it into `FONT_EXTRACTION_EGRESS_POLICY` after changing either of those, so
+the gate can compare the deployed posture against a runtime someone actually
+tested. A missing or mismatched posture leaves production extraction disabled.
 
 ### Local completion and deferred Cloudflare operations
 

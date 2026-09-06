@@ -143,7 +143,6 @@ try {
     throw new Error('A DNS-rebinding attempt unexpectedly reached a target.');
   }
 
-  const verifiedAt = new Date();
   const evidence = {
     runtime: 'Cloudflare temporary Workers account',
     executedAt: new Date().toISOString(),
@@ -178,16 +177,22 @@ try {
   const evidenceSha256 = createHash('sha256')
     .update(JSON.stringify(evidence))
     .digest('hex');
-  evidence.gateMetadata = {
+  // The run does not produce a credential to install anywhere. It produces the
+  // record that `FONT_EXTRACTION_EGRESS_POLICY` should carry, so that the
+  // deployed egress posture can be compared against a runtime someone actually
+  // exercised. Copy `verifiedPolicy` into
+  // `functions/_shared/fontExtractionCapability.js` when the compatibility date
+  // or the fetch implementation revision changes.
+  evidence.evidenceSha256 = evidenceSha256;
+  evidence.verifiedPolicy = {
     schemaVersion: FONT_EXTRACTION_EGRESS_POLICY.schemaVersion,
     runtime: FONT_EXTRACTION_EGRESS_POLICY.runtime,
     outcome: 'pass',
     compatibilityDate: FONT_EXTRACTION_EGRESS_POLICY.compatibilityDate,
+    compatibilityFlags: [...FONT_EXTRACTION_EGRESS_POLICY.compatibilityFlags],
     implementationRevision: FONT_EXTRACTION_EGRESS_POLICY.implementationRevision,
-    evidenceSha256,
-    verifiedAt: verifiedAt.toISOString(),
-    expiresAt: new Date(verifiedAt.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    scenarios: [...FONT_EXTRACTION_EGRESS_POLICY.requiredScenarios],
+    verifiedOn: new Date().toISOString().slice(0, 10),
+    requiredScenarios: [...FONT_EXTRACTION_EGRESS_POLICY.requiredScenarios],
   };
 
   console.log(JSON.stringify(evidence, null, 2));

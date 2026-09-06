@@ -395,8 +395,12 @@ functions/api/** 納入覆蓋率門檻，與共用 server 與 client library 使
 
 functions/_shared/requestPolicy.js 管理 Font Extractor 的 4 KiB 請求上限與聚合工作
 限制（HTML／CSS／總位元組、樣式表數量、import 深度、face 數量、並行數與 deadline）。
-functions/_shared/fontExtractionCapability.js 會在短期 runtime 證據未符合 Cloudflare
-compatibility date、fetch 實作版本與必要情境集合時，讓正式環境擷取功能故障關閉。
+functions/_shared/fontExtractionCapability.js 會在部署的 FONT_EXTRACTION_EGRESS_POSTURE
+變數未符合已記錄 runtime 驗證所涵蓋的 compatibility date、公開對外連線 compatibility
+flag 與 fetch 實作版本時，讓正式環境擷取功能故障關閉。該 posture 宣告於 wrangler.jsonc
+中，就位於它所描述的設定旁邊；若兩者不一致，或部署的 posture 已不符合驗證紀錄，
+scripts/check-cloudflare-config.mjs 會讓建置失敗。此關卡不含任何到期時間，因此在
+runtime 實際變更之前，工具不會自行停止服務。
 字型擷取會把 HTML `rel` 視為不分大小寫的 token 清單，並依宣告順序回傳每個
 font-face source list 中所有遠端 `url()` 候選。`local()` 與 data source 會被略過，
 但不會遮蔽後續遠端 fallback；候選會依正規化絕對 URL 與 face metadata 去重。

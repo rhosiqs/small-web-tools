@@ -74,8 +74,11 @@ npm run audit
 因此會進行外部部署。只有在需要 Cloudflare 執行環境的 CR-009 證據，且操作者
 接受 Cloudflare 當前的服務條款與隱私權政策時，才可執行。指令會遮蔽 bearer 與
 認領憑證；絕不要把全域 Wrangler 設定或認領 URL 貼入記錄。成功的 JSON 輸出會
-包含正式環境網站字型擷取器所需的短期 `gateMetadata`。當 compatibility date 或
-fetch 實作版本變更，以及 metadata 到期前，都必須重新執行。
+包含 `verifiedPolicy` 區塊。請將該區塊複製到
+`functions/_shared/fontExtractionCapability.js` 的 `FONT_EXTRACTION_EGRESS_POLICY`，
+並同步更新 `wrangler.jsonc` 中的 `FONT_EXTRACTION_EGRESS_POSTURE`。只有在
+compatibility date 或 fetch 實作版本變更時才需要重新執行；沒有到期時間，也不需要
+定期輪替。
 
 npm run verify 會執行 Git 標籤版本解析、Lint 警告預算、baseline、domain 與 UI
 三個 checkJs 專案、覆蓋率、建置／套件大小、標頭、網路清單、Cloudflare 設定與
