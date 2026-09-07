@@ -350,6 +350,7 @@ Prefer the shared primitives and existing design tokens. Add global CSS only for
 | `tool-qrcode` | QR Code Generator | `QrBarcodeGenerator.jsx` (`qr` tab) | Utilities |
 | `tool-qrbarcodescan` | QR & Barcode Scanner | `QrBarcodeScanner.jsx` | Utilities |
 | `tool-wheel` | Random Wheel | `RandomWheel.jsx` | Utilities |
+| `tool-shuffle` | Random Order | `RandomOrder.jsx` | Utilities |
 | `about` | About | `docs/AboutPage.jsx` | Policy (footer only, not in tool catalog) |
 | `privacy` | Privacy | `docs/PrivacyPage.jsx` | Policy (footer only, not in tool catalog); carries the network inventory and the service consent settings |
 | `terms` | Terms of Use | `docs/TermsPage.jsx` | Policy (footer only, not in tool catalog) |
