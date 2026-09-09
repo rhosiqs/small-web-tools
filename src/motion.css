@@ -38,6 +38,43 @@
   animation: swt-motion-reveal var(--motion-duration-slow) var(--motion-ease-emphasized) both;
 }
 
+/* Full dashboard: reveal the hierarchy first, then the cards inside each group. */
+#tool-home > div:first-child {
+  animation: swt-motion-reveal 480ms var(--motion-ease-emphasized) 40ms both;
+}
+
+#tool-home [data-group] {
+  animation: swt-motion-reveal 420ms var(--motion-ease-emphasized) both;
+}
+
+#tool-home [data-group]:nth-of-type(1) { animation-delay: 90ms; }
+#tool-home [data-group]:nth-of-type(2) { animation-delay: 135ms; }
+#tool-home [data-group]:nth-of-type(3) { animation-delay: 180ms; }
+#tool-home [data-group]:nth-of-type(4) { animation-delay: 225ms; }
+#tool-home [data-group]:nth-of-type(5) { animation-delay: 270ms; }
+#tool-home [data-group]:nth-of-type(6) { animation-delay: 315ms; }
+
+#tool-home .grid > * {
+  animation: swt-motion-rise 380ms var(--motion-ease-emphasized) both;
+  transition:
+    transform var(--motion-duration-base) var(--motion-ease-standard),
+    border-color var(--motion-duration-base) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-base) var(--motion-ease-standard);
+}
+
+#tool-home .grid > *:nth-child(1) { animation-delay: 120ms; }
+#tool-home .grid > *:nth-child(2) { animation-delay: 155ms; }
+#tool-home .grid > *:nth-child(3) { animation-delay: 190ms; }
+#tool-home .grid > *:nth-child(4) { animation-delay: 225ms; }
+#tool-home .grid > *:nth-child(5) { animation-delay: 260ms; }
+#tool-home .grid > *:nth-child(6) { animation-delay: 295ms; }
+#tool-home .grid > *:nth-child(7) { animation-delay: 330ms; }
+#tool-home .grid > *:nth-child(8) { animation-delay: 365ms; }
+
+#tool-home .grid > *:hover {
+  transform: translateY(-3px);
+}
+
 /* Simple Home: progressive hierarchy instead of a single block appearing. */
 #simple-home > header {
   animation: swt-motion-reveal 480ms var(--motion-ease-emphasized) 40ms both;
