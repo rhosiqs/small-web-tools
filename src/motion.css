@@ -1,0 +1,145 @@
+/* Shared motion language inspired by modern product storytelling sites.
+ * Motion stays restrained for a utility-first application and is disabled
+ * for users who request reduced motion.
+ */
+
+:root {
+  --motion-duration-fast: 140ms;
+  --motion-duration-base: 220ms;
+  --motion-duration-slow: 420ms;
+  --motion-ease-standard: cubic-bezier(0.2, 0.65, 0.25, 1);
+  --motion-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes swt-motion-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes swt-motion-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Main content reveals once after the shell is mounted. */
+#root > div > main {
+  animation: swt-motion-reveal var(--motion-duration-slow) var(--motion-ease-emphasized) both;
+}
+
+/* Full dashboard: reveal the hierarchy first, then the cards inside each group. */
+#tool-home > div:first-child {
+  animation: swt-motion-reveal 480ms var(--motion-ease-emphasized) 40ms both;
+}
+
+#tool-home [data-group] {
+  animation: swt-motion-reveal 420ms var(--motion-ease-emphasized) both;
+}
+
+#tool-home [data-group]:nth-of-type(1) { animation-delay: 90ms; }
+#tool-home [data-group]:nth-of-type(2) { animation-delay: 135ms; }
+#tool-home [data-group]:nth-of-type(3) { animation-delay: 180ms; }
+#tool-home [data-group]:nth-of-type(4) { animation-delay: 225ms; }
+#tool-home [data-group]:nth-of-type(5) { animation-delay: 270ms; }
+#tool-home [data-group]:nth-of-type(6) { animation-delay: 315ms; }
+
+#tool-home .grid > * {
+  animation: swt-motion-rise 380ms var(--motion-ease-emphasized) both;
+  transition:
+    transform var(--motion-duration-base) var(--motion-ease-standard),
+    border-color var(--motion-duration-base) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-base) var(--motion-ease-standard);
+}
+
+#tool-home .grid > *:nth-child(1) { animation-delay: 120ms; }
+#tool-home .grid > *:nth-child(2) { animation-delay: 155ms; }
+#tool-home .grid > *:nth-child(3) { animation-delay: 190ms; }
+#tool-home .grid > *:nth-child(4) { animation-delay: 225ms; }
+#tool-home .grid > *:nth-child(5) { animation-delay: 260ms; }
+#tool-home .grid > *:nth-child(6) { animation-delay: 295ms; }
+#tool-home .grid > *:nth-child(7) { animation-delay: 330ms; }
+#tool-home .grid > *:nth-child(8) { animation-delay: 365ms; }
+
+#tool-home .grid > *:hover {
+  transform: translateY(-3px);
+}
+
+/* Simple Home: progressive hierarchy instead of a single block appearing. */
+#simple-home > header {
+  animation: swt-motion-reveal 480ms var(--motion-ease-emphasized) 40ms both;
+}
+
+#simple-tool-search {
+  transition:
+    border-color var(--motion-duration-base) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-base) var(--motion-ease-standard),
+    transform var(--motion-duration-base) var(--motion-ease-standard);
+}
+
+#simple-tool-search:focus {
+  transform: translateY(-1px);
+}
+
+#simple-essentials-grid > * {
+  animation: swt-motion-rise 420ms var(--motion-ease-emphasized) both;
+  transition:
+    transform var(--motion-duration-base) var(--motion-ease-standard),
+    border-color var(--motion-duration-base) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-base) var(--motion-ease-standard);
+}
+
+#simple-essentials-grid > *:nth-child(1) { animation-delay: 70ms; }
+#simple-essentials-grid > *:nth-child(2) { animation-delay: 105ms; }
+#simple-essentials-grid > *:nth-child(3) { animation-delay: 140ms; }
+#simple-essentials-grid > *:nth-child(4) { animation-delay: 175ms; }
+#simple-essentials-grid > *:nth-child(5) { animation-delay: 210ms; }
+#simple-essentials-grid > *:nth-child(6) { animation-delay: 245ms; }
+#simple-essentials-grid > *:nth-child(7) { animation-delay: 280ms; }
+#simple-essentials-grid > *:nth-child(8) { animation-delay: 315ms; }
+
+#simple-essentials-grid > *:hover {
+  transform: translateY(-3px);
+}
+
+/* Search results and dropdowns get a short state transition rather than a jump. */
+.header-search-input:focus {
+  transition-duration: var(--motion-duration-base);
+}
+
+#simple-home [role='listbox'],
+#simple-home ul,
+header [class*='absolute'][class*='top-full'] {
+  animation: swt-motion-reveal var(--motion-duration-fast) var(--motion-ease-standard) both;
+}
+
+/* Sidebar / header controls share the same interaction timing. */
+#sidebar-collapse-btn,
+#desktop-brand-logo,
+header button,
+header input {
+  transition-timing-function: var(--motion-ease-standard);
+}
+
+/* Keep motion from changing the layout while preserving focus and usability. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+  }
+}
