@@ -114,6 +114,7 @@ essentials. Tools opened there remain in the reduced shell at addresses such as
 - **QR & Barcode Scanner** — scan with a camera or image file.
 - **Password Generator** and **Password Strength** — generate or assess passwords.
 - **Random Wheel** — make a cryptographically seeded selection and export a locally verifiable draw record.
+- **Random Order** — draw any list of entries into a random order and export a locally verifiable draw record.
 
 ## Privacy and network access
 

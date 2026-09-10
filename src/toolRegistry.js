@@ -44,6 +44,7 @@ const loaders = {
   'tool-qrcode': () => import('./components/QrBarcodeGenerator.jsx'),
   'tool-qrbarcodescan': () => import('./components/QrBarcodeScanner.jsx'),
   'tool-wheel': () => import('./components/RandomWheel.jsx'),
+  'tool-shuffle': () => import('./components/RandomOrder.jsx'),
   about: () => import('./components/docs/AboutPage.jsx'),
   privacy: () => import('./components/docs/PrivacyPage.jsx'),
   terms: () => import('./components/docs/TermsPage.jsx'),

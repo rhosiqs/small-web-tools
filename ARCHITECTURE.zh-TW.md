@@ -299,6 +299,7 @@ public/fonts/MANIFEST.zh-TW.md。應用程式不會自動要求 Google Fonts。
 | tool-qrcode | QR Code 產生器 | QrBarcodeGenerator.jsx（qr 分頁） | 工具 |
 | tool-qrbarcodescan | QR Code 與條碼掃描器 | QrBarcodeScanner.jsx | 工具 |
 | tool-wheel | 隨機轉盤 | RandomWheel.jsx | 工具 |
+| tool-shuffle | 隨機排序 | RandomOrder.jsx | 工具 |
 | about | 關於 | docs/AboutPage.jsx | 政策（僅頁尾，不在工具目錄） |
 | privacy | 隱私權 | docs/PrivacyPage.jsx | 政策（僅頁尾，不在工具目錄）；同時提供網路服務清單與服務同意設定 |
 | terms | 使用條款 | docs/TermsPage.jsx | 政策（僅頁尾，不在工具目錄） |
