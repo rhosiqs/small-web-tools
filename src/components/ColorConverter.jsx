@@ -1156,7 +1156,7 @@ export default function ColorConverter() {
         
         {/* Panel 1: Code Converter Inputs/Outputs */}
         <div className="flex w-full flex-col gap-2.5">
-          <h3 className="border-b border-border pb-2 text-[0.95rem] uppercase tracking-wider text-text-muted">{t('tool-color.ui.converter')}</h3>
+          <h2 className="border-b border-border pb-2 text-[0.95rem] uppercase tracking-wider text-text-muted">{t('tool-color.ui.converter')}</h2>
           <div className="flex w-full flex-col gap-1.5">
             <label htmlFor="color-input" className="text-xs font-semibold text-text-main">{t('tool-color.ui.codeLabel')}</label>
             <div className="flex gap-2 w-full">
@@ -1223,7 +1223,7 @@ export default function ColorConverter() {
         {/* Panel 2: Visual Swatches Grid Selector */}
         <div className="flex flex-col gap-3 w-full">
           <div className="flex justify-between items-center w-full pb-2 border-b border-border">
-            <h3 className="text-[0.95rem] text-text-muted uppercase tracking-wider">{t('tool-color.ui.hslSwatches')}</h3>
+            <h2 className="text-[0.95rem] text-text-muted uppercase tracking-wider">{t('tool-color.ui.hslSwatches')}</h2>
             <button
               type="button"
               className={`inline-flex min-h-9 items-center gap-2 rounded-full border-2 px-3 py-1.5 text-xs font-extrabold tracking-wide shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
@@ -1359,7 +1359,7 @@ export default function ColorConverter() {
 
         {/* Panel 3: Visual HSL Spectrum Selector */}
         <div className="flex flex-col gap-3 w-full">
-          <h3 className="text-[0.95rem] text-text-muted uppercase tracking-wider mb-1 pb-2 border-b border-border">{t('tool-color.ui.hslSpectrum')}</h3>
+          <h2 className="text-[0.95rem] text-text-muted uppercase tracking-wider mb-1 pb-2 border-b border-border">{t('tool-color.ui.hslSpectrum')}</h2>
           
           <div className="flex gap-4 w-full items-stretch">
             {/* 2D Hue-Saturation board */}

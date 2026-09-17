@@ -1047,7 +1047,7 @@ export default function FolderAnalyzer() {
               <polyline points="17 8 12 3 7 8"></polyline>
               <line x1="12" y1="3" x2="12" y2="15"></line>
             </svg>
-            <h3 className="text-lg font-bold text-text-main">{t('tool-folder-analyzer.ui.selectTitle')}</h3>
+            <h2 className="text-lg font-bold text-text-main">{t('tool-folder-analyzer.ui.selectTitle')}</h2>
             <p className="text-sm text-text-muted">{t('tool-folder-analyzer.ui.selectDescription')}</p>
           </button>
 

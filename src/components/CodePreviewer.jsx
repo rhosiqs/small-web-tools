@@ -263,9 +263,9 @@ export default function CodePreviewer() {
       <section className="overflow-hidden rounded-xl border border-border bg-card" aria-labelledby="vscode-editor-title">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-app/70 px-3 py-2">
           <div className="flex min-w-0 items-center gap-3">
-            <h3 id="vscode-editor-title" className="truncate text-xs font-semibold text-text-muted">
+            <h2 id="vscode-editor-title" className="truncate text-xs font-semibold text-text-muted">
               {normalizeCodeFilename(filename, language)}
-            </h3>
+            </h2>
           </div>
           <div className="flex items-center gap-3">
             <label htmlFor="code-language" className="sr-only">{t('tool-code-preview.ui.language')}</label>
@@ -349,7 +349,7 @@ export default function CodePreviewer() {
           >
             <div className="flex items-center justify-between gap-4 border-b border-border pb-3">
               <div>
-                <h3 id="appearance-dialog-title" className="text-lg font-bold text-text-main">{t('tool-code-preview.ui.appearanceTitle')}</h3>
+                <h2 id="appearance-dialog-title" className="text-lg font-bold text-text-main">{t('tool-code-preview.ui.appearanceTitle')}</h2>
                 <p className="mt-1 text-xs text-text-muted">{t('tool-code-preview.ui.appearanceDescription')}</p>
               </div>
               <Button type="button" variant="secondary" size="sm" onClick={() => setSettingsOpen(false)}>

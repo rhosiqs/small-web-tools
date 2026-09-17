@@ -383,7 +383,7 @@ export default function PasswordGenerator({ initialTab = 'generate' }) {
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {/* Left Column: Configuration */}
             <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3">
-              <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider border-b border-border pb-2.5">{t('tool-password.ui.configuration')}</h3>
+              <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider border-b border-border pb-2.5">{t('tool-password.ui.configuration')}</h2>
               
               <div className="flex flex-col gap-2 w-full">
                 <label htmlFor="password-length-slider" className="flex justify-between items-center text-sm font-semibold text-text-main">
@@ -440,7 +440,7 @@ export default function PasswordGenerator({ initialTab = 'generate' }) {
 
             {/* Right Column: Strength Analytics */}
             <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3">
-              <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider border-b border-border pb-2.5">{t('tool-password.ui.securityStrength')}</h3>
+              <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider border-b border-border pb-2.5">{t('tool-password.ui.securityStrength')}</h2>
               
               <div className="flex flex-col gap-1.5">
                 <span className="text-sm font-semibold text-text-main">
@@ -521,7 +521,7 @@ export default function PasswordGenerator({ initialTab = 'generate' }) {
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {/* Left Column: Requirements Checklist */}
             <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3">
-              <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider border-b border-border pb-2.5">{t('tool-password.ui.analysis')}</h3>
+              <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider border-b border-border pb-2.5">{t('tool-password.ui.analysis')}</h2>
               
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex min-w-0 items-center gap-2 rounded-lg border border-border bg-app/50 p-2 transition-colors">
@@ -632,7 +632,7 @@ export default function PasswordGenerator({ initialTab = 'generate' }) {
 
             {/* Right Column: Strength Analytics */}
             <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3">
-              <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider border-b border-border pb-2.5">{t('tool-password.ui.securityStrength')}</h3>
+              <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider border-b border-border pb-2.5">{t('tool-password.ui.securityStrength')}</h2>
               
               <div className="flex flex-col gap-1.5">
                 <span className="text-sm font-semibold text-text-main">

@@ -12,7 +12,9 @@ Browser accessibility checks reject every unlisted Axe violation, including mode
 
 ### Temporary Axe exceptions
 
-The `heading-order` rule is accepted through 2026-09-30 while legacy tool sections are normalized from level-three headings to a sequential hierarchy beneath the shared level-one `ToolHeader`. The exception covers heading order only; page-title presence, landmarks, names, roles, focus, and every other Axe rule remain enforced. Remove the exception after the section-heading migration and its representative route checks pass.
+`TEMPORARY_ACCEPTED_VIOLATIONS` in `e2e/accessibility.spec.js` is empty, so every Axe violation on an audited route is a failure. The list is not a place to park a finding: each entry also fails the suite once its `expires` date passes, so an exception must be removed by fixing the rule it covers.
+
+The former `heading-order` exception is gone. Tool sections that sat at level three directly beneath the level-one `ToolHeader` are now level two, category groups on the dashboard are level two with their sub-groups at level three, and the metadata tools keep a level-two file title above their level-three tables. No route in the registry reports a skipped heading level.
 
 The UI floor is intentionally incremental. New modules are added explicitly, and a threshold may only move upward unless a PR documents a temporary exception and follow-up issue.
 

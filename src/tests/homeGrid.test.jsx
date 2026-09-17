@@ -51,7 +51,7 @@ let container;
 let root;
 
 function groupHeadings() {
-  return [...container.querySelectorAll('#tool-home [data-group] > h3')]
+  return [...container.querySelectorAll('#tool-home [data-group] > h2')]
     .map((heading) => heading.textContent.trim());
 }
 

@@ -228,7 +228,7 @@ app version. Never edit `dist/`.
 "Axe violation in CI".*
 
 `e2e/accessibility.spec.js` rejects every unlisted Axe violation, including
-moderate ones. `heading-order` has a documented exception through 2026-09-30 only.
+moderate ones. There are no accepted exceptions; `TEMPORARY_ACCEPTED_VIOLATIONS` is empty.
 Fix the markup (roles, names, focus order, visible focus ring, live-region
 announcements) rather than widening the allowlist; a new exception needs a rule
 name, rationale, ISO expiry, and remediation reference.

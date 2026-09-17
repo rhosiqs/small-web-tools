@@ -228,9 +228,9 @@ export default function PhredScaleConverter() {
       <section aria-labelledby="phred-scale-title" className="flex flex-col gap-1">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-0">
-            <h3 id="phred-scale-title" className="m-0 text-[0.9375rem] font-medium text-text-main">
+            <h2 id="phred-scale-title" className="m-0 text-[0.9375rem] font-medium text-text-main">
               {t('tool-phred.ui.referenceTitle')}
-            </h3>
+            </h2>
             <p className="m-0 mt-0.5 text-xs text-text-muted">{t('tool-phred.ui.referenceDescription')}</p>
           </div>
         </div>

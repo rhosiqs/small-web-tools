@@ -554,7 +554,7 @@ export default function RandomWheel() {
         <div id="wheel-clear-modal" className="fixed inset-0 z-[1000] flex items-center justify-center p-5" style={{ display: 'flex' }}>
           <div id="wheel-clear-modal-backdrop" className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setShowClearModal(false)}></div>
           <div className="relative bg-card border border-border rounded-2xl p-7 max-w-[420px] w-full shadow-2xl z-[1001] flex flex-col gap-4 animate-[modalSlideIn_0.3s_cubic-bezier(0.34,1.56,0.64,1)]">
-            <h3 className="font-display text-lg font-bold text-text-main">{t('tool-wheel.ui.clearAllTitle')}</h3>
+            <h2 className="font-display text-lg font-bold text-text-main">{t('tool-wheel.ui.clearAllTitle')}</h2>
             <p className="text-sm text-text-muted leading-relaxed">{t('tool-wheel.ui.clearAllBody')}</p>
             <div className="flex gap-3 justify-end mt-2">
               <Button id="wheel-confirm-clear-btn" variant="dangerConfirm" onClick={confirmClear}>{t('tool-wheel.ui.confirmClear')}</Button>

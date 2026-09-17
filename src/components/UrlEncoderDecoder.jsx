@@ -9,7 +9,7 @@ function ScopeSelector({ scope, setScope }) {
     <section className="flex flex-col gap-2" aria-labelledby="url-scope-title">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 id="url-scope-title" className="m-0 text-[0.9375rem] font-medium text-text-main">{t('tool-url.ui.scope')}</h3>
+          <h2 id="url-scope-title" className="m-0 text-[0.9375rem] font-medium text-text-main">{t('tool-url.ui.scope')}</h2>
           <p className="m-0 mt-0.5 text-xs text-text-muted">
             {t('tool-url.ui.scopeHint')}
           </p>

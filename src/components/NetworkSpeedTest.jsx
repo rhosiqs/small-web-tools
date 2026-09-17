@@ -719,7 +719,7 @@ export default function NetworkSpeedTest() {
       {/* Results */}
       {phase === 'complete' && (
         <div className="flex flex-col gap-4">
-          <h3 className="text-lg font-bold text-text-main">{t('tool-speedtest.ui.results')}</h3>
+          <h2 className="text-lg font-bold text-text-main">{t('tool-speedtest.ui.results')}</h2>
           {error && (
             <p role="status" className="text-sm text-amber-600">{error}</p>
           )}

@@ -27,7 +27,7 @@ export class ErrorBoundaryBase extends React.Component {
               !
             </div>
             <div className="space-y-1">
-              <h3 className="text-lg font-bold text-text-main">{t('boundary.title')}</h3>
+              <h2 className="text-lg font-bold text-text-main">{t('boundary.title')}</h2>
               <p className="text-xs text-text-muted max-w-md">
                 {this.state.error?.message || t('boundary.message')}
               </p>

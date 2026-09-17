@@ -181,7 +181,7 @@ export default function BaseConverter() {
       <section className="flex flex-col gap-2.5 rounded-xl border border-border bg-app/70 p-3" aria-labelledby="base-conversion-title">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h3 id="base-conversion-title" className="text-sm font-bold text-text-main">{t('tool-base.ui.conversionTitle')}</h3>
+            <h2 id="base-conversion-title" className="text-sm font-bold text-text-main">{t('tool-base.ui.conversionTitle')}</h2>
             <p className="text-xs text-text-muted">{t('tool-base.ui.conversionHint')}</p>
           </div>
           <span className="rounded-full border border-accent/25 bg-accent-light px-2.5 py-1 text-xs font-bold text-accent">
@@ -324,7 +324,7 @@ export default function BaseConverter() {
       <section className="flex flex-col gap-2" aria-labelledby="common-base-reference-title">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h3 id="common-base-reference-title" className="text-sm font-bold text-text-main">{t('tool-base.ui.reference')}</h3>
+            <h2 id="common-base-reference-title" className="text-sm font-bold text-text-main">{t('tool-base.ui.reference')}</h2>
             <p className="text-xs text-text-muted">{t('tool-base.ui.referenceHint')}</p>
           </div>
           <span className="text-[0.68rem] font-semibold text-text-muted">{t('tool-base.ui.legend')}</span>

@@ -1319,7 +1319,7 @@ export default function ImgMeta() {
     return (
       <div className="border border-border bg-card rounded-xl p-5 flex flex-col gap-5 shadow-sm w-full">
         <div className="flex justify-between items-center gap-4 border-b border-border pb-3">
-          <h3 className="text-sm font-bold text-text-main">⚖️ {t('imgmeta-extra.comparisonTitle')}</h3>
+          <h2 className="text-sm font-bold text-text-main">⚖️ {t('imgmeta-extra.comparisonTitle')}</h2>
           <Button variant="secondary" size="sm" onClick={() => setCompareMode(false)}>
             {t('tool-imgmeta.ui.backDetail')}
           </Button>
@@ -1629,7 +1629,7 @@ export default function ImgMeta() {
                   )}
                 </div>
                 <div className="p-4 flex flex-col gap-1.5 bg-card">
-                  <h3 id="imgmeta-file-name" className="text-sm font-bold text-text-main truncate" title={activeImage.name}>{activeImage.name}</h3>
+                  <h2 id="imgmeta-file-name" className="text-sm font-bold text-text-main truncate" title={activeImage.name}>{activeImage.name}</h2>
                   <div className="flex justify-between items-center text-xs mt-1 border-t border-border/40 pt-2 text-text-muted">
                     <p><span className="font-semibold text-text-main">{t('metadata-common.format')}</span> <span className="font-mono">{activeImage.type}</span></p>
                     <p><span className="font-semibold text-text-main">{t('metadata-common.size')}</span> <span className="font-mono">{displayedSize}</span></p>

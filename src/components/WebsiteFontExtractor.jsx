@@ -94,7 +94,7 @@ function FontCard({ font }) {
     <div className="flex flex-col gap-3.5 bg-card border border-border rounded-2xl p-5 transition-all duration-200 hover:border-accent">
       <div className="flex items-start justify-between gap-2.5">
         <div className="flex-1 min-w-0">
-          <h3 className="font-display text-[1.05rem] font-bold text-text-main truncate tracking-tight">{font.family}</h3>
+          <h2 className="font-display text-[1.05rem] font-bold text-text-main truncate tracking-tight">{font.family}</h2>
           <p className="text-[0.74rem] text-text-muted mt-0.5 truncate">{font.name}</p>
         </div>
         <span className={formatBadgeClass(font.format)}>{font.format}</span>
@@ -277,9 +277,9 @@ export default function WebsiteFontExtractor() {
           <div className="max-h-[420px] overflow-y-auto pr-2 custom-scrollbar flex flex-col gap-5">
             {groupedFonts.map(([family, faces]) => (
               <section key={family} className="flex flex-col gap-2">
-                <h3 className="text-sm font-bold text-text-main">
+                <h2 className="text-sm font-bold text-text-main">
                   {family} <span className="text-text-muted font-normal">{t('tool-fontextractor.ui.faceCount', { count: faces.length })}</span>
-                </h3>
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {faces.map((font) => (
                     <FontCard

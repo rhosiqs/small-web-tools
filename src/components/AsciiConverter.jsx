@@ -83,9 +83,9 @@ function AsciiReferenceTable({ input, setInput }) {
     <section className="flex flex-col gap-3" aria-labelledby="ascii-reference-title">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <h3 id="ascii-reference-title" className="m-0 text-[0.9375rem] font-medium text-text-main">
+          <h2 id="ascii-reference-title" className="m-0 text-[0.9375rem] font-medium text-text-main">
             {t('tool-ascii.ui.reference')}
-          </h3>
+          </h2>
           <p className="m-0 mt-0.5 text-xs text-text-muted">{t('tool-ascii.ui.referenceHint')}</p>
         </div>
         <span className="font-mono text-[0.6875rem] text-text-muted">0–127</span>

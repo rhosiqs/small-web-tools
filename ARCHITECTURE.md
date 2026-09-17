@@ -301,6 +301,11 @@ Every routed tool page uses the shared visual contract established by Image Meta
 1. Use `Card` with `variant="tool"` as the page container.
 2. Render exactly one `ToolHeader` title for the page identity.
 3. Keep page-level descriptions out of `ToolHeader`; helper text belongs inside the feature that needs it.
+   `ToolHeader` owns the only `h1`, so a section heading beneath it is an `h2` and
+   nests downward from there without skipping a level. The dashboard puts category
+   groups at `h2` with their sub-groups at `h3`, and the metadata tools keep an `h2`
+   file title above their `h3` tables. `e2e/accessibility.spec.js` enforces this
+   through the Axe `heading-order` rule with no accepted exceptions.
 4. Preserve the shared desktop card spacing (`p-6`, `gap-4`) and allow the mobile `.tool-card` rules in `styles.css` to handle compact screens. The conversion screens described below opt into a wider rhythm (`p-6 sm:p-8`, `gap-6`), which the one-frame layout needs.
 
 `src/components/ui/AutoDetectConverter.jsx` implements this contract for the

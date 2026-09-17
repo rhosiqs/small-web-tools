@@ -230,6 +230,9 @@ App shell、lazy route、持久化、工作區導覽與語言切換的整合覆�
 1. 使用 variant="tool" 的 Card 作為頁面容器。
 2. 頁面識別恰好渲染一個 ToolHeader 標題。
 3. 頁面層級描述不要放進 ToolHeader；輔助文字放在需要它的功能內。
+   ToolHeader 擁有唯一的 h1，因此其下的區段標題是 h2，並依序往下巢狀，不可跳級。
+   儀表板的分類群組為 h2、子群組為 h3；中繼資料工具在 h3 表格之上保留 h2 檔名標題。
+   e2e/accessibility.spec.js 以 Axe heading-order 規則強制此結構，且不接受任何例外。
 4. 保留共用桌面卡片間距（p-6、gap-4），並讓 styles.css 的行動 .tool-card 規則
    處理窄螢幕。下述轉換頁面改用較寬的節奏（p-6 sm:p-8、gap-6），這是單一框架
    版面所需。

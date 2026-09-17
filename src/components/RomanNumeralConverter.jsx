@@ -127,9 +127,9 @@ export default function RomanNumeralConverter() {
 
       <section className="flex flex-col gap-4" aria-labelledby="roman-reference-title">
         <div>
-          <h3 id="roman-reference-title" className="m-0 text-[0.9375rem] font-medium text-text-main">
+          <h2 id="roman-reference-title" className="m-0 text-[0.9375rem] font-medium text-text-main">
             {t('tool-roman.ui.referenceTitle')}
-          </h3>
+          </h2>
           <p className="m-0 mt-0.5 text-xs text-text-muted">
             {t('tool-roman.ui.referenceDescription')}
           </p>

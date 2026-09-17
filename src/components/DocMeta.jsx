@@ -1062,12 +1062,12 @@ export default function DocMeta() {
     return (
       <div className="bg-card border border-border rounded-xl p-5 mt-4">
         <div className="flex justify-between items-center pb-3 border-b border-border mb-4">
-          <h3 className="text-md font-bold text-text-main flex items-center gap-2">
+          <h2 className="text-md font-bold text-text-main flex items-center gap-2">
             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
               <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M4 4l5 5"></path>
             </svg>
             {t('tool-docmeta.ui.comparisonTitle')}
-          </h3>
+          </h2>
           <Button variant="secondary" size="sm" onClick={() => setCompareMode(false)}>
             {t('tool-docmeta.ui.backDetail')}
           </Button>
@@ -1574,7 +1574,7 @@ export default function DocMeta() {
                       )}
                     </div>
                     <div className="flex flex-col gap-2 min-w-0">
-                      <h3 id="docmeta-file-name" className="text-base font-bold text-text-main break-words" title={activeFile.name}>{activeFile.name}</h3>
+                      <h2 id="docmeta-file-name" className="text-base font-bold text-text-main break-words" title={activeFile.name}>{activeFile.name}</h2>
                       <div className="flex flex-col gap-1 text-xs">
                         <p className="flex justify-between border-b border-border/50 py-1"><span className="text-text-muted font-medium">{t('metadata-common.format')}</span> <span className="font-semibold text-text-main">{activeFile.type.toUpperCase()}</span></p>
                         <p className="flex justify-between py-1"><span className="text-text-muted font-medium">{t('metadata-common.size')}</span> <span className="font-semibold text-text-main">{displayFile.formattedSize}</span></p>

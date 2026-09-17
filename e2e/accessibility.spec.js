@@ -3,12 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 
 // Any temporary exception must include { id, rationale, expires, remediation }.
 // Moderate findings are CI failures unless an entry here is complete and unexpired.
-const TEMPORARY_ACCEPTED_VIOLATIONS = [{
-  id: 'heading-order',
-  rationale: 'Legacy tool sections use level-three headings beneath the newly normalized level-one page title.',
-  expires: '2026-09-30',
-  remediation: 'docs/quality-baselines.md#temporary-axe-exceptions',
-}];
+const TEMPORARY_ACCEPTED_VIOLATIONS = [];
 
 function expectNoUnacceptedViolations(results) {
   for (const exception of TEMPORARY_ACCEPTED_VIOLATIONS) {
