@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { ROUTE_DEFINITIONS } from '../src/toolRouteMetadata.js';
 
 // Any temporary exception must include { id, rationale, expires, remediation }.
 // Moderate findings are CI failures unless an entry here is complete and unexpired.
@@ -111,12 +112,29 @@ test('mobile navigation has a complete focus and dismissal lifecycle', async ({ 
   await expect(drawer).toHaveCount(0);
 });
 
-for (const route of [
-  '/home', '/simple', '/simple/color', '/home/currency', '/home/folder-analyzer',
-  '/home/about', '/home/privacy', '/home/terms', '/home/security', '/home/license',
-]) {
+// Every registered route is audited, so a new tool cannot ship an unreviewed
+// violation and the Simple shell is covered alongside the canonical /home paths.
+const AUDITED_ROUTES = [
+  '/simple', '/simple/color',
+  ...ROUTE_DEFINITIONS.map(({ id }) => (
+    id === 'tool-home' ? '/home' : `/home/${id.startsWith('tool-') ? id.slice('tool-'.length) : id}`
+  )),
+];
+
+// Entry animations tween opacity from 0, so auditing before they settle measures
+// interpolated colours and reports contrast failures that no user ever sees.
+// Infinite animations (pulses, spinners) never finish and are excluded.
+async function settle(page) {
+  await expect(page.locator('h1').first()).toBeVisible();
+  await page.waitForFunction(() => document.getAnimations()
+    .filter((animation) => animation.effect?.getComputedTiming?.().iterations !== Infinity)
+    .every((animation) => animation.playState === 'finished' || animation.playState === 'idle'));
+}
+
+for (const route of AUDITED_ROUTES) {
   test(`${route} has no unaccepted automated accessibility findings`, async ({ page }) => {
     await page.goto(route);
+    await settle(page);
     const results = await new AxeBuilder({ page }).analyze();
     expectNoUnacceptedViolations(results);
   });

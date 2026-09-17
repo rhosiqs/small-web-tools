@@ -459,9 +459,7 @@ export default function AudioMeta() {
         <div
           className={`border-2 border-dashed border-border rounded-xl p-8 cursor-pointer text-center transition-all flex flex-col items-center justify-center gap-4 min-h-[220px] hover:border-accent hover:bg-accent-light/5 mt-4 ${dragOver ? 'border-accent bg-accent-light/5' : ''}`}
           onClick={() => fileInputRef.current?.click()}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
+          role="group"
           aria-label={t('tool-audiometa.ui.uploadAria')}
         >
           <div className="flex flex-col items-center gap-3">

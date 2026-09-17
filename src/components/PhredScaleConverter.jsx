@@ -268,7 +268,7 @@ export default function PhredScaleConverter() {
               >
                 <span aria-hidden="true" className="mx-auto mb-1.5 block h-2.5 w-px bg-current" />
                 <span className="block font-mono text-[0.6875rem] leading-none">Q{mark}</span>
-                <span className="mt-1 block font-mono text-[0.5938rem] leading-none opacity-70">
+                <span className="mt-1 block font-mono text-[0.5938rem] leading-none">
                   {mark === 0 ? '1' : `1e-${mark / 10}`}
                 </span>
               </button>

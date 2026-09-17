@@ -9,7 +9,8 @@ const zxcvbn = new ZxcvbnFactory({
 });
 
 const LABELS = ['Very Weak', 'Weak', 'Moderate', 'Strong', 'Very Strong'];
-const COLORS = ['#ef4444', '#f97316', '#eab308', '#10b981', '#059669'];
+const COLORS = ['var(--strength-veryWeak)', 'var(--strength-weak)', 'var(--strength-moderate)',
+  'var(--strength-strong)', 'var(--strength-veryStrong)'];
 
 export function calculateTheoreticalEntropy(password, poolSize) {
   if (!password || poolSize <= 0) return 0;
@@ -21,7 +22,7 @@ export function evaluatePasswordStrength(password, isRandomlyGenerated = false, 
     return {
       score: 0,
       label: 'None',
-      color: '#9ca3af',
+      color: 'var(--strength-none)',
       entropyBits: 0,
       crackTimeEstimate: 'Instant',
       feedback: ['Enter a password to analyze its strength.'],

@@ -423,7 +423,7 @@ export default function RandomWheel() {
             <div className="flex-grow flex flex-col">
               {/* View Mode (List View) */}
               {!isEditing && (
-                <div id="wheel-list-view" className="flex h-[190px] flex-col gap-2 overflow-y-auto p-3">
+                <div id="wheel-list-view" className="flex h-[190px] flex-col gap-2 overflow-y-auto p-3" role="group" aria-label={t('tool-wheel.ui.optionsListAria')} tabIndex={0}>
                   {items.length === 0 ? (
                     <div className="text-text-muted italic p-3 text-sm text-center">
                       {t('tool-wheel.ui.noOptions')}

@@ -99,12 +99,14 @@ function getAminoName(t, data, codon) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Amino acid colour palette — distinct hue per AA group
 // ─────────────────────────────────────────────────────────────────────────────
+// Hue families group the amino acids. The values are theme tokens from styles.css
+// so each theme can clear 4.5:1 against its own card surface.
 const AA_COLORS = {
-  Phe: '#a78bfa', Leu: '#8b5cf6', Ile: '#7c3aed', Met: null /* start */,
-  Val: '#6d28d9', Ser: '#3b82f6', Pro: '#0ea5e9', Thr: '#06b6d4',
-  Ala: '#14b8a6', Tyr: '#f59e0b', His: '#d97706', Gln: '#f97316',
-  Asn: '#ef4444', Lys: '#dc2626', Asp: '#ec4899', Glu: '#db2777',
-  Cys: '#84cc16', Trp: '#22c55e', Arg: '#10b981', Gly: '#6b7280',
+  Phe: 'var(--aa-phe)', Leu: 'var(--aa-leu)', Ile: 'var(--aa-ile)', Met: null /* start */,
+  Val: 'var(--aa-val)', Ser: 'var(--aa-ser)', Pro: 'var(--aa-pro)', Thr: 'var(--aa-thr)',
+  Ala: 'var(--aa-ala)', Tyr: 'var(--aa-tyr)', His: 'var(--aa-his)', Gln: 'var(--aa-gln)',
+  Asn: 'var(--aa-asn)', Lys: 'var(--aa-lys)', Asp: 'var(--aa-asp)', Glu: 'var(--aa-glu)',
+  Cys: 'var(--aa-cys)', Trp: 'var(--aa-trp)', Arg: 'var(--aa-arg)', Gly: 'var(--aa-gly)',
   Stop: null /* stop */,
 };
 
@@ -1052,7 +1054,7 @@ function InfoPanel({
           {[t('tool-codon.ui.firstShort'), t('tool-codon.ui.secondShort'), t('tool-codon.ui.thirdShort')].map((posName, idx) => {
             const char = typedCodon[idx] || '';
             const isActive = typedCodon.length === idx;
-            const charColorClass = char === 'U' ? 'text-purple-400' : char === 'C' ? 'text-sky-400' : char === 'A' ? 'text-amber-400' : char === 'G' ? 'text-emerald-400' : '';
+            const charColorClass = char === 'U' ? 'text-purple-700 dark:text-purple-300' : char === 'C' ? 'text-sky-700 dark:text-sky-300' : char === 'A' ? 'text-amber-700 dark:text-amber-300' : char === 'G' ? 'text-emerald-700 dark:text-emerald-300' : '';
             return (
               <div
                 key={idx}
@@ -1275,7 +1277,7 @@ export default function CodonTable() {
         <div className="flex flex-wrap items-center justify-between gap-2.5 text-xs text-text-muted bg-app/50 border border-border px-3 py-2 rounded-lg">
           <p className="leading-relaxed">
             <strong className="text-text-main">{t('tool-codon.ui.standardCode')}</strong>: {t('tool-codon.ui.codeDescription')}
-            <span className="ml-1 opacity-90">{t('tool-codon.ui.startDescription')} <em>{t('tool-codon.ui.codeNote')}</em></span>
+            <span className="ml-1">{t('tool-codon.ui.startDescription')} <em>{t('tool-codon.ui.codeNote')}</em></span>
           </p>
         </div>
 
@@ -1306,12 +1308,12 @@ export default function CodonTable() {
             <div className="col-start-2 row-start-2 flex flex-col">
 
               {/* Top axis: Second Base */}
-              <div className="grid grid-cols-[28px_repeat(4,1fr)_36px] border-b border-border bg-app" role="row">
+              <div className="grid grid-cols-[28px_repeat(4,1fr)_36px] border-b border-border bg-app" aria-hidden="true">
                 <div className="ct-axis-corner"></div>
                 {SECOND_BASES.map(b2 => {
-                  const colorClass = b2 === 'U' ? 'text-purple-400' : b2 === 'C' ? 'text-sky-400' : b2 === 'A' ? 'text-amber-400' : b2 === 'G' ? 'text-emerald-400' : '';
+                  const colorClass = b2 === 'U' ? 'text-purple-700 dark:text-purple-300' : b2 === 'C' ? 'text-sky-700 dark:text-sky-300' : b2 === 'A' ? 'text-amber-700 dark:text-amber-300' : b2 === 'G' ? 'text-emerald-700 dark:text-emerald-300' : '';
                   return (
-                    <div key={b2} className="flex flex-col items-center justify-center border-l border-border px-0.5 py-1" role="columnheader">
+                    <div key={b2} className="flex flex-col items-center justify-center border-l border-border px-0.5 py-1">
                       <span className={`font-mono text-base font-bold ${colorClass}`}>{b2}</span>
                     </div>
                   );
@@ -1324,13 +1326,13 @@ export default function CodonTable() {
 
 
                 {BASES.map(b1 => {
-                  const b1ColorClass = b1 === 'U' ? 'text-purple-400' : b1 === 'C' ? 'text-sky-400' : b1 === 'A' ? 'text-amber-400' : b1 === 'G' ? 'text-emerald-400' : '';
+                  const b1ColorClass = b1 === 'U' ? 'text-purple-700 dark:text-purple-300' : b1 === 'C' ? 'text-sky-700 dark:text-sky-300' : b1 === 'A' ? 'text-amber-700 dark:text-amber-300' : b1 === 'G' ? 'text-emerald-700 dark:text-emerald-300' : '';
                   const b1BgHeaderClass = b1 === 'U' ? 'bg-purple-500/10' : b1 === 'C' ? 'bg-sky-500/10' : b1 === 'A' ? 'bg-amber-500/10' : b1 === 'G' ? 'bg-emerald-500/10' : '';
                   return (
-                    <div key={b1} className="grid grid-cols-[28px_1fr_36px] border-t border-border first:border-t-0" role="rowgroup">
+                    <div key={b1} className="grid grid-cols-[28px_1fr_36px] border-t border-border first:border-t-0">
 
                       {/* Left row header: first base letter */}
-                      <div className={`flex items-center justify-center border-r border-border p-0.5 font-mono text-base font-bold ${b1ColorClass} ${b1BgHeaderClass}`} role="rowheader" aria-label={t('tool-codon.ui.firstBaseAria', { base: b1 })}>
+                      <div className={`flex items-center justify-center border-r border-border p-0.5 font-mono text-base font-bold ${b1ColorClass} ${b1BgHeaderClass}`} aria-hidden="true">
                         <span>{b1}</span>
                       </div>
 
@@ -1358,7 +1360,6 @@ export default function CodonTable() {
                                   <div
                                     key={codon}
                                     className="flex min-h-[24px] items-center border-b border-border/50 px-0.5 transition-all duration-150 last:border-b-0 sm:min-h-[27px] [@media(max-height:760px)]:!min-h-[22px]"
-                                    role="row"
                                   >
                                     <CodonButton
                                       codon={codon}
@@ -1396,7 +1397,7 @@ export default function CodonTable() {
                       {/* Repeating right axis per row group: U C A G */}
                       <div className="grid grid-rows-4 border-l border-border">
                         {THIRD_BASES.map(b3 => {
-                          const b3ColorClass = b3 === 'U' ? 'text-purple-400' : b3 === 'C' ? 'text-sky-400' : b3 === 'A' ? 'text-amber-400' : b3 === 'G' ? 'text-emerald-400' : '';
+                          const b3ColorClass = b3 === 'U' ? 'text-purple-700 dark:text-purple-300' : b3 === 'C' ? 'text-sky-700 dark:text-sky-300' : b3 === 'A' ? 'text-amber-700 dark:text-amber-300' : b3 === 'G' ? 'text-emerald-700 dark:text-emerald-300' : '';
                           return (
                             <div key={b3} className={`flex items-center justify-center border-b border-border p-0 font-mono text-[0.8rem] font-bold last:border-b-0 ${b3ColorClass}`}>
                               <span>{b3}</span>
@@ -1412,10 +1413,10 @@ export default function CodonTable() {
               </div>
 
               {/* Bottom axis: Second Base (repeated) */}
-              <div className="grid grid-cols-[28px_repeat(4,1fr)_36px] border-t border-border bg-app" role="row" aria-hidden="true">
+              <div className="grid grid-cols-[28px_repeat(4,1fr)_36px] border-t border-border bg-app" aria-hidden="true">
                 <div className="ct-axis-corner"></div>
                 {SECOND_BASES.map(b2 => {
-                  const b2ColorClass = b2 === 'U' ? 'text-purple-400' : b2 === 'C' ? 'text-sky-400' : b2 === 'A' ? 'text-amber-400' : b2 === 'G' ? 'text-emerald-400' : '';
+                  const b2ColorClass = b2 === 'U' ? 'text-purple-700 dark:text-purple-300' : b2 === 'C' ? 'text-sky-700 dark:text-sky-300' : b2 === 'A' ? 'text-amber-700 dark:text-amber-300' : b2 === 'G' ? 'text-emerald-700 dark:text-emerald-300' : '';
                   return (
                     <div key={b2} className="flex flex-col items-center justify-center border-l border-border px-0.5 py-1">
                       <span className={`font-mono text-base font-bold ${b2ColorClass}`}>{b2}</span>

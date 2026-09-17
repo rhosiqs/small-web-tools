@@ -338,6 +338,8 @@ Inter, JetBrains Mono, Plus Jakarta Sans, and TASA Orbiter are served from `publ
 
 Prefer the shared primitives and existing design tokens. Add global CSS only for truly shared behavior or component-specific rules that cannot be expressed clearly with the existing utilities.
 
+Token and status colours are chosen to clear a 4.5:1 contrast ratio on the surfaces they are used on, including the tinted `--accent-light` and `--nav-active-bg` backgrounds, and the categorical amino-acid palette in `CodonTable.jsx` is darkened to the same threshold. An `opacity-*` utility over text dilutes the inherited colour and breaks that guarantee, so a subdued state uses `--text-muted` or a darker shade of its own hue. `e2e/accessibility.spec.js` audits every registered route, so a regression here fails CI.
+
 ## Route inventory
 
 | Route ID | Navigation label | Component | Category |

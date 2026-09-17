@@ -104,9 +104,7 @@ export default function MediaSeparator() {
         <div
           className={`border-2 border-dashed rounded-[14px] py-10 px-5 text-center cursor-pointer transition-all duration-300 flex justify-center items-center bg-accent/[0.02] ${dragOver ? 'border-accent bg-accent/[0.06]' : 'border-border hover:border-accent hover:bg-accent/[0.06]'}`}
           onClick={() => inputRef.current?.click()}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.click()}
+          role="group"
           aria-label={t('tool-mediasplit.ui.uploadAria')}
         >
           <div className="flex flex-col items-center">

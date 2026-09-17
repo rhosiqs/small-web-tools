@@ -57,15 +57,15 @@ function AsciiCell({ entry, selected, dimmed, wide, onPick, label }) {
       title={`${entry.code} (0x${entry.code.toString(16).toUpperCase().padStart(2, '0')}) · ${entry.name}`}
       onClick={() => onPick(String(entry.code))}
       className={`rounded px-1.5 py-2 text-center transition-colors ${wide ? 'min-w-[54px]' : 'min-w-[42px]'} ${
-        dimmed ? 'opacity-50 hover:opacity-100' : ''
-      } ${
         selected
           ? 'bg-accent-light text-accent ring-1 ring-accent'
-          : 'bg-app text-text-main hover:bg-accent-light'
+          : dimmed
+            ? 'bg-app text-text-muted hover:bg-accent-light hover:text-text-main'
+            : 'bg-app text-text-main hover:bg-accent-light'
       }`}
     >
       <span className="block font-mono text-sm leading-none">{entry.symbol}</span>
-      <span className="mt-1.5 block font-mono text-[0.5938rem] leading-none opacity-60">{entry.code}</span>
+      <span className="mt-1.5 block font-mono text-[0.5938rem] leading-none">{entry.code}</span>
     </button>
   );
 }
@@ -108,11 +108,11 @@ function AsciiReferenceTable({ input, setInput }) {
                   : 'bg-app text-text-muted hover:text-accent'
               }`}
             >
-              <span className="mb-1.5 block font-mono text-[0.5938rem] font-semibold tracking-[0.06em] opacity-75">
+              <span className="mb-1.5 block font-mono text-[0.5938rem] font-semibold tracking-[0.06em]">
                 {band.range}
               </span>
               <span className="block text-xs font-medium leading-tight">{label}</span>
-              <span className="mt-1.5 block text-[0.625rem] leading-none opacity-60">
+              <span className="mt-1.5 block text-[0.625rem] leading-none">
                 {t('tool-ascii.ui.rangeCount', { count: band.to - band.from + 1 })}
               </span>
             </button>

@@ -269,6 +269,11 @@ public/fonts/MANIFEST.zh-TW.md。應用程式不會自動要求 Google Fonts。
 優先使用共用 primitives 與既有設計 token。只有真正共用的行為或元件專用樣式無法以
 既有 utilities 清楚表達時，才加入全域 CSS。
 
+Token 與狀態顏色必須在其實際所處的背景上達到 4.5:1 對比，包含帶色的 --accent-light
+與 --nav-active-bg 背景；CodonTable.jsx 的胺基酸分類色盤也已調暗至同一門檻。在文字上
+套用 opacity-* utility 會稀釋繼承的顏色並破壞此保證，因此弱化狀態應改用 --text-muted
+或同色系較深的色階。e2e/accessibility.spec.js 會稽核所有已註冊路由，此處的退步會使 CI 失敗。
+
 ## 路由清單
 
 | 路由 ID | 導覽標籤 | 元件 | 分類 |

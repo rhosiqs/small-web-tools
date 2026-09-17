@@ -21,7 +21,7 @@ const SAMPLE = `flowchart LR
 
 function SvgPreview({ render, label, className = '', previewRef }) {
   if (!render) return <div ref={previewRef} className={`flex h-full min-h-0 items-center justify-center p-8 text-center text-sm text-text-muted ${className}`}>{label}</div>;
-  return <div ref={previewRef} className={`h-full min-h-0 overflow-auto p-5 ${className}`} aria-label={label}><div className="mx-auto w-fit max-w-full" dangerouslySetInnerHTML={{ __html: render.svg }} /></div>;
+  return <div ref={previewRef} className={`h-full min-h-0 overflow-auto p-5 ${className}`} role="region" aria-label={label} tabIndex={0}><div className="mx-auto w-fit max-w-full" dangerouslySetInnerHTML={{ __html: render.svg }} /></div>;
 }
 
 export default function MermaidConverter() {

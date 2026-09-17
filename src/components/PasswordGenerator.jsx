@@ -7,7 +7,7 @@ import ToolHeader from './ui/ToolHeader';
 const EMPTY_PASSWORD_ANALYSIS = {
   score: 0,
   label: 'None',
-  color: '#9ca3af',
+  color: 'var(--strength-none)',
   entropyBits: 0,
   crackTimeEstimate: 'Instant',
   feedback: ['Enter a password to analyze its strength.'],
@@ -204,12 +204,12 @@ export default function PasswordGenerator({ initialTab = 'generate' }) {
 
   // Get qualitative strength details (H-07)
   const getStrengthDetails = (ent) => {
-    if (ent <= 0) return { key: 'none', percentage: 0, color: '#9ca3af' };
-    if (ent < 28) return { key: 'veryWeak', percentage: 20, color: '#ef4444' };
-    if (ent < 40) return { key: 'weak', percentage: 40, color: '#f97316' };
-    if (ent < 60) return { key: 'moderate', percentage: 60, color: '#eab308' };
-    if (ent < 80) return { key: 'strong', percentage: 80, color: '#10b981' };
-    return { key: 'veryStrong', percentage: 100, color: '#059669' };
+    if (ent <= 0) return { key: 'none', percentage: 0, color: 'var(--strength-none)' };
+    if (ent < 28) return { key: 'veryWeak', percentage: 20, color: 'var(--strength-veryWeak)' };
+    if (ent < 40) return { key: 'weak', percentage: 40, color: 'var(--strength-weak)' };
+    if (ent < 60) return { key: 'moderate', percentage: 60, color: 'var(--strength-moderate)' };
+    if (ent < 80) return { key: 'strong', percentage: 80, color: 'var(--strength-strong)' };
+    return { key: 'veryStrong', percentage: 100, color: 'var(--strength-veryStrong)' };
   };
 
   const strength = getStrengthDetails(entropy);
