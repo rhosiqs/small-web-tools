@@ -82,7 +82,7 @@ function MiniPlayer({ objectUrl }) {
         preload="metadata"
       />
       <button 
-        className="flex items-center justify-center w-9 h-9 rounded-full bg-accent text-white border-none cursor-pointer transition-all hover:bg-accent-hover hover:scale-105 shrink-0 shadow-md" 
+        className="flex items-center justify-center w-9 h-9 rounded-full bg-accent-fill text-accent-on-fill border-none cursor-pointer transition-all hover:bg-accent-hover hover:scale-105 shrink-0 shadow-md" 
         onClick={togglePlay} 
         aria-label={t(playing ? 'tool-audiometa.ui.pause' : 'tool-audiometa.ui.play')}
       >

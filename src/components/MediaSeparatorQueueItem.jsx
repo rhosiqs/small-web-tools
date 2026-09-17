@@ -131,7 +131,7 @@ export default function MediaSeparatorQueueItem({ item, onAudioFormatChange, onV
             <a
               href={item.audioURL}
               download={buildDownloadName(item, 'audio')}
-              className="inline-flex items-center justify-center py-2 px-4 text-[0.85rem] font-semibold no-underline rounded-md bg-accent-light text-accent-hover border border-transparent transition-all duration-200 text-center hover:bg-accent hover:text-white"
+              className="inline-flex items-center justify-center py-2 px-4 text-[0.85rem] font-semibold no-underline rounded-md bg-accent-light text-accent-hover border border-transparent transition-all duration-200 text-center hover:bg-accent-fill hover:text-accent-on-fill"
             >
               {t('tools:tool-mediasplit.ui.downloadAudio')}
             </a>
@@ -146,7 +146,7 @@ export default function MediaSeparatorQueueItem({ item, onAudioFormatChange, onV
             <a
               href={item.videoURL}
               download={buildDownloadName(item, 'video')}
-              className="inline-flex items-center justify-center py-2 px-4 text-[0.85rem] font-semibold no-underline rounded-md bg-accent-light text-accent-hover border border-transparent transition-all duration-200 text-center hover:bg-accent hover:text-white w-full max-w-[240px]"
+              className="inline-flex items-center justify-center py-2 px-4 text-[0.85rem] font-semibold no-underline rounded-md bg-accent-light text-accent-hover border border-transparent transition-all duration-200 text-center hover:bg-accent-fill hover:text-accent-on-fill w-full max-w-[240px]"
             >
               {t('tools:tool-mediasplit.ui.downloadVideo')}
             </a>

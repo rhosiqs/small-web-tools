@@ -936,7 +936,7 @@ export default function FolderAnalyzer() {
               
               <button
                 type="button"
-                className="rounded-md border border-accent/40 bg-accent-light px-3 py-1.5 text-xs font-bold text-accent transition-colors hover:border-accent hover:bg-accent hover:text-white"
+                className="rounded-md border border-accent/40 bg-accent-light px-3 py-1.5 text-xs font-bold text-accent transition-colors hover:border-accent hover:bg-accent-fill hover:text-accent-on-fill"
                 onClick={openFolderInput}
                 aria-label={t('tool-folder-analyzer.ui.addFolderAria')}
               >
@@ -986,7 +986,7 @@ export default function FolderAnalyzer() {
           
           <button
             type="button"
-            className="rounded-md border border-accent/40 bg-accent-light px-3 py-1.5 text-xs font-bold text-accent transition-colors hover:border-accent hover:bg-accent hover:text-white"
+            className="rounded-md border border-accent/40 bg-accent-light px-3 py-1.5 text-xs font-bold text-accent transition-colors hover:border-accent hover:bg-accent-fill hover:text-accent-on-fill"
             onClick={openFolderInput}
             aria-label={t('tool-folder-analyzer.ui.addFolderAria')}
           >
@@ -1179,7 +1179,7 @@ export default function FolderAnalyzer() {
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
-                {copySuccess && <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-accent text-white text-xs font-bold px-2 py-0.5 rounded shadow">{t('tool-folder-analyzer.ui.copied')}</span>}
+                {copySuccess && <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-accent-fill text-accent-on-fill text-xs font-bold px-2 py-0.5 rounded shadow">{t('tool-folder-analyzer.ui.copied')}</span>}
               </Button>
 
               <div 

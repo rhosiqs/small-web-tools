@@ -1270,7 +1270,7 @@ export default function QrBarcodeGenerator({ initialTab = 'qr' }) {
                       type="button"
                       className={`px-3 py-2 rounded-lg border text-xs font-bold transition-all cursor-pointer text-center ${
                         qrType === t.id 
-                          ? 'bg-accent border-accent text-white shadow-sm' 
+                          ? 'bg-accent-fill border-accent text-accent-on-fill shadow-sm' 
                           : 'bg-card border-border text-text-muted hover:text-text-main hover:bg-nav-hover-bg'
                       }`}
                       onClick={() => setQrType(t.id)}

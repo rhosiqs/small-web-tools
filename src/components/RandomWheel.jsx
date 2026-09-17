@@ -389,7 +389,7 @@ export default function RandomWheel() {
                 <polygon points="24,12 0,4 0,20" />
               </svg>
             </div>
-            <div className="absolute left-1/2 top-1/2 z-[8] flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 select-none items-center justify-center rounded-full border-4 border-accent bg-gradient-to-br from-card to-app font-display text-[0.85rem] font-extrabold tracking-wider text-accent shadow-[0_4px_12px_rgba(0,0,0,0.15),_inset_0_2px_4px_rgba(255,255,255,0.2)] transition-all duration-200 hover:scale-108 hover:border-white hover:bg-accent hover:text-white hover:shadow-[0_6px_18px_rgba(79,70,229,0.4)] active:scale-96 max-[768px]:h-[50px] max-[768px]:w-[50px] max-[768px]:text-[0.7rem]" id="wheel-spin-btn-center" onClick={spin}>
+            <div className="absolute left-1/2 top-1/2 z-[8] flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 select-none items-center justify-center rounded-full border-4 border-accent bg-gradient-to-br from-card to-app font-display text-[0.85rem] font-extrabold tracking-wider text-accent shadow-[0_4px_12px_rgba(0,0,0,0.15),_inset_0_2px_4px_rgba(255,255,255,0.2)] transition-all duration-200 hover:scale-108 hover:border-white hover:bg-accent-fill hover:text-accent-on-fill hover:shadow-[0_6px_18px_rgba(79,70,229,0.4)] active:scale-96 max-[768px]:h-[50px] max-[768px]:w-[50px] max-[768px]:text-[0.7rem]" id="wheel-spin-btn-center" onClick={spin}>
               <span>{t('tool-wheel.ui.spin')}</span>
             </div>
           </div>

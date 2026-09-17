@@ -342,6 +342,9 @@
   --text-sidebar-muted: #64748b;
   --accent: #047857;
   --accent-hover: #065f46;
+  /* Fill + the text that sits on it; white cannot ride a bright fill. */
+  --accent-fill: #047857;
+  --accent-on-fill: #ffffff;
   --accent-light: rgba(4, 120, 87, 0.08);
   /* Accent as an edge: the ring around result slabs and outlined accent controls. */
   --accent-edge: rgba(4, 120, 87, 0.25);
@@ -410,6 +413,8 @@ html[data-theme="dark"] {
   --text-sidebar-muted: #64748b;
   --accent: #10b981;
   --accent-hover: #059669;
+  --accent-fill: #10b981;
+  --accent-on-fill: #08120c;
   --accent-light: rgba(16, 185, 129, 0.15);
   --accent-edge: rgba(16, 185, 129, 0.35);
   --accent-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);

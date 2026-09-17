@@ -104,7 +104,7 @@ function AsciiReferenceTable({ input, setInput }) {
               onClick={() => setActiveRangeId(band.id)}
               className={`rounded px-3 py-2.5 text-left transition-colors ${
                 active
-                  ? 'bg-accent text-white shadow-[0_0_24px_var(--accent-light)]'
+                  ? 'bg-accent-fill text-accent-on-fill shadow-[0_0_24px_var(--accent-light)]'
                   : 'bg-app text-text-muted hover:text-accent'
               }`}
             >

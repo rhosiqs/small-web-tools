@@ -20,7 +20,7 @@ function ScopeSelector({ scope, setScope }) {
             aria-pressed={scope === 'full'}
             onClick={() => setScope('full')}
             className={`rounded px-2.5 py-1 text-[0.6875rem] font-semibold transition-colors ${
-              scope === 'full' ? 'bg-accent text-white' : 'text-text-muted hover:text-accent'
+              scope === 'full' ? 'bg-accent-fill text-accent-on-fill' : 'text-text-muted hover:text-accent'
             }`}
           >
             {t('tool-url.ui.fullUrl')}
@@ -30,7 +30,7 @@ function ScopeSelector({ scope, setScope }) {
             aria-pressed={scope === 'component'}
             onClick={() => setScope('component')}
             className={`rounded px-2.5 py-1 text-[0.6875rem] font-semibold transition-colors ${
-              scope === 'component' ? 'bg-accent text-white' : 'text-text-muted hover:text-accent'
+              scope === 'component' ? 'bg-accent-fill text-accent-on-fill' : 'text-text-muted hover:text-accent'
             }`}
           >
             {t('tool-url.ui.component')}

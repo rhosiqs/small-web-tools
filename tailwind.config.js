@@ -28,6 +28,8 @@ export default {
         'text-sidebar-muted': 'var(--text-sidebar-muted)',
 
         accent: 'var(--accent)',
+        'accent-fill': 'var(--accent-fill)',
+        'accent-on-fill': 'var(--accent-on-fill)',
         'accent-hover': 'var(--accent-hover)',
         'accent-light': 'var(--accent-light)',
         'accent-edge': 'var(--accent-edge)',

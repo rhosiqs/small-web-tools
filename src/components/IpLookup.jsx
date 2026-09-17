@@ -37,7 +37,7 @@ function CopyBtn({ value, copiedKey, thisKey, onCopy }) {
       className={`px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer transition-all duration-200 leading-none border
         ${isCopied
           ? 'bg-[#10b981] text-white border-[#10b981]'
-          : 'bg-accent-light text-accent border-accent/15 hover:bg-accent hover:text-white hover:border-accent'
+          : 'bg-accent-light text-accent border-accent/15 hover:bg-accent-fill hover:text-accent-on-fill hover:border-accent'
         }`}
     >
       {t(isCopied ? 'tool-iplookup.ui.copied' : 'tool-iplookup.ui.copy')}

@@ -169,7 +169,7 @@ function CodonButton({ codon, isSelected, isHighlighted, isDimmed, onSelect }) {
     }
   } else {
     if (isSelected) {
-      cls += ' !bg-accent !border-accent !text-white font-bold shadow-[0_0_0_3px_var(--focus-ring),0_2px_10px_rgba(99,102,241,0.35)] animate-[ct-pulse-glow_2s_ease-in-out_infinite]';
+      cls += ' !bg-accent-fill !border-accent !text-accent-on-fill font-bold shadow-[0_0_0_3px_var(--focus-ring),0_2px_10px_rgba(99,102,241,0.35)] animate-[ct-pulse-glow_2s_ease-in-out_infinite]';
     } else if (isHighlighted) {
       cls += ' bg-accent-light border-accent text-accent';
     }
@@ -862,7 +862,7 @@ function InfoPanel({
               )}
               <button
                 type="button"
-                className={`cursor-pointer whitespace-nowrap rounded-lg border border-border bg-white/3 px-2 py-1.5 text-[0.72rem] font-semibold text-text-main transition-all hover:border-text-muted hover:bg-white/8 active:scale-96 ${isCreatingGroup ? 'bg-accent border-accent text-white shadow-[0_1px_6px_rgba(99, 102, 241, 0.25)]' : ''}`}
+                className={`cursor-pointer whitespace-nowrap rounded-lg border border-border bg-white/3 px-2 py-1.5 text-[0.72rem] font-semibold text-text-main transition-all hover:border-text-muted hover:bg-white/8 active:scale-96 ${isCreatingGroup ? 'bg-accent-fill border-accent text-accent-on-fill shadow-[0_1px_6px_rgba(99, 102, 241, 0.25)]' : ''}`}
                 onClick={() => setIsCreatingGroup(prev => !prev)}
               >
                 {isCreatingGroup ? t('tool-codon.ui.close') : t('tool-codon.ui.addCustom')}
@@ -941,7 +941,7 @@ function InfoPanel({
                 <div className="flex justify-end gap-3 mt-2 border-t border-dashed border-border pt-3">
                   <button
                     type="button"
-                    className="bg-accent border border-accent text-white rounded-lg p-2 px-4 text-[0.8rem] font-semibold cursor-pointer transition-all hover:brightness-95 active:scale-96 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="bg-accent-fill border border-accent text-accent-on-fill rounded-lg p-2 px-4 text-[0.8rem] font-semibold cursor-pointer transition-all hover:brightness-95 active:scale-96 disabled:opacity-40 disabled:cursor-not-allowed"
                     onClick={handleCreateCustomGroup}
                     disabled={!newGroupName.trim() || newGroupAAs.length === 0}
                   >
@@ -1037,13 +1037,13 @@ function InfoPanel({
                 {data.type === 'start' && <span className="p-1 px-2.5 rounded-full text-[0.72rem] font-semibold border border-emerald-500/20 text-emerald-600 bg-emerald-500/10">{t('tool-codon.ui.start')}</span>}
                 {data.type === 'stop'  && <span className="p-1 px-2.5 rounded-full text-[0.72rem] font-semibold border border-red-500/20 text-red-600 bg-red-500/[0.08]">{t('tool-codon.ui.stop')}</span>}
               </div>
-              <button className="absolute top-3 right-3 w-5 h-5 rounded-full border border-border bg-app text-text-muted cursor-pointer text-[0.58rem] flex items-center justify-center transition-all hover:bg-accent hover:text-white hover:border-accent" onClick={onClear} aria-label={t('tool-codon.ui.clearSelection')}>✕</button>
+              <button className="absolute top-3 right-3 w-5 h-5 rounded-full border border-border bg-app text-text-muted cursor-pointer text-[0.58rem] flex items-center justify-center transition-all hover:bg-accent-fill hover:text-accent-on-fill hover:border-accent" onClick={onClear} aria-label={t('tool-codon.ui.clearSelection')}>✕</button>
             </>
           ) : (
             <>
               <span className="text-xl font-bold tracking-tight text-text-main">{t('tool-codon.ui.lookup')}</span>
               {typedCodon.length > 0 && (
-                <button className="absolute top-3 right-3 w-5 h-5 rounded-full border border-border bg-app text-text-muted cursor-pointer text-[0.58rem] flex items-center justify-center transition-all hover:bg-accent hover:text-white hover:border-accent" onClick={onClear} aria-label={t('tool-codon.ui.clearTyping')}>✕</button>
+                <button className="absolute top-3 right-3 w-5 h-5 rounded-full border border-border bg-app text-text-muted cursor-pointer text-[0.58rem] flex items-center justify-center transition-all hover:bg-accent-fill hover:text-accent-on-fill hover:border-accent" onClick={onClear} aria-label={t('tool-codon.ui.clearTyping')}>✕</button>
               )}
             </>
           )}

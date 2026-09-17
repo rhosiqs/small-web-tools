@@ -341,7 +341,7 @@ export default function PhredScaleConverter() {
               aria-pressed={option.offset === offset}
               title={option.detail}
               className={`rounded px-2.5 py-1 text-[0.6875rem] font-semibold transition-colors ${
-                option.offset === offset ? 'bg-accent text-white' : 'text-text-muted hover:text-accent'
+                option.offset === offset ? 'bg-accent-fill text-accent-on-fill' : 'text-text-muted hover:text-accent'
               }`}
             >
               {option.label}

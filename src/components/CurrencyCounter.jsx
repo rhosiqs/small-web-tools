@@ -194,7 +194,7 @@ export default function CurrencyCounter() {
         <button
           className={`flex items-center gap-2 px-4 py-2 rounded-md border text-[0.85rem] font-semibold cursor-pointer transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans ${
             activeTab === 'single'
-              ? 'bg-accent text-white border-accent shadow-[0_4px_14px_rgba(16,185,129,0.3)]'
+              ? 'bg-accent-fill text-accent-on-fill border-accent shadow-[0_4px_14px_rgba(16,185,129,0.3)]'
               : 'border-border bg-card text-text-muted hover:border-accent hover:text-accent hover:bg-nav-hover-bg'
           }`}
           onClick={() => setActiveTab('single')}
@@ -204,7 +204,7 @@ export default function CurrencyCounter() {
         <button
           className={`flex items-center gap-2 px-4 py-2 rounded-md border text-[0.85rem] font-semibold cursor-pointer transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans ${
             activeTab === 'bulk'
-              ? 'bg-accent text-white border-accent shadow-[0_4px_14px_rgba(16,185,129,0.3)]'
+              ? 'bg-accent-fill text-accent-on-fill border-accent shadow-[0_4px_14px_rgba(16,185,129,0.3)]'
               : 'border-border bg-card text-text-muted hover:border-accent hover:text-accent hover:bg-nav-hover-bg'
           }`}
           onClick={() => setActiveTab('bulk')}

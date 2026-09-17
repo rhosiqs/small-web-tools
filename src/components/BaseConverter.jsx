@@ -199,11 +199,11 @@ export default function BaseConverter() {
                 aria-pressed={active}
                 onClick={() => selectInputBase(option.base)}
                 className={`rounded-lg border px-2.5 py-1.5 text-left transition-all ${active
-                  ? 'border-accent bg-accent text-white shadow-[0_4px_12px_var(--accent-light)]'
+                  ? 'border-accent bg-accent-fill text-accent-on-fill shadow-[0_4px_12px_var(--accent-light)]'
                   : 'border-border bg-card text-text-muted hover:border-accent hover:text-text-main'}`}
               >
                 <span className="block text-xs font-extrabold tracking-wide">{option.short}</span>
-                <span className={`block text-[0.68rem] ${active ? 'text-white/90' : 'text-text-muted'}`}>{t('tool-base.ui.base', { base: option.base })}</span>
+                <span className={`block text-[0.68rem] ${active ? 'text-accent-on-fill/90' : 'text-text-muted'}`}>{t('tool-base.ui.base', { base: option.base })}</span>
               </button>
             );
           })}
@@ -337,7 +337,7 @@ export default function BaseConverter() {
                 {t('tool-base.ui.baseHeading')}
               </div>
               {COMMON_VALUES.map((value) => (
-                <div key={`heading-${value}`} className={`flex min-h-6 items-center justify-center rounded text-[0.62rem] font-bold tabular-nums ${selectedReferenceValue === value ? 'bg-accent text-white' : 'text-text-muted'}`} role="columnheader">
+                <div key={`heading-${value}`} className={`flex min-h-6 items-center justify-center rounded text-[0.62rem] font-bold tabular-nums ${selectedReferenceValue === value ? 'bg-accent-fill text-accent-on-fill' : 'text-text-muted'}`} role="columnheader">
                   {value}
                 </div>
               ))}
@@ -363,7 +363,7 @@ export default function BaseConverter() {
                       title={t('tool-base.ui.cellTitle', { display: displayValue, base: row.base, decimal: value })}
                       onClick={() => selectReferenceValue(row.base, value)}
                       className={`min-h-8 rounded-md border px-1 font-mono text-[0.72rem] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${exactInput
-                        ? 'border-accent bg-accent text-white shadow-[0_2px_8px_var(--accent-light)]'
+                        ? 'border-accent bg-accent-fill text-accent-on-fill shadow-[0_2px_8px_var(--accent-light)]'
                         : selected
                           ? 'border-accent/45 bg-accent-light text-accent'
                           : 'border-border bg-card text-text-main hover:border-accent hover:bg-accent-light hover:text-accent'}`}

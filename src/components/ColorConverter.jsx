@@ -1228,7 +1228,7 @@ export default function ColorConverter() {
               type="button"
               className={`inline-flex min-h-9 items-center gap-2 rounded-full border-2 px-3 py-1.5 text-xs font-extrabold tracking-wide shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
                 isSynced
-                  ? 'border-accent bg-accent text-white shadow-[0_3px_12px_var(--accent-light)] hover:bg-accent-hover'
+                  ? 'border-accent bg-accent-fill text-accent-on-fill shadow-[0_3px_12px_var(--accent-light)] hover:bg-accent-hover'
                   : 'border-amber-500 bg-amber-500/10 text-amber-600 hover:bg-amber-500/20'
               }`}
               onClick={handleSyncToggle}
@@ -1280,7 +1280,7 @@ export default function ColorConverter() {
                   <>
                     <button
                       type="button"
-                      className="bg-accent border border-accent text-white rounded-md text-[0.65rem] font-bold uppercase p-[4px_8px] cursor-pointer transition-colors duration-200 hover:bg-accent-hover hover:border-accent-hover"
+                      className="bg-accent-fill border border-accent text-accent-on-fill rounded-md text-[0.65rem] font-bold uppercase p-[4px_8px] cursor-pointer transition-colors duration-200 hover:bg-accent-hover hover:border-accent-hover"
                       onClick={() => setIsEditingPresets(false)}
                     >
                       {t('tool-color.ui.done')}

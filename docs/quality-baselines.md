@@ -12,7 +12,7 @@ Browser accessibility checks reject every unlisted Axe violation, including mode
 
 `AUDITED_ROUTES` is derived from `ROUTE_DEFINITIONS`, so every registered route is audited and a new tool is covered the moment it is registered rather than when someone remembers to extend a list. Each route is audited only after its entry animations settle: several tools tween opacity from zero, and sampling mid-animation measures interpolated colours, which produced contrast failures no user could see and made the suite intermittently red.
 
-Text and status colours are expected to clear the 4.5:1 ratio on the surface they actually sit on, not merely on white. Expressing a subdued state with an `opacity-*` utility dilutes the inherited colour and is the most common way that threshold is missed; use the muted token, or a darker shade of the same hue, instead.
+Text and status colours are expected to clear the 4.5:1 ratio on the surface they actually sit on, not merely on white, and in both themes. Colours applied through inline styles cannot use Tailwind's `dark:` variant, so they are theme tokens in `src/styles.css`; a filled accent surface pairs `--accent-fill` with `--accent-on-fill` so each theme can put readable text on its own fill. Expressing a subdued state with an `opacity-*` utility dilutes the inherited colour and is the most common way that threshold is missed; use the muted token, or a darker shade of the same hue, instead.
 
 ### Temporary Axe exceptions
 

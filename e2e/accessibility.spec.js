@@ -126,6 +126,7 @@ const AUDITED_ROUTES = [
 // Infinite animations (pulses, spinners) never finish and are excluded.
 async function settle(page) {
   await expect(page.locator('h1').first()).toBeVisible();
+  await page.waitForLoadState('networkidle');
   await page.waitForFunction(() => document.getAnimations()
     .filter((animation) => animation.effect?.getComputedTiming?.().iterations !== Infinity)
     .every((animation) => animation.playState === 'finished' || animation.playState === 'idle'));

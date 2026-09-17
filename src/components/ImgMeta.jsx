@@ -1698,7 +1698,7 @@ export default function ImgMeta() {
                       key={tab}
                       className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                         activeTab === tab 
-                          ? 'bg-accent border-accent text-white shadow-sm' 
+                          ? 'bg-accent-fill border-accent text-accent-on-fill shadow-sm' 
                           : 'bg-card border-border text-text-muted hover:text-text-main hover:bg-nav-hover-bg'
                       }`}
                       onClick={() => setActiveTab(tab)}
