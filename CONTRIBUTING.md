@@ -134,8 +134,9 @@ keep exclusions minimal and documented in `jsconfig.ui.json`.
   preference, then browser languages, then `en-US`), i18next setup,
   `document.documentElement.lang`, and persistence. The header language menu
   exposes the supported `en-US` and `zh-TW` locales.
-- Put user-facing text in the bounded `common`, `navigation`, `tools`, or `errors`
-  namespace under `src/i18n/locales/<locale>/`; never use translated labels as IDs.
+- Put user-facing text in the bounded `common`, `docs`, `navigation`, `tools`, or
+  `errors` namespace under `src/i18n/locales/<locale>/`; never use translated labels
+  as IDs.
 - Keep route IDs, URL paths, and technical identifiers independent from translations;
   localize labels, descriptions, tooltips, search aliases, errors, announcements,
   and accessible names.

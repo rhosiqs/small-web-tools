@@ -125,7 +125,7 @@ request。兩個檔案都沒動的 pull request 不可能引入弱點，因此�
 - `src/i18n/index.js` 負責地區設定正規化與初始解析（已儲存偏好、瀏覽器語言，最後
   才使用 `en-US`）、i18next 設定、`document.documentElement.lang` 與持久化。標頭的
   語言選單提供支援的 `en-US` 與 `zh-TW` 地區設定。
-- 將使用者可見文字放在 `src/i18n/locales/<locale>/` 下有界線的 `common`、
+- 將使用者可見文字放在 `src/i18n/locales/<locale>/` 下有界線的 `common`、`docs`、
   `navigation`、`tools` 或 `errors` 命名空間；不可使用翻譯後的標籤作為識別碼。
 - 路由 ID、URL 路徑與技術識別碼必須獨立於翻譯；標籤、描述、tooltip、搜尋別名、錯誤、
   通知與輔助名稱則應進行在地化。

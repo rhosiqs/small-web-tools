@@ -4,8 +4,9 @@ Last reviewed: 2026-08-08
 
 ## Supported versions
 
-This project is under active beta development. The current `develop` revision and
-the latest beta Git tag are supported. Older revisions and tags are not supported;
+This project is under active pre-1.0 development. The current `develop` revision
+and the newest version-formatted Git tag (`vMAJOR.MINOR.PATCH`) are supported.
+Older revisions and tags, including the historical `-beta` tags, are not supported;
 please reproduce a report against a supported revision when possible.
 
 ## Report privately

@@ -17,8 +17,8 @@ small-web-tools 是一個使用 React 18 與 Vite 的單頁應用程式，提供
 - PRIVACY.md 與 PRIVACY.zh-TW.md 是成對的隱私權政策與資料流揭露。
 - TODO.md 是刻意維持英文單一版本的待辦事項、已完成工作紀錄與更新流程。
 - ARCHITECTURE.md 是英文架構與維護參考；本檔案是繁體中文對照檔。
-- `src/i18n/` 是兩個支援 UI 地區設定及 `common`、`navigation`、`tools`、`errors`
-  命名空間的來源。
+- `src/i18n/` 是兩個支援 UI 地區設定及 `common`、`docs`、`navigation`、`tools`、
+  `errors` 命名空間的來源。
 
 本專案維護成對的英文與繁體中文說明文件。英文檔名搭配 `.zh-TW.md` 結尾的繁中檔案；
 修改文件描述的行為或結構時，請同步維護兩個版本。只供 AI agent 使用的
@@ -92,8 +92,11 @@ Pages 專案中為該分支建立的 deploy hook URL；secret 不存在時 workf
   Cloudflare Pages 重新建置的 release-deploy.yml。
 - public/：Cloudflare Pages 回應標頭、內建 WOFF2 UI 字型、授權與字型清單，以及 favicon。
 - scripts/：版本、i18n、硬編碼 UI 與文件一致性檢查腳本。
-- docs/：包含 `docs/agents/` 的 issue tracker、triage label 與 domain docs 規則，
-  以及 Docker 開發流程與其他成對的操作文件。
+- docs/：`docs/agents/` 收錄 issue tracker、triage label 與 domain docs 規則；
+  docs/docker-development.md、docs/architecture/language-switcher.md 與
+  docs/operations/production-hardening.md 各有繁中對照檔；
+  docs/mermaid-converter.md、docs/quality-baselines.md 與 docs/research/ 下的
+  日期記錄是只維護英文版的開發者說明文件。
 - .claude/：Claude Code 進入點 CLAUDE.md，以及 `.claude/skills/` 中的儲存庫 skills；
   fix-bug 另附 symptom-map 與 verification 兩份參考文件。
 - src/：React 應用程式、工具登錄表、樣式、共用 UI、工具元件與測試。
@@ -159,7 +162,8 @@ src/components/MobileDrawer.jsx 負責窄螢幕抽屜邊界。關閉時會卸載
 
 `src/i18n/index.js` 以 `react-i18next` 初始化 `i18next`，載入
 `src/i18n/locales/en-US/` 與 `src/i18n/locales/zh-TW/` 下成對的
-`common`、`navigation`、`tools`、`errors` 命名空間。English (`en-US`) 是預設與
+`common`、`docs`、`navigation`、`tools`、`errors` 五個命名空間；`mermaid`
+資源檔在初始化時合併入 `tools` 命名空間。English (`en-US`) 是預設與
 fallback，繁體中文 (`zh-TW`) 是第二個支援地區設定。
 
 初始地區設定按固定順序解析：有效的 `small-web-tools.locale` 儲存值優先，其次是
@@ -526,6 +530,7 @@ verify 中的 scripts/check-external-hosts.mjs 會在正式來源主機名稱未
 | jszip | 通過 archive-limit preflight 後的 Office 文件中繼資料解析與封存處理。 |
 | html5-qrcode | 相機與檔案式 QR／barcode 掃描。 |
 | qrcode、jsbarcode | QR 與 barcode 產生。 |
+| mermaid | Mermaid 轉換器的瀏覽器本機圖表渲染，僅在該路由要求渲染後才匯入。 |
 | highlight.js | Code Live Preview 工具的瀏覽器本機語法醒目顯示。 |
 | html-to-image | 樣式化程式碼預覽的 lazy 瀏覽器本機 PNG 匯出。 |
 | @ffmpeg/ffmpeg | 使用完整性驗證遠端 core 資產的用戶端媒體分割。 |
