@@ -212,6 +212,8 @@ locks body scrolling, and supports Escape, overlay, explicit-close, and route
 dismissal before restoring focus to the opener.
 
 `src/components/LanguageSwitcher.jsx` is rendered by `App.jsx` in the mobile header and by `AppHeader.jsx` in the desktop header. It is the shared owner of locale options, menu state, keyboard navigation, and focus restoration; the desktop control is omitted in the Simple workspace.
+[`docs/architecture/language-switcher.md`](docs/architecture/language-switcher.md)
+records the design of that control in detail.
 
 ### Internationalization runtime
 
@@ -410,6 +412,17 @@ those raw elements lose to the Tailwind reset. Source-line metadata keeps the
 independently scrollable editor and preview aligned in both directions without
 collapsing fenced-code content. Focused parser and interaction coverage lives in
 `markdownDomain.test.js` and `markdownPreviewer.test.jsx`.
+
+### Mermaid Converter
+
+`MermaidConverter.jsx` renders diagrams with the bundled `mermaid` package, which
+is dynamically imported only after the route is opened and a render is requested.
+Rendering runs under `securityLevel: strict` with bounded source size and statement
+counts, and the generated SVG passes a second local sanitizer before it reaches the
+preview, the SVG download, or PNG rasterization. Its locale resources live in the
+separate `mermaid.json` files that are merged into the `tools` namespace.
+[`docs/mermaid-converter.md`](docs/mermaid-converter.md) documents the processing,
+security, and export model in full.
 
 ### GitHub HTML Blocks
 
@@ -664,7 +677,9 @@ documentation consistency. CI additionally runs dependency checks, Playwright
 journeys, and `npm audit`.
 
 The coverage gate includes `App.jsx`, shared category definitions, and the extracted
-audio/video domains with per-boundary thresholds. Knip runs in dependency-only and
+audio/video domains with per-boundary thresholds.
+[`docs/quality-baselines.md`](docs/quality-baselines.md) records the coverage tiers,
+the ESLint warning budget, and any time-bound accessibility exceptions. Knip runs in dependency-only and
 full dead-code modes with explicit application, Functions, Worker, script, test,
 integration, and browser-journey entry points.
 

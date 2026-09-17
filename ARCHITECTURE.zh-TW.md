@@ -157,6 +157,8 @@ src/components/MobileDrawer.jsx 負責窄螢幕抽屜邊界。關閉時會卸載
 與路由選取後關閉，最後將焦點還給開啟按鈕。
 
 `src/components/LanguageSwitcher.jsx` 由 `App.jsx` 直接渲染於行動與桌面 header。它是地區設定選項、選單狀態、鍵盤導覽與焦點復原的共用負責元件；Simple 工作區不渲染桌面控制項。
+[`docs/architecture/language-switcher.zh-TW.md`](docs/architecture/language-switcher.zh-TW.md)
+完整記錄該控制項的設計。
 
 ### 國際化執行階段
 
@@ -338,6 +340,15 @@ config/network-services.json 宣告、且 public/_headers 的 img-src 允許的�
 src/styles.css 中的 .markdown-html 會補回這些 raw 元素被 Tailwind reset 移除的基本樣式。
 來源行中繼資料讓可獨立捲動的編輯器與預覽區能雙向對齊，不會折疊 fenced-code 內容。
 重點解析器與互動測試位於 markdownDomain.test.js 與 markdownPreviewer.test.jsx。
+
+### Mermaid 轉換器
+
+MermaidConverter.jsx 使用內建的 mermaid 套件渲染圖表，該套件只在開啟此路由並要求
+渲染後才動態匯入。渲染以 securityLevel: strict 執行，並限制原始碼大小與敘述數量；
+產生的 SVG 會再經過一層本機淨化程序，才提供給預覽、SVG 下載與 PNG 點陣化使用。
+其地區設定資源位於獨立的 mermaid.json，於初始化時合併入 tools 命名空間。
+[`docs/mermaid-converter.md`](docs/mermaid-converter.md)（僅英文版）完整說明其處理、
+安全性與匯出模型。
 
 ### GitHub HTML 積木
 
@@ -566,6 +577,8 @@ npm@10.9.2；CI 會安裝並驗證該精確版本。npm run verify 是基本門�
 Playwright 流程與 npm audit。
 
 覆蓋率 gate 納入 `App.jsx`、共用分類定義與抽離後的音訊／影片領域，並設定各邊界門檻。
+[`docs/quality-baselines.md`](docs/quality-baselines.md)（僅英文版）記錄覆蓋率層級、
+ESLint 警告預算，以及有時效的無障礙例外。
 Knip 會以 dependency-only 與完整 dead-code 模式執行，明確列出應用程式、Functions、
 Worker、script、test、integration 與瀏覽器流程入口。
 
