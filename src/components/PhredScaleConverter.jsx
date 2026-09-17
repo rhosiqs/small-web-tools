@@ -228,9 +228,9 @@ export default function PhredScaleConverter() {
       <section aria-labelledby="phred-scale-title" className="flex flex-col gap-1">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-0">
-            <h3 id="phred-scale-title" className="m-0 text-[0.9375rem] font-medium text-text-main">
+            <h2 id="phred-scale-title" className="m-0 text-[0.9375rem] font-medium text-text-main">
               {t('tool-phred.ui.referenceTitle')}
-            </h3>
+            </h2>
             <p className="m-0 mt-0.5 text-xs text-text-muted">{t('tool-phred.ui.referenceDescription')}</p>
           </div>
         </div>
@@ -268,7 +268,7 @@ export default function PhredScaleConverter() {
               >
                 <span aria-hidden="true" className="mx-auto mb-1.5 block h-2.5 w-px bg-current" />
                 <span className="block font-mono text-[0.6875rem] leading-none">Q{mark}</span>
-                <span className="mt-1 block font-mono text-[0.5938rem] leading-none opacity-70">
+                <span className="mt-1 block font-mono text-[0.5938rem] leading-none">
                   {mark === 0 ? '1' : `1e-${mark / 10}`}
                 </span>
               </button>
@@ -341,7 +341,7 @@ export default function PhredScaleConverter() {
               aria-pressed={option.offset === offset}
               title={option.detail}
               className={`rounded px-2.5 py-1 text-[0.6875rem] font-semibold transition-colors ${
-                option.offset === offset ? 'bg-accent text-white' : 'text-text-muted hover:text-accent'
+                option.offset === offset ? 'bg-accent-fill text-accent-on-fill' : 'text-text-muted hover:text-accent'
               }`}
             >
               {option.label}

@@ -94,7 +94,7 @@ export default function AutoDetectConverter({
       aria-pressed={mode === id}
       className={`rounded px-2.5 py-1 text-[0.6875rem] font-semibold transition-colors ${
         mode === id
-          ? 'bg-accent text-white'
+          ? 'bg-accent-fill text-accent-on-fill'
           : 'text-text-muted hover:text-accent'
       }`}
     >

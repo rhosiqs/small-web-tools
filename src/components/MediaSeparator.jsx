@@ -104,9 +104,7 @@ export default function MediaSeparator() {
         <div
           className={`border-2 border-dashed rounded-[14px] py-10 px-5 text-center cursor-pointer transition-all duration-300 flex justify-center items-center bg-accent/[0.02] ${dragOver ? 'border-accent bg-accent/[0.06]' : 'border-border hover:border-accent hover:bg-accent/[0.06]'}`}
           onClick={() => inputRef.current?.click()}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.click()}
+          role="group"
           aria-label={t('tool-mediasplit.ui.uploadAria')}
         >
           <div className="flex flex-col items-center">
@@ -148,7 +146,7 @@ export default function MediaSeparator() {
                 type="button"
                 onClick={runQueue}
                 disabled={!hasPending && !engineLoading}
-                className="inline-flex items-center justify-center px-4 py-2 text-[0.875rem] font-semibold rounded-lg border border-transparent cursor-pointer bg-accent text-white transition-colors duration-150 hover:enabled:bg-accent-hover disabled:bg-border disabled:text-text-muted disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center px-4 py-2 text-[0.875rem] font-semibold rounded-lg border border-transparent cursor-pointer bg-accent-fill text-accent-on-fill transition-colors duration-150 hover:enabled:bg-accent-hover disabled:bg-border disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 {t(engineLoading ? 'tool-mediasplit.ui.loadingEngine' : 'tool-mediasplit.ui.startQueue')}
               </button>

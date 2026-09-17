@@ -30,7 +30,7 @@ Use this sequence for each meaningful update:
 3. **Validate.** Run `npm run verify`. For layout or interaction work, also run the relevant Playwright journeys, check the affected routes at desktop and mobile widths, and review browser console errors.
 4. **Update documentation.** Refresh the relevant English and Traditional Chinese companion documents for changed user behavior or structure. For a completed GitHub Issue, the project owner or an AI agent may append one entry under `Completed` after implementation, validation, and commit are complete; preserve the existing date, checklist, label, and English-only format. The project owner controls backlog priorities and status; do not turn the README into a changelog.
 5. **Review and commit.** Check `git diff` and `git status`, then create a focused commit after each completed logical stage.
-6. **Prepare a release when appropriate.** Confirm the version in `package.json`; create or update the git tag only as part of an agreed release. The app displays the newest git tag when one is available, otherwise it falls back to the package version.
+6. **Prepare a release when appropriate.** Versions live in Git tags only, in plain `vMAJOR.MINOR.PATCH` form. `package.json` stays on the `0.0.0-private` placeholder and is never bumped for a release; `npm run docs:check` enforces that. Tag the commit carrying the finished work and push the tag, which is the whole release step. `scripts/resolve-version.mjs` resolves the displayed version from the newest version-formatted tag, falling back to the repository's remote tags and then to an explicit `VITE_APP_VERSION` for archives without Git metadata; it never uses the npm manifest version.
 
 ## Active backlog
 

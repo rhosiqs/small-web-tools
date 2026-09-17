@@ -389,7 +389,7 @@ export default function RandomWheel() {
                 <polygon points="24,12 0,4 0,20" />
               </svg>
             </div>
-            <div className="absolute left-1/2 top-1/2 z-[8] flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 select-none items-center justify-center rounded-full border-4 border-accent bg-gradient-to-br from-card to-app font-display text-[0.85rem] font-extrabold tracking-wider text-accent shadow-[0_4px_12px_rgba(0,0,0,0.15),_inset_0_2px_4px_rgba(255,255,255,0.2)] transition-all duration-200 hover:scale-108 hover:border-white hover:bg-accent hover:text-white hover:shadow-[0_6px_18px_rgba(79,70,229,0.4)] active:scale-96 max-[768px]:h-[50px] max-[768px]:w-[50px] max-[768px]:text-[0.7rem]" id="wheel-spin-btn-center" onClick={spin}>
+            <div className="absolute left-1/2 top-1/2 z-[8] flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 select-none items-center justify-center rounded-full border-4 border-accent bg-gradient-to-br from-card to-app font-display text-[0.85rem] font-extrabold tracking-wider text-accent shadow-[0_4px_12px_rgba(0,0,0,0.15),_inset_0_2px_4px_rgba(255,255,255,0.2)] transition-all duration-200 hover:scale-108 hover:border-white hover:bg-accent-fill hover:text-accent-on-fill hover:shadow-[0_6px_18px_rgba(79,70,229,0.4)] active:scale-96 max-[768px]:h-[50px] max-[768px]:w-[50px] max-[768px]:text-[0.7rem]" id="wheel-spin-btn-center" onClick={spin}>
               <span>{t('tool-wheel.ui.spin')}</span>
             </div>
           </div>
@@ -423,7 +423,7 @@ export default function RandomWheel() {
             <div className="flex-grow flex flex-col">
               {/* View Mode (List View) */}
               {!isEditing && (
-                <div id="wheel-list-view" className="flex h-[190px] flex-col gap-2 overflow-y-auto p-3">
+                <div id="wheel-list-view" className="flex h-[190px] flex-col gap-2 overflow-y-auto p-3" role="group" aria-label={t('tool-wheel.ui.optionsListAria')} tabIndex={0}>
                   {items.length === 0 ? (
                     <div className="text-text-muted italic p-3 text-sm text-center">
                       {t('tool-wheel.ui.noOptions')}
@@ -554,7 +554,7 @@ export default function RandomWheel() {
         <div id="wheel-clear-modal" className="fixed inset-0 z-[1000] flex items-center justify-center p-5" style={{ display: 'flex' }}>
           <div id="wheel-clear-modal-backdrop" className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setShowClearModal(false)}></div>
           <div className="relative bg-card border border-border rounded-2xl p-7 max-w-[420px] w-full shadow-2xl z-[1001] flex flex-col gap-4 animate-[modalSlideIn_0.3s_cubic-bezier(0.34,1.56,0.64,1)]">
-            <h3 className="font-display text-lg font-bold text-text-main">{t('tool-wheel.ui.clearAllTitle')}</h3>
+            <h2 className="font-display text-lg font-bold text-text-main">{t('tool-wheel.ui.clearAllTitle')}</h2>
             <p className="text-sm text-text-muted leading-relaxed">{t('tool-wheel.ui.clearAllBody')}</p>
             <div className="flex gap-3 justify-end mt-2">
               <Button id="wheel-confirm-clear-btn" variant="dangerConfirm" onClick={confirmClear}>{t('tool-wheel.ui.confirmClear')}</Button>

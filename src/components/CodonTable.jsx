@@ -99,12 +99,14 @@ function getAminoName(t, data, codon) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Amino acid colour palette — distinct hue per AA group
 // ─────────────────────────────────────────────────────────────────────────────
+// Hue families group the amino acids. The values are theme tokens from styles.css
+// so each theme can clear 4.5:1 against its own card surface.
 const AA_COLORS = {
-  Phe: '#a78bfa', Leu: '#8b5cf6', Ile: '#7c3aed', Met: null /* start */,
-  Val: '#6d28d9', Ser: '#3b82f6', Pro: '#0ea5e9', Thr: '#06b6d4',
-  Ala: '#14b8a6', Tyr: '#f59e0b', His: '#d97706', Gln: '#f97316',
-  Asn: '#ef4444', Lys: '#dc2626', Asp: '#ec4899', Glu: '#db2777',
-  Cys: '#84cc16', Trp: '#22c55e', Arg: '#10b981', Gly: '#6b7280',
+  Phe: 'var(--aa-phe)', Leu: 'var(--aa-leu)', Ile: 'var(--aa-ile)', Met: null /* start */,
+  Val: 'var(--aa-val)', Ser: 'var(--aa-ser)', Pro: 'var(--aa-pro)', Thr: 'var(--aa-thr)',
+  Ala: 'var(--aa-ala)', Tyr: 'var(--aa-tyr)', His: 'var(--aa-his)', Gln: 'var(--aa-gln)',
+  Asn: 'var(--aa-asn)', Lys: 'var(--aa-lys)', Asp: 'var(--aa-asp)', Glu: 'var(--aa-glu)',
+  Cys: 'var(--aa-cys)', Trp: 'var(--aa-trp)', Arg: 'var(--aa-arg)', Gly: 'var(--aa-gly)',
   Stop: null /* stop */,
 };
 
@@ -167,7 +169,7 @@ function CodonButton({ codon, isSelected, isHighlighted, isDimmed, onSelect }) {
     }
   } else {
     if (isSelected) {
-      cls += ' !bg-accent !border-accent !text-white font-bold shadow-[0_0_0_3px_var(--focus-ring),0_2px_10px_rgba(99,102,241,0.35)] animate-[ct-pulse-glow_2s_ease-in-out_infinite]';
+      cls += ' !bg-accent-fill !border-accent !text-accent-on-fill font-bold shadow-[0_0_0_3px_var(--focus-ring),0_2px_10px_rgba(99,102,241,0.35)] animate-[ct-pulse-glow_2s_ease-in-out_infinite]';
     } else if (isHighlighted) {
       cls += ' bg-accent-light border-accent text-accent';
     }
@@ -860,7 +862,7 @@ function InfoPanel({
               )}
               <button
                 type="button"
-                className={`cursor-pointer whitespace-nowrap rounded-lg border border-border bg-white/3 px-2 py-1.5 text-[0.72rem] font-semibold text-text-main transition-all hover:border-text-muted hover:bg-white/8 active:scale-96 ${isCreatingGroup ? 'bg-accent border-accent text-white shadow-[0_1px_6px_rgba(99, 102, 241, 0.25)]' : ''}`}
+                className={`cursor-pointer whitespace-nowrap rounded-lg border border-border bg-white/3 px-2 py-1.5 text-[0.72rem] font-semibold text-text-main transition-all hover:border-text-muted hover:bg-white/8 active:scale-96 ${isCreatingGroup ? 'bg-accent-fill border-accent text-accent-on-fill shadow-[0_1px_6px_rgba(99, 102, 241, 0.25)]' : ''}`}
                 onClick={() => setIsCreatingGroup(prev => !prev)}
               >
                 {isCreatingGroup ? t('tool-codon.ui.close') : t('tool-codon.ui.addCustom')}
@@ -939,7 +941,7 @@ function InfoPanel({
                 <div className="flex justify-end gap-3 mt-2 border-t border-dashed border-border pt-3">
                   <button
                     type="button"
-                    className="bg-accent border border-accent text-white rounded-lg p-2 px-4 text-[0.8rem] font-semibold cursor-pointer transition-all hover:brightness-95 active:scale-96 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="bg-accent-fill border border-accent text-accent-on-fill rounded-lg p-2 px-4 text-[0.8rem] font-semibold cursor-pointer transition-all hover:brightness-95 active:scale-96 disabled:opacity-40 disabled:cursor-not-allowed"
                     onClick={handleCreateCustomGroup}
                     disabled={!newGroupName.trim() || newGroupAAs.length === 0}
                   >
@@ -1035,13 +1037,13 @@ function InfoPanel({
                 {data.type === 'start' && <span className="p-1 px-2.5 rounded-full text-[0.72rem] font-semibold border border-emerald-500/20 text-emerald-600 bg-emerald-500/10">{t('tool-codon.ui.start')}</span>}
                 {data.type === 'stop'  && <span className="p-1 px-2.5 rounded-full text-[0.72rem] font-semibold border border-red-500/20 text-red-600 bg-red-500/[0.08]">{t('tool-codon.ui.stop')}</span>}
               </div>
-              <button className="absolute top-3 right-3 w-5 h-5 rounded-full border border-border bg-app text-text-muted cursor-pointer text-[0.58rem] flex items-center justify-center transition-all hover:bg-accent hover:text-white hover:border-accent" onClick={onClear} aria-label={t('tool-codon.ui.clearSelection')}>✕</button>
+              <button className="absolute top-3 right-3 w-5 h-5 rounded-full border border-border bg-app text-text-muted cursor-pointer text-[0.58rem] flex items-center justify-center transition-all hover:bg-accent-fill hover:text-accent-on-fill hover:border-accent" onClick={onClear} aria-label={t('tool-codon.ui.clearSelection')}>✕</button>
             </>
           ) : (
             <>
               <span className="text-xl font-bold tracking-tight text-text-main">{t('tool-codon.ui.lookup')}</span>
               {typedCodon.length > 0 && (
-                <button className="absolute top-3 right-3 w-5 h-5 rounded-full border border-border bg-app text-text-muted cursor-pointer text-[0.58rem] flex items-center justify-center transition-all hover:bg-accent hover:text-white hover:border-accent" onClick={onClear} aria-label={t('tool-codon.ui.clearTyping')}>✕</button>
+                <button className="absolute top-3 right-3 w-5 h-5 rounded-full border border-border bg-app text-text-muted cursor-pointer text-[0.58rem] flex items-center justify-center transition-all hover:bg-accent-fill hover:text-accent-on-fill hover:border-accent" onClick={onClear} aria-label={t('tool-codon.ui.clearTyping')}>✕</button>
               )}
             </>
           )}
@@ -1052,7 +1054,7 @@ function InfoPanel({
           {[t('tool-codon.ui.firstShort'), t('tool-codon.ui.secondShort'), t('tool-codon.ui.thirdShort')].map((posName, idx) => {
             const char = typedCodon[idx] || '';
             const isActive = typedCodon.length === idx;
-            const charColorClass = char === 'U' ? 'text-purple-400' : char === 'C' ? 'text-sky-400' : char === 'A' ? 'text-amber-400' : char === 'G' ? 'text-emerald-400' : '';
+            const charColorClass = char === 'U' ? 'text-purple-700 dark:text-purple-300' : char === 'C' ? 'text-sky-700 dark:text-sky-300' : char === 'A' ? 'text-amber-700 dark:text-amber-300' : char === 'G' ? 'text-emerald-700 dark:text-emerald-300' : '';
             return (
               <div
                 key={idx}
@@ -1275,7 +1277,7 @@ export default function CodonTable() {
         <div className="flex flex-wrap items-center justify-between gap-2.5 text-xs text-text-muted bg-app/50 border border-border px-3 py-2 rounded-lg">
           <p className="leading-relaxed">
             <strong className="text-text-main">{t('tool-codon.ui.standardCode')}</strong>: {t('tool-codon.ui.codeDescription')}
-            <span className="ml-1 opacity-90">{t('tool-codon.ui.startDescription')} <em>{t('tool-codon.ui.codeNote')}</em></span>
+            <span className="ml-1">{t('tool-codon.ui.startDescription')} <em>{t('tool-codon.ui.codeNote')}</em></span>
           </p>
         </div>
 
@@ -1306,12 +1308,12 @@ export default function CodonTable() {
             <div className="col-start-2 row-start-2 flex flex-col">
 
               {/* Top axis: Second Base */}
-              <div className="grid grid-cols-[28px_repeat(4,1fr)_36px] border-b border-border bg-app" role="row">
+              <div className="grid grid-cols-[28px_repeat(4,1fr)_36px] border-b border-border bg-app" aria-hidden="true">
                 <div className="ct-axis-corner"></div>
                 {SECOND_BASES.map(b2 => {
-                  const colorClass = b2 === 'U' ? 'text-purple-400' : b2 === 'C' ? 'text-sky-400' : b2 === 'A' ? 'text-amber-400' : b2 === 'G' ? 'text-emerald-400' : '';
+                  const colorClass = b2 === 'U' ? 'text-purple-700 dark:text-purple-300' : b2 === 'C' ? 'text-sky-700 dark:text-sky-300' : b2 === 'A' ? 'text-amber-700 dark:text-amber-300' : b2 === 'G' ? 'text-emerald-700 dark:text-emerald-300' : '';
                   return (
-                    <div key={b2} className="flex flex-col items-center justify-center border-l border-border px-0.5 py-1" role="columnheader">
+                    <div key={b2} className="flex flex-col items-center justify-center border-l border-border px-0.5 py-1">
                       <span className={`font-mono text-base font-bold ${colorClass}`}>{b2}</span>
                     </div>
                   );
@@ -1324,13 +1326,13 @@ export default function CodonTable() {
 
 
                 {BASES.map(b1 => {
-                  const b1ColorClass = b1 === 'U' ? 'text-purple-400' : b1 === 'C' ? 'text-sky-400' : b1 === 'A' ? 'text-amber-400' : b1 === 'G' ? 'text-emerald-400' : '';
+                  const b1ColorClass = b1 === 'U' ? 'text-purple-700 dark:text-purple-300' : b1 === 'C' ? 'text-sky-700 dark:text-sky-300' : b1 === 'A' ? 'text-amber-700 dark:text-amber-300' : b1 === 'G' ? 'text-emerald-700 dark:text-emerald-300' : '';
                   const b1BgHeaderClass = b1 === 'U' ? 'bg-purple-500/10' : b1 === 'C' ? 'bg-sky-500/10' : b1 === 'A' ? 'bg-amber-500/10' : b1 === 'G' ? 'bg-emerald-500/10' : '';
                   return (
-                    <div key={b1} className="grid grid-cols-[28px_1fr_36px] border-t border-border first:border-t-0" role="rowgroup">
+                    <div key={b1} className="grid grid-cols-[28px_1fr_36px] border-t border-border first:border-t-0">
 
                       {/* Left row header: first base letter */}
-                      <div className={`flex items-center justify-center border-r border-border p-0.5 font-mono text-base font-bold ${b1ColorClass} ${b1BgHeaderClass}`} role="rowheader" aria-label={t('tool-codon.ui.firstBaseAria', { base: b1 })}>
+                      <div className={`flex items-center justify-center border-r border-border p-0.5 font-mono text-base font-bold ${b1ColorClass} ${b1BgHeaderClass}`} aria-hidden="true">
                         <span>{b1}</span>
                       </div>
 
@@ -1358,7 +1360,6 @@ export default function CodonTable() {
                                   <div
                                     key={codon}
                                     className="flex min-h-[24px] items-center border-b border-border/50 px-0.5 transition-all duration-150 last:border-b-0 sm:min-h-[27px] [@media(max-height:760px)]:!min-h-[22px]"
-                                    role="row"
                                   >
                                     <CodonButton
                                       codon={codon}
@@ -1396,7 +1397,7 @@ export default function CodonTable() {
                       {/* Repeating right axis per row group: U C A G */}
                       <div className="grid grid-rows-4 border-l border-border">
                         {THIRD_BASES.map(b3 => {
-                          const b3ColorClass = b3 === 'U' ? 'text-purple-400' : b3 === 'C' ? 'text-sky-400' : b3 === 'A' ? 'text-amber-400' : b3 === 'G' ? 'text-emerald-400' : '';
+                          const b3ColorClass = b3 === 'U' ? 'text-purple-700 dark:text-purple-300' : b3 === 'C' ? 'text-sky-700 dark:text-sky-300' : b3 === 'A' ? 'text-amber-700 dark:text-amber-300' : b3 === 'G' ? 'text-emerald-700 dark:text-emerald-300' : '';
                           return (
                             <div key={b3} className={`flex items-center justify-center border-b border-border p-0 font-mono text-[0.8rem] font-bold last:border-b-0 ${b3ColorClass}`}>
                               <span>{b3}</span>
@@ -1412,10 +1413,10 @@ export default function CodonTable() {
               </div>
 
               {/* Bottom axis: Second Base (repeated) */}
-              <div className="grid grid-cols-[28px_repeat(4,1fr)_36px] border-t border-border bg-app" role="row" aria-hidden="true">
+              <div className="grid grid-cols-[28px_repeat(4,1fr)_36px] border-t border-border bg-app" aria-hidden="true">
                 <div className="ct-axis-corner"></div>
                 {SECOND_BASES.map(b2 => {
-                  const b2ColorClass = b2 === 'U' ? 'text-purple-400' : b2 === 'C' ? 'text-sky-400' : b2 === 'A' ? 'text-amber-400' : b2 === 'G' ? 'text-emerald-400' : '';
+                  const b2ColorClass = b2 === 'U' ? 'text-purple-700 dark:text-purple-300' : b2 === 'C' ? 'text-sky-700 dark:text-sky-300' : b2 === 'A' ? 'text-amber-700 dark:text-amber-300' : b2 === 'G' ? 'text-emerald-700 dark:text-emerald-300' : '';
                   return (
                     <div key={b2} className="flex flex-col items-center justify-center border-l border-border px-0.5 py-1">
                       <span className={`font-mono text-base font-bold ${b2ColorClass}`}>{b2}</span>

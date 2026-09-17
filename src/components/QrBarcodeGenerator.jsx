@@ -1270,7 +1270,7 @@ export default function QrBarcodeGenerator({ initialTab = 'qr' }) {
                       type="button"
                       className={`px-3 py-2 rounded-lg border text-xs font-bold transition-all cursor-pointer text-center ${
                         qrType === t.id 
-                          ? 'bg-accent border-accent text-white shadow-sm' 
+                          ? 'bg-accent-fill border-accent text-accent-on-fill shadow-sm' 
                           : 'bg-card border-border text-text-muted hover:text-text-main hover:bg-nav-hover-bg'
                       }`}
                       onClick={() => setQrType(t.id)}
@@ -2053,7 +2053,7 @@ export default function QrBarcodeGenerator({ initialTab = 'qr' }) {
         {/* ================= RIGHT SIDE: STICKY PREVIEW CARD ================= */}
         <div className="flex flex-col gap-3 lg:sticky lg:top-3 lg:col-span-2">
           <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3 shadow-sm">
-            <h3 className="border-b border-border pb-2 text-center text-xs font-bold uppercase tracking-wider text-text-muted">{t('tool-qrbarcode.ui.livePreview')}</h3>
+            <h2 className="border-b border-border pb-2 text-center text-xs font-bold uppercase tracking-wider text-text-muted">{t('tool-qrbarcode.ui.livePreview')}</h2>
 
             <div className="relative flex h-[170px] select-none items-center justify-center rounded-xl border border-dashed border-border bg-app p-2">
               <FullscreenPreviewButton

@@ -32,8 +32,9 @@ The catalog is grouped into six categories:
 - **Media** — color conversion, image/document/audio/video metadata, media
   separation, and SVG-to-PNG conversion.
 - **Bioinfo** — DNA conversion, codon tables, and Phred quality-score conversion.
-- **Utilities** — QR codes and barcodes, password generation and strength checking,
-  currency and date calculation, Roman numerals, and a random wheel.
+- **Utilities** — QR codes and barcodes, QR and barcode scanning, password
+  generation and strength checking, currency and date calculation, Roman numerals,
+  a random wheel, and random ordering.
 
 ## Local-first processing
 

@@ -722,7 +722,7 @@ export default function DnaConverter() {
             <div className="flex justify-between items-center mb-0.5">
               <label className="text-sm font-semibold text-text-main" htmlFor="dna-output-opposite">{t('tool-dna.ui.oppositeStrand')}</label>
               <button
-                className={`px-2.5 py-1 text-xs font-semibold rounded-sm bg-accent-light text-accent border border-accent/15 dark:border-accent/30 cursor-pointer transition-all duration-200 leading-none hover:bg-accent hover:text-white hover:border-accent ${copiedBtn === 'opposite' ? 'bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-500 hover:text-white hover:border-emerald-500' : ''}`}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-sm bg-accent-light text-accent border border-accent/15 dark:border-accent/30 cursor-pointer transition-all duration-200 leading-none hover:bg-accent-fill hover:text-accent-on-fill hover:border-accent ${copiedBtn === 'opposite' ? 'bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-500 hover:text-white hover:border-emerald-500' : ''}`}
                 onClick={() => handleCopy(outputs.opposite, 'opposite')}
               >
                 {t(copiedBtn === 'opposite' ? 'tool-dna.ui.copied' : 'tool-dna.ui.copy')}
@@ -740,7 +740,7 @@ export default function DnaConverter() {
             <div className="flex justify-between items-center mb-0.5">
               <label className="text-sm font-semibold text-text-main" htmlFor="dna-output-revcomp">{t('tool-dna.ui.reverseComplement')}</label>
               <button
-                className={`px-2.5 py-1 text-xs font-semibold rounded-sm bg-accent-light text-accent border border-accent/15 dark:border-accent/30 cursor-pointer transition-all duration-200 leading-none hover:bg-accent hover:text-white hover:border-accent ${copiedBtn === 'revcomp' ? 'bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-500 hover:text-white hover:border-emerald-500' : ''}`}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-sm bg-accent-light text-accent border border-accent/15 dark:border-accent/30 cursor-pointer transition-all duration-200 leading-none hover:bg-accent-fill hover:text-accent-on-fill hover:border-accent ${copiedBtn === 'revcomp' ? 'bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-500 hover:text-white hover:border-emerald-500' : ''}`}
                 onClick={() => handleCopy(outputs.revcomp, 'revcomp')}
               >
                 {t(copiedBtn === 'revcomp' ? 'tool-dna.ui.copied' : 'tool-dna.ui.copy')}
@@ -758,7 +758,7 @@ export default function DnaConverter() {
             <div className="flex justify-between items-center mb-0.5">
               <label className="text-sm font-semibold text-text-main" htmlFor="dna-output-reverse">{t('tool-dna.ui.sameStrand')}</label>
               <button
-                className={`px-2.5 py-1 text-xs font-semibold rounded-sm bg-accent-light text-accent border border-accent/15 dark:border-accent/30 cursor-pointer transition-all duration-200 leading-none hover:bg-accent hover:text-white hover:border-accent ${copiedBtn === 'reverse' ? 'bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-500 hover:text-white hover:border-emerald-500' : ''}`}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-sm bg-accent-light text-accent border border-accent/15 dark:border-accent/30 cursor-pointer transition-all duration-200 leading-none hover:bg-accent-fill hover:text-accent-on-fill hover:border-accent ${copiedBtn === 'reverse' ? 'bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-500 hover:text-white hover:border-emerald-500' : ''}`}
                 onClick={() => handleCopy(outputs.reverse, 'reverse')}
               >
                 {t(copiedBtn === 'reverse' ? 'tool-dna.ui.copied' : 'tool-dna.ui.copy')}

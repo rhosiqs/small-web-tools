@@ -137,9 +137,9 @@ export default function GithubHtmlSnippets() {
       <div className="grid grid-cols-1 overflow-hidden rounded-xl border border-border bg-card lg:h-[560px] lg:grid-cols-2">
         <section className="flex min-h-[380px] min-w-0 flex-col border-b border-border lg:min-h-0 lg:border-b-0 lg:border-r" aria-labelledby="github-html-editor-title">
           <div className="relative flex min-h-12 items-center justify-between gap-3 border-b border-border bg-app/70 px-4 py-2 pr-14">
-            <h3 id="github-html-editor-title" className="text-sm font-bold text-text-main">
+            <h2 id="github-html-editor-title" className="text-sm font-bold text-text-main">
               {t('tool-github-html.ui.editorTitle')}
-            </h3>
+            </h2>
             <span className="text-xs tabular-nums text-text-muted">
               {t('tool-github-html.ui.characterCount', { count: markdown.length.toLocaleString(i18n.language) })}
             </span>
@@ -162,9 +162,9 @@ export default function GithubHtmlSnippets() {
 
         <section className="flex min-h-[380px] min-w-0 flex-col bg-accent-light/10 lg:min-h-0" aria-labelledby="github-html-preview-title">
           <div className="relative flex min-h-12 items-center border-b border-border bg-app/45 px-4 py-2 pr-14">
-            <h3 id="github-html-preview-title" className="text-sm font-bold text-text-main">
+            <h2 id="github-html-preview-title" className="text-sm font-bold text-text-main">
               {t('tool-github-html.ui.previewTitle')}
-            </h3>
+            </h2>
             <FullscreenPreviewButton
               label={t('tool-github-html.ui.openPreviewFullscreen')}
               onClick={() => setFocusedPanel('preview')}

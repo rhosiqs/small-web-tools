@@ -770,16 +770,16 @@ export default function QrBarcodeScanner() {
               <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-emerald-500/10 text-accent border-emerald-500/20">Data Matrix</span>
               <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-emerald-500/10 text-accent border-emerald-500/20">Aztec</span>
               <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-emerald-500/10 text-accent border-emerald-500/20">PDF 417</span>
-              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-500 border-indigo-500/20">Code 128</span>
-              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-500 border-indigo-500/20">Code 39</span>
-              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-500 border-indigo-500/20">Code 93</span>
-              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-500 border-indigo-500/20">EAN-13</span>
-              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-500 border-indigo-500/20">EAN-8</span>
-              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-500 border-indigo-500/20">UPC-A</span>
-              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-500 border-indigo-500/20">UPC-E</span>
-              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-500 border-indigo-500/20">ITF</span>
-              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-500 border-indigo-500/20">Codabar</span>
-              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-500 border-indigo-500/20">RSS 14</span>
+              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border-indigo-500/20">Code 128</span>
+              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border-indigo-500/20">Code 39</span>
+              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border-indigo-500/20">Code 93</span>
+              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border-indigo-500/20">EAN-13</span>
+              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border-indigo-500/20">EAN-8</span>
+              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border-indigo-500/20">UPC-A</span>
+              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border-indigo-500/20">UPC-E</span>
+              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border-indigo-500/20">ITF</span>
+              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border-indigo-500/20">Codabar</span>
+              <span className="rounded-full px-2.5 py-0.5 text-[0.76rem] font-semibold border bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border-indigo-500/20">RSS 14</span>
             </div>
             <div className="flex gap-3.5 mt-1.5">
               <span className="inline-flex items-center gap-1.5 text-[0.76rem] text-text-muted"><span className="w-2 h-2 rounded-full shrink-0 bg-accent" />{t('tool-qrbarcodescan.ui.codes2d')}</span>

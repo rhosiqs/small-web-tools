@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Card from './ui/Card';
 import Button from './ui/Button';
@@ -181,7 +181,7 @@ export default function BaseConverter() {
       <section className="flex flex-col gap-2.5 rounded-xl border border-border bg-app/70 p-3" aria-labelledby="base-conversion-title">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h3 id="base-conversion-title" className="text-sm font-bold text-text-main">{t('tool-base.ui.conversionTitle')}</h3>
+            <h2 id="base-conversion-title" className="text-sm font-bold text-text-main">{t('tool-base.ui.conversionTitle')}</h2>
             <p className="text-xs text-text-muted">{t('tool-base.ui.conversionHint')}</p>
           </div>
           <span className="rounded-full border border-accent/25 bg-accent-light px-2.5 py-1 text-xs font-bold text-accent">
@@ -199,11 +199,11 @@ export default function BaseConverter() {
                 aria-pressed={active}
                 onClick={() => selectInputBase(option.base)}
                 className={`rounded-lg border px-2.5 py-1.5 text-left transition-all ${active
-                  ? 'border-accent bg-accent text-white shadow-[0_4px_12px_var(--accent-light)]'
+                  ? 'border-accent bg-accent-fill text-accent-on-fill shadow-[0_4px_12px_var(--accent-light)]'
                   : 'border-border bg-card text-text-muted hover:border-accent hover:text-text-main'}`}
               >
                 <span className="block text-xs font-extrabold tracking-wide">{option.short}</span>
-                <span className={`block text-[0.68rem] ${active ? 'text-white/75' : 'text-text-muted'}`}>{t('tool-base.ui.base', { base: option.base })}</span>
+                <span className={`block text-[0.68rem] ${active ? 'text-accent-on-fill/90' : 'text-text-muted'}`}>{t('tool-base.ui.base', { base: option.base })}</span>
               </button>
             );
           })}
@@ -324,7 +324,7 @@ export default function BaseConverter() {
       <section className="flex flex-col gap-2" aria-labelledby="common-base-reference-title">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h3 id="common-base-reference-title" className="text-sm font-bold text-text-main">{t('tool-base.ui.reference')}</h3>
+            <h2 id="common-base-reference-title" className="text-sm font-bold text-text-main">{t('tool-base.ui.reference')}</h2>
             <p className="text-xs text-text-muted">{t('tool-base.ui.referenceHint')}</p>
           </div>
           <span className="text-[0.68rem] font-semibold text-text-muted">{t('tool-base.ui.legend')}</span>
@@ -332,17 +332,19 @@ export default function BaseConverter() {
 
         <div className="overflow-x-auto rounded-xl border border-border bg-app/70 p-1.5">
           <div className="grid min-w-[760px] grid-cols-[58px_repeat(16,minmax(38px,1fr))] gap-1" role="grid" aria-label={t('tool-base.ui.gridLabel')}>
-            <div className="flex items-center justify-center text-[0.6rem] font-extrabold uppercase tracking-wide text-text-muted" role="columnheader">
-              {t('tool-base.ui.baseHeading')}
-            </div>
-            {COMMON_VALUES.map((value) => (
-              <div key={`heading-${value}`} className={`flex min-h-6 items-center justify-center rounded text-[0.62rem] font-bold tabular-nums ${selectedReferenceValue === value ? 'bg-accent text-white' : 'text-text-muted'}`} role="columnheader">
-                {value}
+            <div className="contents" role="row">
+              <div className="flex items-center justify-center text-[0.6rem] font-extrabold uppercase tracking-wide text-text-muted" role="columnheader">
+                {t('tool-base.ui.baseHeading')}
               </div>
-            ))}
+              {COMMON_VALUES.map((value) => (
+                <div key={`heading-${value}`} className={`flex min-h-6 items-center justify-center rounded text-[0.62rem] font-bold tabular-nums ${selectedReferenceValue === value ? 'bg-accent-fill text-accent-on-fill' : 'text-text-muted'}`} role="columnheader">
+                  {value}
+                </div>
+              ))}
+            </div>
 
             {COMMON_BASES.map((row) => (
-              <React.Fragment key={row.base}>
+              <div className="contents" key={row.base} role="row">
                 <div className="flex min-h-8 flex-col items-center justify-center rounded-md border border-border bg-card leading-none" role="rowheader" title={t('tool-base.ui.rowTitle', { name: t(`tool-base.ui.${row.labelKey}`), base: row.base })}>
                   <span className="text-[0.64rem] font-extrabold text-accent">{row.short}</span>
                   <span className="mt-0.5 text-[0.5rem] text-text-muted">{row.base}</span>
@@ -356,12 +358,12 @@ export default function BaseConverter() {
                       key={`${row.base}-${value}`}
                       type="button"
                       role="gridcell"
-                      aria-pressed={exactInput}
+                      aria-selected={exactInput}
                       aria-label={t('tool-base.ui.cellLabel', { name: t(`tool-base.ui.${row.labelKey}`), display: displayValue, decimal: value })}
                       title={t('tool-base.ui.cellTitle', { display: displayValue, base: row.base, decimal: value })}
                       onClick={() => selectReferenceValue(row.base, value)}
                       className={`min-h-8 rounded-md border px-1 font-mono text-[0.72rem] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${exactInput
-                        ? 'border-accent bg-accent text-white shadow-[0_2px_8px_var(--accent-light)]'
+                        ? 'border-accent bg-accent-fill text-accent-on-fill shadow-[0_2px_8px_var(--accent-light)]'
                         : selected
                           ? 'border-accent/45 bg-accent-light text-accent'
                           : 'border-border bg-card text-text-main hover:border-accent hover:bg-accent-light hover:text-accent'}`}
@@ -370,7 +372,7 @@ export default function BaseConverter() {
                     </button>
                   );
                 })}
-              </React.Fragment>
+              </div>
             ))}
           </div>
         </div>

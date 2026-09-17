@@ -310,11 +310,41 @@
   --bg-sidebar: #ffffff;
   --bg-card: #ffffff;
   --text-main: #0f172a;
-  --text-muted: #64748b;
+  --text-muted: #5b6a7d;
+  /* Amino-acid categories and password-strength steps: both are rendered
+     through inline styles, so they need tokens rather than dark: variants. */
+  --aa-phe: #7c3aed;
+  --aa-leu: #6d28d9;
+  --aa-ile: #5b21b6;
+  --aa-val: #4c1d95;
+  --aa-ser: #2563eb;
+  --aa-pro: #0369a1;
+  --aa-thr: #0e7490;
+  --aa-ala: #0f766e;
+  --aa-tyr: #b45309;
+  --aa-his: #92400e;
+  --aa-gln: #c2410c;
+  --aa-asn: #dc2626;
+  --aa-lys: #b91c1c;
+  --aa-asp: #be185d;
+  --aa-glu: #9d174d;
+  --aa-cys: #4d7c0f;
+  --aa-trp: #15803d;
+  --aa-arg: #047857;
+  --aa-gly: #4b5563;
+  --strength-none: #6b7280;
+  --strength-veryWeak: #dc2626;
+  --strength-weak: #c2410c;
+  --strength-moderate: #a16207;
+  --strength-strong: #047857;
+  --strength-veryStrong: #065f46;
   --text-sidebar: #0f172a;
   --text-sidebar-muted: #64748b;
   --accent: #047857;
   --accent-hover: #065f46;
+  /* Fill + the text that sits on it; white cannot ride a bright fill. */
+  --accent-fill: #047857;
+  --accent-on-fill: #ffffff;
   --accent-light: rgba(4, 120, 87, 0.08);
   /* Accent as an edge: the ring around result slabs and outlined accent controls. */
   --accent-edge: rgba(4, 120, 87, 0.25);
@@ -331,7 +361,7 @@
   --focus-ring: rgba(16, 185, 129, 0.2);
   --bg-footer: #f8fafc;
   --nav-active-bg: rgba(16, 185, 129, 0.08);
-  --nav-active-text: #059669;
+  --nav-active-text: #047857;
   --nav-hover-bg: rgba(15, 23, 42, 0.02);
   --bg-search-sidebar: #f1f5f9;
   --bg-header: #ffffff;
@@ -352,10 +382,39 @@ html[data-theme="dark"] {
   --bg-card-solid: #141826;
   --text-main: #f1f5f9;
   --text-muted: #94a3b8;
+  /* Amino-acid categories and password-strength steps: both are rendered
+     through inline styles, so they need tokens rather than dark: variants. */
+  --aa-phe: #c4b5fd;
+  --aa-leu: #a78bfa;
+  --aa-ile: #ddd6fe;
+  --aa-val: #e9d5ff;
+  --aa-ser: #93c5fd;
+  --aa-pro: #7dd3fc;
+  --aa-thr: #67e8f9;
+  --aa-ala: #5eead4;
+  --aa-tyr: #fcd34d;
+  --aa-his: #fbbf24;
+  --aa-gln: #fdba74;
+  --aa-asn: #fca5a5;
+  --aa-lys: #f87171;
+  --aa-asp: #f9a8d4;
+  --aa-glu: #f472b6;
+  --aa-cys: #bef264;
+  --aa-trp: #86efac;
+  --aa-arg: #6ee7b7;
+  --aa-gly: #9ca3af;
+  --strength-none: #9ca3af;
+  --strength-veryWeak: #f87171;
+  --strength-weak: #fdba74;
+  --strength-moderate: #fcd34d;
+  --strength-strong: #6ee7b7;
+  --strength-veryStrong: #34d399;
   --text-sidebar: #e2e8f0;
   --text-sidebar-muted: #64748b;
   --accent: #10b981;
   --accent-hover: #059669;
+  --accent-fill: #10b981;
+  --accent-on-fill: #08120c;
   --accent-light: rgba(16, 185, 129, 0.15);
   --accent-edge: rgba(16, 185, 129, 0.35);
   --accent-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);
@@ -957,5 +1016,28 @@ textarea.slab-output[readonly]:focus {
       var(--border-color) calc(100% - 28px),
       transparent
     );
+  }
+}
+
+/* Random Order reveals one drawn entry at a time; the lift is what makes the
+   staggered reveal read as a draw rather than as a list that simply appeared. */
+@keyframes shuffle-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.shuffle-reveal-item {
+  animation: shuffle-reveal 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shuffle-reveal-item {
+    animation: none;
   }
 }

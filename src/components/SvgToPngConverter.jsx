@@ -138,7 +138,7 @@ export default function SvgToPngConverter() {
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)]">
         <section className="flex min-w-0 flex-col gap-4" aria-labelledby="svg-source-title">
           <div>
-            <h3 id="svg-source-title" className="text-sm font-bold text-text-main">{t('tool-svg-png.ui.sourceTitle')}</h3>
+            <h2 id="svg-source-title" className="text-sm font-bold text-text-main">{t('tool-svg-png.ui.sourceTitle')}</h2>
             <p className="text-xs text-text-muted">{t('tool-svg-png.ui.privacyNote')}</p>
           </div>
 
@@ -185,7 +185,7 @@ export default function SvgToPngConverter() {
         </section>
 
         <section className="flex min-w-0 flex-col gap-4" aria-labelledby="svg-output-title">
-          <h3 id="svg-output-title" className="text-sm font-bold text-text-main">{t('tool-svg-png.ui.outputTitle')}</h3>
+          <h2 id="svg-output-title" className="text-sm font-bold text-text-main">{t('tool-svg-png.ui.outputTitle')}</h2>
           <div
             data-preview-background={background}
             className={`relative flex min-h-56 items-center justify-center overflow-hidden rounded-xl border border-border p-4 ${

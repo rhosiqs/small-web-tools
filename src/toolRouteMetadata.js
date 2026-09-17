@@ -29,6 +29,7 @@ export const ROUTE_DEFINITIONS = [
   route('tool-qrcode', 'utilities', { subGroupKey: 'utilities', componentProps: { initialTab: 'qr' }, staticLayout: true }),
   route('tool-qrbarcodescan', 'utilities', { subGroupKey: 'utilities', staticLayout: true }),
   route('tool-wheel', 'utilities', { subGroupKey: 'utilities', staticLayout: true }),
+  route('tool-shuffle', 'utilities', { subGroupKey: 'utilities', staticLayout: true }),
   route('about', 'policy', { navigationVisible: false }),
   route('privacy', 'policy', { navigationVisible: false }),
   route('terms', 'policy', { navigationVisible: false }),

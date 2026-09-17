@@ -25,6 +25,7 @@ const modeDefinitions = [
       'tool-password',
       'tool-pwstrength',
       'tool-wheel',
+      'tool-shuffle',
     ],
     simplified: false,
   },

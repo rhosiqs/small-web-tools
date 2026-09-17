@@ -1,4 +1,5 @@
 export const WHEEL_ALGORITHM_VERSION = 'SWT-WHEEL-SHA256-REJECTION-v1';
+export const SHUFFLE_ALGORITHM_VERSION = 'SWT-SHUFFLE-SHA256-FISHER-YATES-v1';
 const UINT32_RANGE = 0x1_0000_0000;
 
 function bytesToHex(bytes) {
@@ -96,6 +97,110 @@ export async function verifyDrawRecord(record) {
     return valid
       ? { valid: true, winnerIndex, winnerName: record.items[winnerIndex] }
       : { valid: false, error: 'Record contents or winner do not match' };
+  } catch (error) {
+    return {
+      valid: false,
+      error: error instanceof Error ? error.message : 'Record verification failed',
+    };
+  }
+}
+
+/**
+ * Deterministic uint32 stream derived from a seed. The domain label keeps the
+ * wheel draw and the shuffle from ever deriving the same values out of one seed.
+ *
+ * @param {string} seedHex
+ * @param {string} domainLabel
+ * @returns {AsyncGenerator<number>}
+ */
+async function* seededUint32Stream(seedHex, domainLabel) {
+  const seed = hexToBytes(seedHex);
+  const domain = new TextEncoder().encode(domainLabel);
+  for (let counter = 0; counter < UINT32_RANGE; counter += 1) {
+    const input = new Uint8Array(domain.length + seed.length + 4);
+    input.set(domain);
+    input.set(seed, domain.length);
+    new DataView(input.buffer).setUint32(domain.length + seed.length, counter);
+    const block = await sha256(input);
+    const view = new DataView(block.buffer);
+    for (let offset = 0; offset < block.byteLength; offset += 4) {
+      yield view.getUint32(offset);
+    }
+  }
+}
+
+/**
+ * Fisher-Yates over the seeded stream, rejecting values above the largest exact
+ * multiple of the bound so every permutation stays equally likely.
+ *
+ * @param {string} seedHex
+ * @param {number} itemCount
+ * @returns {Promise<number[]>} original indices in their drawn positions
+ */
+export async function deriveShuffleOrder(seedHex, itemCount) {
+  if (!Number.isSafeInteger(itemCount) || itemCount < 1) {
+    throw new Error('At least one item is required');
+  }
+  const order = Array.from({ length: itemCount }, (_, index) => index);
+  if (itemCount === 1) return order;
+
+  const stream = seededUint32Stream(seedHex, SHUFFLE_ALGORITHM_VERSION);
+  for (let position = itemCount - 1; position > 0; position -= 1) {
+    const bound = position + 1;
+    const limit = Math.floor(UINT32_RANGE / bound) * bound;
+    let value = limit;
+    while (value >= limit) {
+      const next = await stream.next();
+      if (next.done) throw new Error('Random stream was exhausted before an unbiased value was found');
+      value = next.value;
+    }
+    const target = value % bound;
+    const swapped = order[position];
+    order[position] = order[target];
+    order[target] = swapped;
+  }
+  return order;
+}
+
+/**
+ * @param {string[]} items
+ * @param {{ seed?: string, timestamp?: string }} [options]
+ */
+export async function createShuffleRecord(items, options = {}) {
+  if (!Array.isArray(items) || items.length === 0) throw new Error('At least one item is required');
+  const snapshot = items.map((item) => String(item).trim()).filter(Boolean);
+  if (snapshot.length !== items.length) throw new Error('Shuffle items cannot be blank');
+  const seed = options.seed || createSeed();
+  const order = await deriveShuffleOrder(seed, snapshot.length);
+  return {
+    algorithm: SHUFFLE_ALGORITHM_VERSION,
+    seed,
+    items: snapshot,
+    itemsHash: await hashItemSnapshot(snapshot),
+    order,
+    result: order.map((index) => snapshot[index]),
+    timestamp: options.timestamp || new Date().toISOString(),
+  };
+}
+
+export async function verifyShuffleRecord(record) {
+  if (record?.algorithm !== SHUFFLE_ALGORITHM_VERSION) {
+    return { valid: false, error: 'Unsupported algorithm version' };
+  }
+  try {
+    const expectedHash = await hashItemSnapshot(record.items);
+    const order = await deriveShuffleOrder(record.seed, record.items.length);
+    const result = order.map((index) => record.items[index]);
+    const valid = (
+      expectedHash === record.itemsHash
+      && Array.isArray(record.order)
+      && order.join(',') === record.order.join(',')
+      && Array.isArray(record.result)
+      && result.join('\u0000') === record.result.join('\u0000')
+    );
+    return valid
+      ? { valid: true, order, result }
+      : { valid: false, error: 'Record contents or drawn order do not match' };
   } catch (error) {
     return {
       valid: false,

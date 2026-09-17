@@ -91,7 +91,7 @@ function restoreExcludedWords(source, draft, excludeWords) {
 
 const pillClass = (active) =>
   `rounded px-2 py-1.5 font-mono text-[0.6875rem] font-medium transition-colors ${
-    active ? 'bg-accent text-white' : 'text-text-muted ring-1 ring-inset ring-border hover:text-accent'
+    active ? 'bg-accent-fill text-accent-on-fill' : 'text-text-muted ring-1 ring-inset ring-border hover:text-accent'
   }`;
 
 const nestedFieldClass =

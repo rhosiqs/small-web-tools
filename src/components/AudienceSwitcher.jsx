@@ -24,7 +24,7 @@ export default function AudienceSwitcher({ activeModeId, onSelectMode, mobile = 
             onClick={() => onSelectMode(mode.id)}
             className={`shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
               isActive
-                ? 'border-accent bg-accent text-white shadow-sm'
+                ? 'border-accent bg-accent-fill text-accent-on-fill shadow-sm'
                 : 'border-transparent bg-transparent text-text-muted hover:bg-accent-light hover:text-accent'
             }`}
           >

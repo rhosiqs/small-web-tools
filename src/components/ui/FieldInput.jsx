@@ -54,7 +54,7 @@ export default function FieldInput({
       {(error || hint) && (
         <span
           id={`${inputId}-note`}
-          className={error ? 'text-xs text-red-500' : 'text-xs text-text-muted'}
+          className={error ? 'text-xs text-red-600 dark:text-red-400' : 'text-xs text-text-muted'}
         >
           {error || hint}
         </span>

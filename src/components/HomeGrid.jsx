@@ -134,9 +134,9 @@ export default function HomeGrid({
     const sortedSubGroupNames = Object.keys(subGroups).sort();
     return sortedSubGroupNames.map(sgName => (
       <div key={sgName} className="mt-6 mb-6">
-        <h4 className="text-[0.9rem] font-bold uppercase tracking-[0.05em] text-text-muted mb-3 pl-1.5 border-l-2 border-accent leading-none">
+        <h3 className="text-[0.9rem] font-bold uppercase tracking-[0.05em] text-text-muted mb-3 pl-1.5 border-l-2 border-accent leading-none">
           {sgName}
-        </h4>
+        </h3>
         {renderGrid(sortLocalizedTools(subGroups[sgName], i18n.resolvedLanguage))}
       </div>
     ));
@@ -149,10 +149,10 @@ export default function HomeGrid({
 
       return (
         <div key={group.id} data-group={group.id} className="mb-10 last:mb-0">
-          <h3 className="text-[1.25rem] font-bold text-text-main mb-[18px] flex items-center gap-2 tracking-[-0.01em] [&>svg]:text-accent [&>svg]:w-[18px] [&>svg]:h-[18px]">
+          <h2 className="text-[1.25rem] font-bold text-text-main mb-[18px] flex items-center gap-2 tracking-[-0.01em] [&>svg]:text-accent [&>svg]:w-[18px] [&>svg]:h-[18px]">
             {group.icon}
             {group.label}
-          </h3>
+          </h2>
           {/* The default Utilities group keeps its sub-group headings; an
               arrangement the reader built is shown exactly as they built it. */}
           {!layout.isCustomized && group.id === 'utilities'
@@ -243,10 +243,10 @@ export default function HomeGrid({
             return (
               <>
                 {cat && (
-                  <h3 className="text-[1.25rem] font-bold text-text-main mb-[18px] flex items-center gap-2 tracking-[-0.01em] [&>svg]:text-accent [&>svg]:w-[18px] [&>svg]:h-[18px]">
+                  <h2 className="text-[1.25rem] font-bold text-text-main mb-[18px] flex items-center gap-2 tracking-[-0.01em] [&>svg]:text-accent [&>svg]:w-[18px] [&>svg]:h-[18px]">
                     {cat.icon}
                     {cat.name}
-                  </h3>
+                  </h2>
                 )}
                 {renderGrid(tools.filter(t => t.category === activeTab))}
               </>

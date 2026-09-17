@@ -21,7 +21,7 @@ const SAMPLE = `flowchart LR
 
 function SvgPreview({ render, label, className = '', previewRef }) {
   if (!render) return <div ref={previewRef} className={`flex h-full min-h-0 items-center justify-center p-8 text-center text-sm text-text-muted ${className}`}>{label}</div>;
-  return <div ref={previewRef} className={`h-full min-h-0 overflow-auto p-5 ${className}`} aria-label={label}><div className="mx-auto w-fit max-w-full" dangerouslySetInnerHTML={{ __html: render.svg }} /></div>;
+  return <div ref={previewRef} className={`h-full min-h-0 overflow-auto p-5 ${className}`} role="region" aria-label={label} tabIndex={0}><div className="mx-auto w-fit max-w-full" dangerouslySetInnerHTML={{ __html: render.svg }} /></div>;
 }
 
 export default function MermaidConverter() {
@@ -174,11 +174,11 @@ export default function MermaidConverter() {
       </div>
       <div className="grid grid-cols-1 overflow-hidden rounded-xl border border-border bg-card lg:h-[560px] lg:grid-cols-2">
         <section className="flex min-h-[420px] min-w-0 flex-col border-b border-border lg:min-h-0 lg:border-b-0 lg:border-r" aria-labelledby="mermaid-editor-title">
-          <div className="relative flex min-h-12 items-center justify-between border-b border-border bg-app/70 px-4 py-2 pr-14"><h3 id="mermaid-editor-title" className="text-sm font-bold text-text-main">{t('tool-mermaid.ui.editorTitle')}</h3><span className="text-xs tabular-nums text-text-muted">{t('tool-mermaid.ui.characterCount', { count: characterCount })}</span><FullscreenPreviewButton label={t('tool-mermaid.ui.expandEditor')} onClick={() => setFocusedPanel('editor')} /></div>
+          <div className="relative flex min-h-12 items-center justify-between border-b border-border bg-app/70 px-4 py-2 pr-14"><h2 id="mermaid-editor-title" className="text-sm font-bold text-text-main">{t('tool-mermaid.ui.editorTitle')}</h2><span className="text-xs tabular-nums text-text-muted">{t('tool-mermaid.ui.characterCount', { count: characterCount })}</span><FullscreenPreviewButton label={t('tool-mermaid.ui.expandEditor')} onClick={() => setFocusedPanel('editor')} /></div>
           <textarea ref={textareaRef} value={source} onChange={(event) => { setSource(event.target.value); setStatus(''); }} spellCheck="false" aria-label={t('tool-mermaid.ui.editorAria')} className="min-h-[370px] flex-1 resize-none bg-card p-5 font-mono text-sm leading-6 text-text-main outline-none focus:ring-2 focus:ring-inset focus:ring-focus lg:min-h-0" />
         </section>
         <section className="flex min-h-[420px] min-w-0 flex-col lg:min-h-0" aria-labelledby="mermaid-preview-title">
-          <div className="relative flex min-h-12 items-center justify-between border-b border-border bg-app/70 px-4 py-2 pr-14"><h3 id="mermaid-preview-title" className="text-sm font-bold text-text-main">{t('tool-mermaid.ui.previewTitle')}</h3><FullscreenPreviewButton label={t('tool-mermaid.ui.expandPreview')} onClick={() => setFocusedPanel('preview')} /></div>
+          <div className="relative flex min-h-12 items-center justify-between border-b border-border bg-app/70 px-4 py-2 pr-14"><h2 id="mermaid-preview-title" className="text-sm font-bold text-text-main">{t('tool-mermaid.ui.previewTitle')}</h2><FullscreenPreviewButton label={t('tool-mermaid.ui.expandPreview')} onClick={() => setFocusedPanel('preview')} /></div>
           <SvgPreview render={currentRender} previewRef={previewRef} label={currentRender ? previewAria : t('tool-mermaid.ui.emptyPreview')} />
         </section>
       </div>

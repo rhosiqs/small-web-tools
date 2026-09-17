@@ -17,8 +17,8 @@ small-web-tools 是一個使用 React 18 與 Vite 的單頁應用程式，提供
 - PRIVACY.md 與 PRIVACY.zh-TW.md 是成對的隱私權政策與資料流揭露。
 - TODO.md 是刻意維持英文單一版本的待辦事項、已完成工作紀錄與更新流程。
 - ARCHITECTURE.md 是英文架構與維護參考；本檔案是繁體中文對照檔。
-- `src/i18n/` 是兩個支援 UI 地區設定及 `common`、`navigation`、`tools`、`errors`
-  命名空間的來源。
+- `src/i18n/` 是兩個支援 UI 地區設定及 `common`、`docs`、`navigation`、`tools`、
+  `errors` 命名空間的來源。
 
 本專案維護成對的英文與繁體中文說明文件。英文檔名搭配 `.zh-TW.md` 結尾的繁中檔案；
 修改文件描述的行為或結構時，請同步維護兩個版本。只供 AI agent 使用的
@@ -92,8 +92,11 @@ Pages 專案中為該分支建立的 deploy hook URL；secret 不存在時 workf
   Cloudflare Pages 重新建置的 release-deploy.yml。
 - public/：Cloudflare Pages 回應標頭、內建 WOFF2 UI 字型、授權與字型清單，以及 favicon。
 - scripts/：版本、i18n、硬編碼 UI 與文件一致性檢查腳本。
-- docs/：包含 `docs/agents/` 的 issue tracker、triage label 與 domain docs 規則，
-  以及 Docker 開發流程與其他成對的操作文件。
+- docs/：`docs/agents/` 收錄 issue tracker、triage label 與 domain docs 規則；
+  docs/docker-development.md、docs/architecture/language-switcher.md 與
+  docs/operations/production-hardening.md 各有繁中對照檔；
+  docs/mermaid-converter.md、docs/quality-baselines.md 與 docs/research/ 下的
+  日期記錄是只維護英文版的開發者說明文件。
 - .claude/：Claude Code 進入點 CLAUDE.md，以及 `.claude/skills/` 中的儲存庫 skills；
   fix-bug 另附 symptom-map 與 verification 兩份參考文件。
 - src/：React 應用程式、工具登錄表、樣式、共用 UI、工具元件與測試。
@@ -154,12 +157,15 @@ src/components/MobileDrawer.jsx 負責窄螢幕抽屜邊界。關閉時會卸載
 與路由選取後關閉，最後將焦點還給開啟按鈕。
 
 `src/components/LanguageSwitcher.jsx` 由 `App.jsx` 直接渲染於行動與桌面 header。它是地區設定選項、選單狀態、鍵盤導覽與焦點復原的共用負責元件；Simple 工作區不渲染桌面控制項。
+[`docs/architecture/language-switcher.zh-TW.md`](docs/architecture/language-switcher.zh-TW.md)
+完整記錄該控制項的設計。
 
 ### 國際化執行階段
 
 `src/i18n/index.js` 以 `react-i18next` 初始化 `i18next`，載入
 `src/i18n/locales/en-US/` 與 `src/i18n/locales/zh-TW/` 下成對的
-`common`、`navigation`、`tools`、`errors` 命名空間。English (`en-US`) 是預設與
+`common`、`docs`、`navigation`、`tools`、`errors` 五個命名空間；`mermaid`
+資源檔在初始化時合併入 `tools` 命名空間。English (`en-US`) 是預設與
 fallback，繁體中文 (`zh-TW`) 是第二個支援地區設定。
 
 初始地區設定按固定順序解析：有效的 `small-web-tools.locale` 儲存值優先，其次是
@@ -224,6 +230,9 @@ App shell、lazy route、持久化、工作區導覽與語言切換的整合覆�
 1. 使用 variant="tool" 的 Card 作為頁面容器。
 2. 頁面識別恰好渲染一個 ToolHeader 標題。
 3. 頁面層級描述不要放進 ToolHeader；輔助文字放在需要它的功能內。
+   ToolHeader 擁有唯一的 h1，因此其下的區段標題是 h2，並依序往下巢狀，不可跳級。
+   儀表板的分類群組為 h2、子群組為 h3；中繼資料工具在 h3 表格之上保留 h2 檔名標題。
+   e2e/accessibility.spec.js 以 Axe heading-order 規則強制此結構，且不接受任何例外。
 4. 保留共用桌面卡片間距（p-6、gap-4），並讓 styles.css 的行動 .tool-card 規則
    處理窄螢幕。下述轉換頁面改用較寬的節奏（p-6 sm:p-8、gap-6），這是單一框架
    版面所需。
@@ -259,6 +268,13 @@ public/fonts/MANIFEST.zh-TW.md。應用程式不會自動要求 Google Fonts。
 
 優先使用共用 primitives 與既有設計 token。只有真正共用的行為或元件專用樣式無法以
 既有 utilities 清楚表達時，才加入全域 CSS。
+
+Token 與狀態顏色必須在其實際所處的背景上達到 4.5:1 對比。填色的 accent 表面應使用
+--accent-fill／--accent-on-fill 這組 token，而非 bg-accent 搭配 text-white：深色主題的
+accent 是明亮的薄荷綠，白色文字無法承載，因此該主題改在同一填色上使用近黑色文字，
+而不是把填色調暗。帶色的 --accent-light 與 --nav-active-bg 背景同樣受此門檻約束；CodonTable.jsx 的胺基酸分類色盤也已調暗至同一門檻。在文字上
+套用 opacity-* utility 會稀釋繼承的顏色並破壞此保證，因此弱化狀態應改用 --text-muted
+或同色系較深的色階。e2e/accessibility.spec.js 會稽核所有已註冊路由，此處的退步會使 CI 失敗。
 
 ## 路由清單
 
@@ -299,6 +315,7 @@ public/fonts/MANIFEST.zh-TW.md。應用程式不會自動要求 Google Fonts。
 | tool-qrcode | QR Code 產生器 | QrBarcodeGenerator.jsx（qr 分頁） | 工具 |
 | tool-qrbarcodescan | QR Code 與條碼掃描器 | QrBarcodeScanner.jsx | 工具 |
 | tool-wheel | 隨機轉盤 | RandomWheel.jsx | 工具 |
+| tool-shuffle | 隨機排序 | RandomOrder.jsx | 工具 |
 | about | 關於 | docs/AboutPage.jsx | 政策（僅頁尾，不在工具目錄） |
 | privacy | 隱私權 | docs/PrivacyPage.jsx | 政策（僅頁尾，不在工具目錄）；同時提供網路服務清單與服務同意設定 |
 | terms | 使用條款 | docs/TermsPage.jsx | 政策（僅頁尾，不在工具目錄） |
@@ -333,6 +350,15 @@ config/network-services.json 宣告、且 public/_headers 的 img-src 允許的�
 src/styles.css 中的 .markdown-html 會補回這些 raw 元素被 Tailwind reset 移除的基本樣式。
 來源行中繼資料讓可獨立捲動的編輯器與預覽區能雙向對齊，不會折疊 fenced-code 內容。
 重點解析器與互動測試位於 markdownDomain.test.js 與 markdownPreviewer.test.jsx。
+
+### Mermaid 轉換器
+
+MermaidConverter.jsx 使用內建的 mermaid 套件渲染圖表，該套件只在開啟此路由並要求
+渲染後才動態匯入。渲染以 securityLevel: strict 執行，並限制原始碼大小與敘述數量；
+產生的 SVG 會再經過一層本機淨化程序，才提供給預覽、SVG 下載與 PNG 點陣化使用。
+其地區設定資源位於獨立的 mermaid.json，於初始化時合併入 tools 命名空間。
+[`docs/mermaid-converter.md`](docs/mermaid-converter.md)（僅英文版）完整說明其處理、
+安全性與匯出模型。
 
 ### GitHub HTML 積木
 
@@ -525,6 +551,7 @@ verify 中的 scripts/check-external-hosts.mjs 會在正式來源主機名稱未
 | jszip | 通過 archive-limit preflight 後的 Office 文件中繼資料解析與封存處理。 |
 | html5-qrcode | 相機與檔案式 QR／barcode 掃描。 |
 | qrcode、jsbarcode | QR 與 barcode 產生。 |
+| mermaid | Mermaid 轉換器的瀏覽器本機圖表渲染，僅在該路由要求渲染後才匯入。 |
 | highlight.js | Code Live Preview 工具的瀏覽器本機語法醒目顯示。 |
 | html-to-image | 樣式化程式碼預覽的 lazy 瀏覽器本機 PNG 匯出。 |
 | @ffmpeg/ffmpeg | 使用完整性驗證遠端 core 資產的用戶端媒體分割。 |
@@ -560,6 +587,8 @@ npm@10.9.2；CI 會安裝並驗證該精確版本。npm run verify 是基本門�
 Playwright 流程與 npm audit。
 
 覆蓋率 gate 納入 `App.jsx`、共用分類定義與抽離後的音訊／影片領域，並設定各邊界門檻。
+[`docs/quality-baselines.md`](docs/quality-baselines.md)（僅英文版）記錄覆蓋率層級、
+ESLint 警告預算，以及有時效的無障礙例外。
 Knip 會以 dependency-only 與完整 dead-code 模式執行，明確列出應用程式、Functions、
 Worker、script、test、integration 與瀏覽器流程入口。
 

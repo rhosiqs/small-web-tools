@@ -82,7 +82,7 @@ function MiniPlayer({ objectUrl }) {
         preload="metadata"
       />
       <button 
-        className="flex items-center justify-center w-9 h-9 rounded-full bg-accent text-white border-none cursor-pointer transition-all hover:bg-accent-hover hover:scale-105 shrink-0 shadow-md" 
+        className="flex items-center justify-center w-9 h-9 rounded-full bg-accent-fill text-accent-on-fill border-none cursor-pointer transition-all hover:bg-accent-hover hover:scale-105 shrink-0 shadow-md" 
         onClick={togglePlay} 
         aria-label={t(playing ? 'tool-audiometa.ui.pause' : 'tool-audiometa.ui.play')}
       >
@@ -459,9 +459,7 @@ export default function AudioMeta() {
         <div
           className={`border-2 border-dashed border-border rounded-xl p-8 cursor-pointer text-center transition-all flex flex-col items-center justify-center gap-4 min-h-[220px] hover:border-accent hover:bg-accent-light/5 mt-4 ${dragOver ? 'border-accent bg-accent-light/5' : ''}`}
           onClick={() => fileInputRef.current?.click()}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
+          role="group"
           aria-label={t('tool-audiometa.ui.uploadAria')}
         >
           <div className="flex flex-col items-center gap-3">

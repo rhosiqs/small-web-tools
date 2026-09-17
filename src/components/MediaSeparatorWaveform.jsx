@@ -108,7 +108,7 @@ export default function MediaSeparatorWaveform({ audioURL, className }) {
           onClick={togglePlay}
           disabled={!peaks || !peaks.length}
           title={t(isPlaying ? 'tool-mediasplit.ui.pause' : 'tool-mediasplit.ui.play')}
-          className="bg-accent text-white border-none rounded-full w-8 h-8 inline-flex items-center justify-center cursor-pointer transition-colors duration-200 flex-shrink-0 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-accent-fill text-accent-on-fill border-none rounded-full w-8 h-8 inline-flex items-center justify-center cursor-pointer transition-colors duration-200 flex-shrink-0 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPlaying ? (
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
