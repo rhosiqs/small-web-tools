@@ -156,6 +156,7 @@ export default function WebsiteFontExtractor() {
   const [urlInput, setUrlInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
+  const [blocked, setBlocked] = useState(false);
   const [fonts, setFonts] = useState([]);
   const [searched, setSearched] = useState(false);
   const [truncation, setTruncation] = useState(null);
@@ -171,7 +172,7 @@ export default function WebsiteFontExtractor() {
 
   const doExtract = async (rawUrl) => {
     if (!extractorAllowed) {
-      setStatus(t('tool-fontextractor.ui.blocked'));
+      setBlocked(true);
       return;
     }
     let target = (rawUrl || urlInput).trim();
@@ -183,6 +184,7 @@ export default function WebsiteFontExtractor() {
 
     setLoading(true);
     setStatus('');
+    setBlocked(false);
     setFonts([]);
     setTruncation(null);
     setSearched(true);
@@ -221,10 +223,7 @@ export default function WebsiteFontExtractor() {
       <ToolHeader title={t('tool-fontextractor.ui.heading')} />
 
       {!extractorAllowed && (
-        <div className="p-3 bg-app border border-border rounded-xl flex items-center justify-between gap-3 text-xs">
-          <span>{t('tool-fontextractor.ui.consentDisclosure')}</span>
-          <Button variant="secondary" onClick={() => grantConsent('fontextractor')}>{t('tool-fontextractor.ui.allow')}</Button>
-        </div>
+        <p className="p-3 bg-app border border-border rounded-xl text-xs">{t('tool-fontextractor.ui.consentDisclosure')}</p>
       )}
 
       <div className="flex flex-col gap-2 w-full mt-4">
@@ -259,6 +258,12 @@ export default function WebsiteFontExtractor() {
       </div>
 
       {loading && <Spinner container label={t('tool-fontextractor.ui.fetching')} className="py-12 w-full" />}
+      {!extractorAllowed && blocked && (
+        <div role="status" className="flex flex-wrap items-center gap-3 mt-2">
+          <p className="text-red-500 font-medium text-sm">{t('tool-fontextractor.ui.blocked')}</p>
+          <Button variant="primary" onClick={() => grantConsent('fontextractor')}>{t('tool-fontextractor.ui.allow')}</Button>
+        </div>
+      )}
       {!loading && status && <p role="status" className="text-red-500 font-medium text-sm mt-2">{status}</p>}
 
       {!loading && fonts.length > 0 && (
