@@ -145,6 +145,37 @@ describe('safeExternalFetch', () => {
     })).rejects.toThrow('Response size exceeds limit');
   });
 
+  it('labels upstream failures with stable codes', async () => {
+    await expect(safeExternalFetch('https://example.com/', {
+      fetchImpl: vi.fn(async () => new Response('denied', { status: 403 })),
+      resolveHostname: publicResolver,
+    })).rejects.toMatchObject({ code: 'UPSTREAM_STATUS', status: 403 });
+
+    await expect(safeExternalFetch('https://example.com/file.css', {
+      fetchImpl: vi.fn(async () => new Response('<html></html>', { headers: { 'Content-Type': 'text/html' } })),
+      resolveHostname: publicResolver,
+      allowedContentTypes: ['text/css'],
+    })).rejects.toMatchObject({ code: 'UNEXPECTED_CONTENT_TYPE' });
+
+    await expect(safeExternalFetch('https://example.com/', {
+      fetchImpl: vi.fn(async () => new Response(null, { status: 500 })),
+      resolveHostname: async () => { throw new Error('resolver down'); },
+    })).rejects.toMatchObject({ code: 'DNS_FAILED' });
+  });
+
+  it('can keep the leading bytes of an oversized response instead of failing', async () => {
+    for (const headers of [{}, { 'Content-Length': '9' }]) {
+      const result = await safeExternalFetch('https://example.com/', {
+        fetchImpl: vi.fn(async () => new Response('<head>abc', { headers })),
+        resolveHostname: publicResolver,
+        maxBytes: 6,
+        truncateAtLimit: true,
+      });
+      expect(new TextDecoder().decode(result.buffer)).toBe('<head>');
+      expect(result.truncated).toBe(true);
+    }
+  });
+
   it('uses one absolute deadline across redirects and body reading', async () => {
     const fetchImpl = vi.fn(async (url) => {
       await new Promise((resolve) => setTimeout(resolve, 15));
