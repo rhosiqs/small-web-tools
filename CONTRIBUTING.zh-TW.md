@@ -89,7 +89,10 @@ Cloudflare 整合、Playwright 瀏覽器流程與 build artifact 產生；相依
 分支推送、每週排程執行，或修改 `package.json`、`package-lock.json` 的 pull
 request。兩個檔案都沒動的 pull request 不可能引入弱點，因此新公布的 advisory 會
 以警告與 job summary 呈現，而不會讓無關的變更失敗；請用只調整相依套件的變更修
-正，而不是由剛好先跑到 CI 的分支承擔。Node 22 則保留為最低執行環境相容性 gate，
+正，而不是由剛好先跑到 CI 的分支承擔。
+`npm run audit` 會執行 `scripts/check-audit.mjs`：任何 moderate 以上的 advisory 都會失敗，
+除非列在 `config/audit-exceptions.json` 並附上理由、移除條件與到期日；例外過期後閘門
+會再次失敗，而不再對應任何 advisory 的項目會被回報，以便移除。Node 22 則保留為最低執行環境相容性 gate，
 只執行型別檢查、單元測試與正式環境建置。兩個 job 都有明確 timeout，同一 ref 上
 被新提交取代的舊 CI 會由 workflow concurrency 自動取消。workflow 使用
 `actions/checkout@v7`、`actions/setup-node@v6` 與 `actions/upload-artifact@v7`。

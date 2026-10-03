@@ -39,7 +39,7 @@
     "test:ssrf-runtime": "node scripts/verify-ssrf-cloudflare-runtime.mjs",
     "deps:check": "knip --dependencies --no-progress",
     "deadcode:check": "knip --no-progress",
-    "audit": "npm audit --audit-level=moderate",
+    "audit": "node scripts/check-audit.mjs",
     "verify": "npm run version:check && npm run i18n:check && npm run i18n:audit && npm run lint && npm run lint:changed && npm run typecheck && npm run test:coverage && npm run build && npm run bundle:check && npm run headers:check && npm run external-hosts:check && npm run platform:check && npm run docs:check"
   },
   "devDependencies": {

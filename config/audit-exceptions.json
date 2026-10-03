@@ -1,0 +1,9 @@
+[
+  {
+    "id": "GHSA-vfj7-8cjw-p6xm",
+    "package": "braces",
+    "expires": "2027-01-01",
+    "reason": "Stack exhaustion on deeply nested glob patterns. It is reached only through the Tailwind CSS 3 and Knip build and lint toolchains (chokidar, micromatch, fast-glob), never ships in the bundle, and those globs come from this repository's own source tree.",
+    "removalCondition": "Remove once Tailwind CSS 4 replaces the 3.x toolchain or a patched braces release exists."
+  }
+]
