@@ -97,10 +97,12 @@ small-web-tools/
 ├── config/
 │   ├── network-services.json Network-service policy source of truth
 │   ├── ffmpeg-assets.json    Pinned FFmpeg asset sizes and SHA-256 values
+│   ├── audit-exceptions.json Time-bound `npm audit` advisory exceptions
 │   └── rateLimitPolicies.js  Canonical route, class, binding, limit, and period policies
 ├── scripts/
 │   ├── check-i18n.mjs         Locale-pair structure and interpolation checks
 │   ├── check-hardcoded-ui.mjs User-facing string audit
+│   ├── check-audit.mjs        `npm audit` gate with expiring exceptions
 │   └── check-doc-consistency.mjs Documentation/link consistency checks
 ├── docs/
 │   ├── agents/               Issue-tracker, triage-label, and domain-doc rules

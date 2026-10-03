@@ -87,7 +87,7 @@ Pages 專案中為該分支建立的 deploy hook URL；secret 不存在時 workf
 
 - config/：network-services.json 網路服務政策來源，以及 ffmpeg-assets.json 固定的
   FFmpeg 資產大小與 SHA-256；rateLimitPolicies.js 是正式的 route、class、binding、
-  limit 與 period 政策。
+  limit 與 period 政策；audit-exceptions.json 記錄有期限的 `npm audit` advisory 例外。
 - .github/：Dependabot 設定、GitHub Actions CI pipeline，以及在版本標籤推送時觸發
   Cloudflare Pages 重新建置的 release-deploy.yml。
 - public/：Cloudflare Pages 回應標頭、內建 WOFF2 UI 字型、授權與字型清單，以及 favicon。
