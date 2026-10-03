@@ -30,8 +30,11 @@ test('font extractor renders metadata and never fetches discovered font files', 
   });
 
   await page.goto('/home/fontextractor');
-  await page.getByRole('button', { name: 'Allow website analysis' }).click();
   await page.getByLabel('Website URL').fill('https://example.com');
+  await page.getByRole('button', { name: 'Scan declarations' }).click();
+  await expect(page.getByText(/blocked until you allow/)).toBeVisible();
+  await page.getByRole('button', { name: 'Allow website analysis' }).click();
+  await expect(page.getByText(/blocked until you allow/)).toBeHidden();
   await page.getByRole('button', { name: 'Scan declarations' }).click();
 
   await expect(page.getByText('Source host')).toBeVisible();

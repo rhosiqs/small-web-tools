@@ -146,12 +146,18 @@ export async function resolveHostname(hostname, { fetchImpl = fetch, signal } = 
 
 export async function assertPublicResolution(hostname, options = {}) {
   const resolver = options.resolveHostname || resolveHostname;
-  const addresses = await resolver(hostname, options);
+  let addresses;
+  try {
+    addresses = await resolver(hostname, options);
+  } catch (error) {
+    if (options.signal?.aborted) throw error;
+    fail('DNS_FAILED', error instanceof Error ? error.message : 'DNS lookup failed');
+  }
   if (!Array.isArray(addresses) || addresses.length === 0) {
-    throw new Error('Target hostname did not resolve to an address');
+    fail('DNS_FAILED', 'Target hostname did not resolve to an address');
   }
   if (addresses.some((address) => isPrivateHost(address))) {
-    throw new Error('Target hostname resolves to a private or reserved IP address');
+    fail('BLOCKED_TARGET', 'Target hostname resolves to a private or reserved IP address');
   }
   return addresses;
 }
@@ -169,7 +175,7 @@ function assertAllowedContentType(response, allowedContentTypes) {
       ? actual.startsWith(expected.slice(0, -1))
       : actual === expected;
   });
-  if (!allowed) throw new Error('Unexpected response Content-Type: ' + (actual || 'missing'));
+  if (!allowed) fail('UNEXPECTED_CONTENT_TYPE', 'Unexpected response Content-Type: ' + (actual || 'missing'));
 }
 
 function abortError(signal) {
@@ -241,21 +247,28 @@ export async function safeExternalFetch(rawUrl, options = {}) {
         continue;
       }
       if (!response.ok) {
-        throw new Error('Remote server responded with status ' + response.status);
+        response.body?.cancel().catch(() => {});
+        throw Object.assign(
+          new SafeFetchError('UPSTREAM_STATUS', 'Remote server responded with status ' + response.status),
+          { status: response.status },
+        );
       }
 
       assertAllowedContentType(response, options.allowedContentTypes);
       const contentLength = Number(response.headers.get('content-length') || 0);
-      if (contentLength > maxBytes) {
-        throw new Error('Response size exceeds limit of ' + maxBytes + ' bytes');
+      if (contentLength > maxBytes && !options.truncateAtLimit) {
+        fail('RESPONSE_TOO_LARGE', 'Response size exceeds limit of ' + maxBytes + ' bytes');
       }
 
       if (!response.body) {
         const buffer = await awaitWithAbort(response.arrayBuffer(), controller.signal);
         if (buffer.byteLength > maxBytes) {
-          throw new Error('Response size exceeds limit of ' + maxBytes + ' bytes');
+          if (!options.truncateAtLimit) {
+            fail('RESPONSE_TOO_LARGE', 'Response size exceeds limit of ' + maxBytes + ' bytes');
+          }
+          return { response, buffer: buffer.slice(0, maxBytes), url: validatedUrl.href, truncated: true };
         }
-        return { response, buffer, url: validatedUrl.href };
+        return { response, buffer, url: validatedUrl.href, truncated: false };
       }
 
       const reader = response.body.getReader();
@@ -263,15 +276,25 @@ export async function safeExternalFetch(rawUrl, options = {}) {
       controller.signal.addEventListener('abort', cancelReader, { once: true });
       const chunks = [];
       let totalRead = 0;
+      let truncated = false;
       try {
         while (true) {
           const { done, value } = await awaitWithAbort(reader.read(), controller.signal);
           if (done) break;
-          totalRead += value.byteLength;
-          if (totalRead > maxBytes) {
+          if (totalRead + value.byteLength > maxBytes) {
             await reader.cancel('Response size limit exceeded');
-            throw new Error('Response size exceeds limit of ' + maxBytes + ' bytes');
+            if (!options.truncateAtLimit) {
+              fail('RESPONSE_TOO_LARGE', 'Response size exceeds limit of ' + maxBytes + ' bytes');
+            }
+            // Keep the leading bytes: font declarations a page links or inlines
+            // live in its head, which a size cap on the whole document would
+            // otherwise throw away along with the oversized body.
+            chunks.push(value.subarray(0, maxBytes - totalRead));
+            totalRead = maxBytes;
+            truncated = true;
+            break;
           }
+          totalRead += value.byteLength;
           chunks.push(value);
         }
       } finally {
@@ -284,7 +307,7 @@ export async function safeExternalFetch(rawUrl, options = {}) {
         fullBuffer.set(chunk, offset);
         offset += chunk.byteLength;
       }
-      return { response, buffer: fullBuffer.buffer, url: validatedUrl.href };
+      return { response, buffer: fullBuffer.buffer, url: validatedUrl.href, truncated };
     }
     fail('TOO_MANY_REDIRECTS', 'Too many redirects');
   } finally {

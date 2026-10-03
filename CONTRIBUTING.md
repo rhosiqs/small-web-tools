@@ -96,7 +96,11 @@ advisory — a branch push, the weekly scheduled run, or a pull request that edi
 `package.json` or `package-lock.json`. A pull request that touches neither cannot
 have introduced one, so a newly published advisory is reported as a warning and a
 job summary there instead of failing an unrelated change; fix it in a
-dependency-only change rather than in the branch that happened to run first. Node 22 remains a minimum-runtime compatibility gate that runs type checking,
+dependency-only change rather than in the branch that happened to run first.
+`npm run audit` runs `scripts/check-audit.mjs`, which fails on any moderate-or-higher
+advisory unless `config/audit-exceptions.json` lists it with a reason, a removal
+condition, and an expiry date; an expired entry fails the gate again, and an entry
+that no longer matches an advisory is reported so it can be removed. Node 22 remains a minimum-runtime compatibility gate that runs type checking,
 the unit-test suite, and a production build. Both jobs have explicit timeouts, and
 workflow concurrency cancels superseded runs for the same ref. The workflow uses
 `actions/checkout@v7`, `actions/setup-node@v6`, and `actions/upload-artifact@v7`.

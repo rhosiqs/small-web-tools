@@ -7,6 +7,8 @@ export const PUBLIC_ERRORS = Object.freeze({
   UPSTREAM_TIMEOUT: 'The external service did not respond in time.',
   BLOCKED_TARGET: 'That network target is not allowed.',
   PROVIDER_UNAVAILABLE: 'The external provider is temporarily unavailable.',
+  UPSTREAM_REJECTED: 'The website refused the request or returned an error.',
+  UNSUPPORTED_CONTENT: 'The address did not return a supported page.',
   PROCESSING_FAILED: 'Processing failed. Check the input and try again.',
   INTERNAL_ERROR: 'An unexpected error occurred.',
 });
