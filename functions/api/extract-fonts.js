@@ -229,6 +229,12 @@ async function fetchBudgeted(url, type, budget, limits) {
     const result = await safeExternalFetch(url, {
       maxBytes: reservation,
       timeoutMs: remainingMs,
+      truncateAtLimit: type === 'html',
+      headers: {
+        Accept: type === 'html'
+          ? 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.1'
+          : 'text/css,*/*;q=0.1',
+      },
       allowedContentTypes: type === 'html'
         ? ['text/html', 'application/xhtml+xml']
         : ['text/css'],
@@ -248,6 +254,7 @@ async function extractFontMetadata(targetUrl, limits) {
   const budget = createBudget(limits);
   const htmlResult = await fetchBudgeted(targetUrl.href, 'html', budget, limits);
   if (!htmlResult) return { fonts: [], truncation: budget.metadata() };
+  if (htmlResult.truncated) budget.reasons.add('html-bytes');
   const html = new TextDecoder().decode(htmlResult.buffer);
   const allFonts = [];
 
@@ -342,6 +349,19 @@ function resolveLimits(rawOverride) {
   return defaults;
 }
 
+/**
+ * Separate the target website's own answer from a failure on this side, so a
+ * site that blocks automated requests is not reported as this service being
+ * down.
+ */
+function upstreamFailure(error) {
+  if (error?.code === 'UPSTREAM_TIMEOUT' || error?.name === 'AbortError') return ['UPSTREAM_TIMEOUT', 504];
+  if (error?.code === 'UPSTREAM_STATUS') return ['UPSTREAM_REJECTED', 502];
+  if (error?.code === 'UNEXPECTED_CONTENT_TYPE') return ['UNSUPPORTED_CONTENT', 422];
+  if (error?.code === 'BLOCKED_TARGET') return ['BLOCKED_TARGET', 400];
+  return ['PROVIDER_UNAVAILABLE', 502];
+}
+
 export async function onRequestPost(context) {
   const { request, env = {} } = context;
   const corsHeaders = sameOriginCorsHeaders(request);
@@ -407,8 +427,8 @@ export async function onRequestPost(context) {
       truncation: result.truncation,
     }, 200, corsHeaders);
   } catch (error) {
-    const timedOut = error?.code === 'UPSTREAM_TIMEOUT' || error?.name === 'AbortError';
-    return errorResponse(timedOut ? 'UPSTREAM_TIMEOUT' : 'PROVIDER_UNAVAILABLE', timedOut ? 504 : 502, {
+    const [code, status] = upstreamFailure(error);
+    return errorResponse(code, status, {
       headers: corsHeaders,
       error,
       diagnostic: error?.code || 'font-analysis',

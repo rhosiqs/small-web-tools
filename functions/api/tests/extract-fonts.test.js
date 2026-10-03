@@ -110,6 +110,41 @@ describe('extract-fonts API handler failures', () => {
     expect(JSON.stringify(body)).not.toContain('internal DNS and timeout detail');
   });
 
+  it.each([
+    ['a refusing website', { code: 'UPSTREAM_STATUS', status: 403 }, 502, 'UPSTREAM_REJECTED'],
+    ['a non-HTML page', { code: 'UNEXPECTED_CONTENT_TYPE' }, 422, 'UNSUPPORTED_CONTENT'],
+    ['a name that resolves privately', { code: 'BLOCKED_TARGET' }, 400, 'BLOCKED_TARGET'],
+    ['a DNS failure', { code: 'DNS_FAILED' }, 502, 'PROVIDER_UNAVAILABLE'],
+  ])('reports %s distinctly and logs its cause', async (_label, fields, status, code) => {
+    const logger = vi.spyOn(console, 'error').mockImplementation(() => {});
+    safeExternalFetch.mockRejectedValueOnce(Object.assign(new Error('detail'), fields));
+
+    const response = await onRequestPost(postContext({ url: 'https://fonts.google.com' }));
+
+    expect(response.status).toBe(status);
+    expect(await response.json()).toMatchObject({ ok: false, code });
+    expect(logger).toHaveBeenCalledWith(expect.objectContaining({ diagnostic: fields.code }));
+    logger.mockRestore();
+  });
+
+  it('asks for HTML, keeps an oversized page, and reports the truncation', async () => {
+    safeExternalFetch.mockResolvedValueOnce({
+      ...fetched('<style>@font-face { font-family: Big; src: url("/big.woff2"); }</style>'),
+      truncated: true,
+    });
+
+    const response = await onRequestPost(postContext({ url: 'https://fonts.google.com' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.fonts).toEqual([expect.objectContaining({ family: 'Big' })]);
+    expect(body.truncation).toMatchObject({ truncated: true, reasons: ['html-bytes'] });
+    expect(safeExternalFetch.mock.calls[0][1]).toMatchObject({
+      truncateAtLimit: true,
+      headers: { Accept: expect.stringContaining('text/html') },
+    });
+  });
+
   it('returns font metadata from inline and linked stylesheets', async () => {
     safeExternalFetch
       .mockResolvedValueOnce(fetched([
