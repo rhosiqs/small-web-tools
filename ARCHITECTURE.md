@@ -119,7 +119,7 @@ small-web-tools/
 │       ├── add-tool/         Routed-tool checklist skill
 │       └── fix-bug/          Bug-diagnosis workflow skill plus symptom-map and verification references
 ├── .github/
-│   ├── dependabot.yml        Monthly dependency updates, including major versions
+│   ├── dependabot.yml        Monthly dependency updates, including major versions; React packages grouped
 │   └── workflows/
 │       ├── ci.yml            GitHub Actions CI pipeline workflow
 │       └── release-deploy.yml Cloudflare Pages rebuild triggered by a version-tag push
