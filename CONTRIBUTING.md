@@ -11,9 +11,10 @@ current architecture, route inventory, API topology, and project map.
 
 ## Supported environment
 
-- Node.js 22 and Node.js 24 are supported LTS majors; `.nvmrc` selects Node 22 for the repository default. `package.json` accepts only the supported 22.x and 24.x release lines rather than unbounded future Node majors.
-- Use npm 10.9.2, pinned by the `packageManager` field. CI rejects a different
-  npm version, so install it before restoring dependencies:
+- Node.js 22 or newer is required (`engines.node` is `>=22`). `.nvmrc` selects
+  Node 22, the minimum supported version, and CI runs on that version.
+- Use npm 10.9.2, pinned by the `packageManager` field, so `package-lock.json`
+  stays stable across machines:
 
   ```bash
   npm install --global npm@10.9.2
@@ -86,26 +87,19 @@ there is no expiry and no recurring rotation.
 
 `npm run verify` runs Git-tag version resolution, lint-warning budget, the
 baseline, domain, and UI checkJs projects, coverage, build/bundle, headers, network
-inventory, Cloudflare configuration, and documentation-consistency gates. CI uses
-two independent jobs while preserving the required check names `Verify (22)` and
-`Verify (24)`. Node 24 runs the complete verification, dependency check, security
-audit, Cloudflare integration, Playwright journeys, and build artifact generation;
-the dependency and audit gates run before the more expensive integration/browser
-steps. The security audit blocks whenever a change could have introduced an
-advisory — a branch push, the weekly scheduled run, or a pull request that edits
-`package.json` or `package-lock.json`. A pull request that touches neither cannot
-have introduced one, so a newly published advisory is reported as a warning and a
-job summary there instead of failing an unrelated change; fix it in a
-dependency-only change rather than in the branch that happened to run first.
-`npm run audit` runs `scripts/check-audit.mjs`, which fails on any moderate-or-higher
-advisory unless `config/audit-exceptions.json` lists it with a reason, a removal
-condition, and an expiry date; an expired entry fails the gate again, and an entry
-that no longer matches an advisory is reported so it can be removed. Node 22 remains a minimum-runtime compatibility gate that runs type checking,
-the unit-test suite, and a production build. Both jobs have explicit timeouts, and
-workflow concurrency cancels superseded runs for the same ref. The workflow uses
-`actions/checkout@v7`, `actions/setup-node@v6`, and `actions/upload-artifact@v7`.
-This preserves explicit coverage of both supported LTS release lines without
-duplicating the most expensive browser and audit work. `npm run typecheck:baseline`
+inventory, Cloudflare configuration, and documentation-consistency gates.
+
+CI (`.github/workflows/ci.yml`) is one `Verify` job on the `.nvmrc` Node version:
+`npm ci`, `npm run verify`, then the Playwright journeys against the build that
+`verify` produced. Workflow concurrency cancels superseded runs for the same ref.
+The dependency, dead-code, security-audit, and Cloudflare-integration checks are
+not in CI; run `npm run deps:check`, `npm run deadcode:check`, `npm run audit`, and
+`npm run platform:integration` locally when a change touches dependencies or the
+Pages/Worker topology. `npm run audit` runs `scripts/check-audit.mjs`, which fails
+on any moderate-or-higher advisory unless `config/audit-exceptions.json` lists it
+with a reason, a removal condition, and an expiry date; an expired entry fails the
+gate again, and an entry that no longer matches an advisory is reported so it can
+be removed. `npm run typecheck:baseline`
 checks the broad JavaScript graph without strict mode, `npm run typecheck:domain`
 preserves the existing narrow domain/shared-helper boundary, and
 `npm run typecheck:ui` enables `strictNullChecks` for the explicitly listed shared

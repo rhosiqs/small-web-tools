@@ -89,7 +89,7 @@ small-web-tools/
 ├── playwright.config.js      Playwright browser-journey runner configuration
 ├── knip.json                 Knip dependency and dead-code entry points
 ├── wrangler.jsonc            Cloudflare Pages topology and service bindings
-├── .nvmrc                    Node 22 default for local development
+├── .nvmrc                    Node 22 (minimum supported) for local development and CI
 ├── .dev.vars.example         Local Pages Functions variable template
 ├── tailwind.config.js        Tailwind tokens mapped to CSS custom properties
 ├── postcss.config.js         Tailwind and Autoprefixer configuration
@@ -676,14 +676,14 @@ npm run docs:check
 npm run preview
 ```
 
-Node.js 22 and Node.js 24 are supported. Use the `npm@10.9.2` release pinned by
-the `packageManager` field in `package.json`; CI installs and verifies that exact
-version. `npm run verify` is the baseline gate: Git-tag version resolution, a
+Node.js 22 or newer is required (`engines.node` is `>=22`); `.nvmrc` selects Node 22.
+Use the `npm@10.9.2` release pinned by the `packageManager` field in `package.json`.
+`npm run verify` is the baseline gate: Git-tag version resolution, a
 non-increasing ESLint warning budget,
 normal and strict checkJs, coverage thresholds, production build, bundle budgets,
 static header policy, the external-host inventory, Cloudflare topology, and
-documentation consistency. CI additionally runs dependency checks, Playwright
-journeys, and `npm audit`.
+documentation consistency. CI runs `npm run verify` and the Playwright journeys on
+Node 22; dependency, dead-code, audit, and Cloudflare-integration checks run locally.
 
 The coverage gate includes `App.jsx`, shared category definitions, and the extracted
 audio/video domains with per-boundary thresholds.

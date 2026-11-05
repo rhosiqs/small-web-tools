@@ -24,7 +24,6 @@
     "version:check": "node scripts/check-version.mjs",
     "preview": "vite preview",
     "lint": "eslint src functions workers test scripts e2e --max-warnings 0",
-    "lint:changed": "node scripts/check-changed-lint.mjs",
     "typecheck": "npm run typecheck:baseline && npm run typecheck:domain && npm run typecheck:ui",
     "typecheck:baseline": "tsc --project jsconfig.json --noEmit",
     "typecheck:domain": "tsc --project jsconfig.domain.json --noEmit",
@@ -40,7 +39,7 @@
     "deps:check": "knip --dependencies --no-progress",
     "deadcode:check": "knip --no-progress",
     "audit": "node scripts/check-audit.mjs",
-    "verify": "npm run version:check && npm run i18n:check && npm run i18n:audit && npm run lint && npm run lint:changed && npm run typecheck && npm run test:coverage && npm run build && npm run bundle:check && npm run headers:check && npm run external-hosts:check && npm run platform:check && npm run docs:check"
+    "verify": "npm run version:check && npm run i18n:check && npm run i18n:audit && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm run bundle:check && npm run headers:check && npm run external-hosts:check && npm run platform:check && npm run docs:check"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

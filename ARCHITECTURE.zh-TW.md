@@ -580,11 +580,11 @@ npm run docs:check
 npm run preview
 ```
 
-支援 Node.js 22 與 Node.js 24。使用 package.json 的 packageManager 欄位固定的
-npm@10.9.2；CI 會安裝並驗證該精確版本。npm run verify 是基本門檻：Git 標籤版本解析、
+需要 Node.js 22 或更新版本（`engines.node` 為 `>=22`）；.nvmrc 選取 Node 22。
+使用 package.json 的 packageManager 欄位固定的 npm@10.9.2。npm run verify 是基本門檻：Git 標籤版本解析、
 不增加的 ESLint 警告預算、一般與 strict checkJs、覆蓋率門檻、正式建置、套件大小、
-靜態標頭政策、外部主機清單、Cloudflare 拓撲與文件一致性。CI 另外執行相依套件檢查、
-Playwright 流程與 npm audit。
+靜態標頭政策、外部主機清單、Cloudflare 拓撲與文件一致性。CI 在 Node 22 上執行
+npm run verify 與 Playwright 流程；相依、dead-code、audit 與 Cloudflare 整合檢查在本機執行。
 
 覆蓋率 gate 納入 `App.jsx`、共用分類定義與抽離後的音訊／影片領域，並設定各邊界門檻。
 [`docs/quality-baselines.md`](docs/quality-baselines.md)（僅英文版）記錄覆蓋率層級、
