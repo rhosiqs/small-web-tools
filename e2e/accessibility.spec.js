@@ -29,7 +29,7 @@ test('consent settings apply in place on the privacy page and announce the chang
   await expect(page.getByRole('dialog')).toHaveCount(0);
 
   const allowButton = page.getByRole('button', { name: /^Allow / }).first();
-  const serviceName = (await allowButton.getAttribute('aria-label')).replace(/^Allow /, '');
+  const serviceName = (await allowButton.getAttribute('aria-label')).match(/^Allow (.+): /)[1];
   await allowButton.click();
   await expect(page.getByText(`${serviceName} is now allowed.`)).toBeAttached();
   await expect(page.getByRole('button', { name: `Revoke ${serviceName}` })).toBeVisible();
@@ -43,7 +43,7 @@ test('brand and folder-selection controls use native button semantics', async ({
   await page.goto('/');
   await expect(page.getByRole('button', { name: 'Go to home' }).first()).toBeVisible();
   await page.goto('/home/folder-analyzer');
-  await expect(page.getByRole('button', { name: 'Select a folder to analyze' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Select or Drag & Drop Folder/ })).toBeVisible();
 });
 
 test('desktop category shortcuts remain pointer-only redundant navigation', async ({ page }) => {

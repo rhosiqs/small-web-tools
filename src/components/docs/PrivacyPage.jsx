@@ -92,7 +92,10 @@ export default function PrivacyPage() {
                       }
                     }}
                     aria-pressed={isGranted}
-                    aria-label={t(isGranted ? 'docs:privacy.consent.revoke' : 'docs:privacy.consent.allow', { service: serviceName })}
+                    aria-label={t(isGranted ? 'docs:privacy.consent.revoke' : 'docs:privacy.consent.allow', {
+                      service: serviceName,
+                      state: t(isGranted ? 'docs:privacy.consent.allowed' : 'docs:privacy.consent.blocked'),
+                    })}
                     className={`flex-shrink-0 rounded-lg px-3 py-1 text-xs font-bold transition-colors ${
                       isGranted
                         ? 'border border-accent/30 bg-accent/15 text-accent hover:border-red-500/30 hover:bg-red-500/15 hover:text-red-500'

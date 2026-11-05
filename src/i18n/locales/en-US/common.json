@@ -1,6 +1,6 @@
 {
   "productName": "Small Web Tools",
-  "language": { "label": "Language", "en-US": "English", "zh-TW": "Traditional Chinese" },
+  "language": { "label": "Language", "trigger": "{{current}}, language", "en-US": "English", "zh-TW": "Traditional Chinese" },
   "actions": { "close": "Close", "cancel": "Cancel", "confirm": "Confirm", "copy": "Copy", "copied": "Copied", "download": "Download", "reset": "Reset", "clear": "Clear", "start": "Start", "stop": "Stop", "retry": "Retry", "open": "Open", "save": "Save", "remove": "Remove", "add": "Add", "selectFile": "Select file" },
   "states": { "loading": "Loading…", "loadingTool": "Loading tool…", "empty": "No results", "ready": "Ready", "processing": "Processing…", "pasting": "Pasting", "pasted": "Pasted" },
   "converter": { "source": "Source", "result": "Result", "mode": "Conversion Mode", "auto": "Auto", "encode": "Encode", "decode": "Decode", "paste": "Paste", "pasteLabel": "Paste from clipboard", "retryPaste": "Retry pasting from clipboard", "sourceInput": "Source input", "copyLabel": "Copy converted result", "retryCopy": "Retry copying converted result", "fixInput": "Fix the source input to see a result.", "convertedResult": "Converted result" },

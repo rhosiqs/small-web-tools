@@ -9,7 +9,7 @@
   "packageManager": "npm@10.9.2",
   "type": "module",
   "engines": {
-    "node": "^22.0.0 || ^24.0.0"
+    "node": ">=22"
   },
   "scripts": {
     "dev": "vite",
@@ -24,7 +24,6 @@
     "version:check": "node scripts/check-version.mjs",
     "preview": "vite preview",
     "lint": "eslint src functions workers test scripts e2e --max-warnings 0",
-    "lint:changed": "node scripts/check-changed-lint.mjs",
     "typecheck": "npm run typecheck:baseline && npm run typecheck:domain && npm run typecheck:ui",
     "typecheck:baseline": "tsc --project jsconfig.json --noEmit",
     "typecheck:domain": "tsc --project jsconfig.domain.json --noEmit",
@@ -40,19 +39,19 @@
     "deps:check": "knip --dependencies --no-progress",
     "deadcode:check": "knip --no-progress",
     "audit": "node scripts/check-audit.mjs",
-    "verify": "npm run version:check && npm run i18n:check && npm run i18n:audit && npm run lint && npm run lint:changed && npm run typecheck && npm run test:coverage && npm run build && npm run bundle:check && npm run headers:check && npm run external-hosts:check && npm run platform:check && npm run docs:check"
+    "verify": "npm run version:check && npm run i18n:check && npm run i18n:audit && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm run bundle:check && npm run headers:check && npm run external-hosts:check && npm run platform:check && npm run docs:check"
   },
   "devDependencies": {
-    "@axe-core/playwright": "4.13.0",
-    "@playwright/test": "^1.62.0",
+    "@axe-core/playwright": "4.14.0",
+    "@eslint/js": "9.39.5",
+    "@playwright/test": "^1.64.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@types/node": "^24.13.3",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.3.1",
-    "@vitest/coverage-v8": "^4.1.11",
-    "autoprefixer": "^10.5.2",
-    "@eslint/js": "9.39.5",
+    "@vitest/coverage-v8": "^4.1.12",
+    "autoprefixer": "^10.6.2",
     "eslint": "9.39.5",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.2.0",
@@ -60,19 +59,19 @@
     "jsdom": "^26.1.0",
     "json-dup-key-validator": "^1.0.3",
     "knip": "5.88",
-    "postcss": "^8.5.26",
+    "postcss": "^8.5.32",
     "tailwindcss": "^3.4.19",
     "typescript": "^5.8.3",
-    "vite": "^6.0.0",
-    "vitest": "^4.1.10",
-    "wrangler": "4.145.0"
+    "vite": "^6.4.5",
+    "vitest": "^4.1.12",
+    "wrangler": "4.157.0"
   },
   "overrides": {
     "brace-expansion": "5.0.12",
     "esbuild": "^0.25.0",
-    "minimatch": "10.2.5",
-    "dompurify": "3.4.16",
-    "undici": "7.29.1"
+    "minimatch": "11.0.4",
+    "dompurify": "3.4.17",
+    "undici": "7.30.1"
   },
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.12.15",

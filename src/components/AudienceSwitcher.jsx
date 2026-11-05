@@ -19,7 +19,9 @@ export default function AudienceSwitcher({ activeModeId, onSelectMode, mobile = 
             key={mode.id}
             type="button"
             aria-pressed={isActive}
-            aria-label={mode.id === 'all' ? t('audience.showAll') : t('audience.switchTo', { audience: mode.label })}
+            aria-label={mode.id === 'all'
+              ? t('audience.showAll', { short: t(`audience.short.${mode.id}`) })
+              : t('audience.switchTo', { short: t(`audience.short.${mode.id}`), audience: mode.label })}
             title={mode.label}
             onClick={() => onSelectMode(mode.id)}
             className={`shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${

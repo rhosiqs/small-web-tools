@@ -53,7 +53,8 @@ describe('backlog enhancement UI', () => {
       value: 'previous-folder',
     });
 
-    const selectButton = container.querySelector('[aria-label="Select a folder to analyze"]');
+    const selectButton = [...container.querySelectorAll('button')]
+      .find((button) => button.textContent.includes('Select or Drag & Drop Folder'));
     await act(async () => selectButton.click());
 
     expect(input.value).toBe('');

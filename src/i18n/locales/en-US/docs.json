@@ -53,8 +53,8 @@
     },
     "consent": {
       "description": "The services below stay blocked until you explicitly allow them. Runtime downloads and external links you select use separate point-of-use disclosures.",
-      "allow": "Allow {{service}}",
-      "revoke": "Revoke {{service}}",
+      "allow": "Allow {{service}}: {{state}}",
+      "revoke": "Revoke {{service}}: {{state}}",
       "allowed": "Allowed (click to revoke)",
       "blocked": "Blocked (click to allow)",
       "allowedAnnouncement": "{{service}} is now allowed.",

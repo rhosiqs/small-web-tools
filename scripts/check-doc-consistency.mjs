@@ -43,11 +43,15 @@ for (const documentName of ['README', 'ARCHITECTURE', 'CONTRIBUTING']) {
   requireText(documentName, npmVersion, `pinned npm version ${npmVersion}`);
   requireText(`${documentName}_ZH_TW`, npmVersion, `pinned npm version ${npmVersion}`);
 }
-for (const major of ['22', '24']) {
-  requireText('README', `Node.js ${major}`, `supported Node.js ${major}`);
-  requireText('README_ZH_TW', `Node.js ${major}`, `supported Node.js ${major}`);
-  requireText('ARCHITECTURE', major, `supported Node.js ${major}`);
-  requireText('ARCHITECTURE_ZH_TW', major, `supported Node.js ${major}`);
+const minimumNodeMajor = pkg.engines.node.match(/^>=(\d+)$/)?.[1];
+if (!minimumNodeMajor) {
+  failures.push(`package.json engines.node must be a ">=MAJOR" floor, found ${pkg.engines.node}`);
+} else if (read('.nvmrc').trim() !== minimumNodeMajor) {
+  failures.push(`.nvmrc must select the minimum supported Node.js major ${minimumNodeMajor}`);
+} else {
+  for (const documentName of ['README', 'README_ZH_TW', 'ARCHITECTURE', 'ARCHITECTURE_ZH_TW']) {
+    requireText(documentName, `Node.js ${minimumNodeMajor}`, `minimum Node.js ${minimumNodeMajor}`);
+  }
 }
 
 for (const command of ['npm run dev', 'npm run build', 'npm run verify', 'npm run test:e2e']) {

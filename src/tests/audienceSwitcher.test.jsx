@@ -29,7 +29,7 @@ describe('AudienceSwitcher', () => {
       .toEqual(['Home', 'Daily', 'Developer', 'Bioinfo', 'Designer', 'Student']);
     expect(container).not.toHaveTextContent('Simple');
     expect(container.querySelector('[aria-pressed="true"]')).toHaveTextContent('Developer');
-    expect(container.querySelector('button')).toHaveAccessibleName('Show all tools');
+    expect(container.querySelector('button')).toHaveAccessibleName('Home, show all tools');
   });
 
   it('switches immediately from a segmented button', async () => {

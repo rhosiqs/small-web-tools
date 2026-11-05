@@ -6,10 +6,9 @@ invent new scripts for a bug fix.
 
 ## Environment
 
-Node 22 or 24, npm pinned to 10.9.2 (`npm install --global npm@10.9.2`, then
-`npm ci`). CI rejects a different npm version. Node 22 is the compatibility gate
-(types, unit tests, build); Node 24 runs everything including Playwright, audit,
-and the Cloudflare integration.
+Node 22 or newer, npm pinned to 10.9.2 (`npm install --global npm@10.9.2`, then
+`npm ci`). CI runs one job on Node 22 (`.nvmrc`): `npm run verify`,
+`npm run audit`, then Playwright. Knip and the Cloudflare integration run only locally.
 
 ## Inner loop — the failing test
 
@@ -29,7 +28,6 @@ Confirm red before the fix and green after. Vitest collects
 ```bash
 npm run test:run        # whole unit suite, fast
 npm run lint            # zero warnings allowed, repo-wide
-npm run lint:changed    # same rule against origin/develop; run `git fetch origin develop` first
 npm run typecheck       # baseline + domain + strict UI checkJs projects
 npm run i18n:check      # locale pair structure, empties, interpolation drift
 npm run i18n:audit      # rejects user-facing literals in JSX
@@ -46,7 +44,7 @@ individually when you only need one of them.
 npm run verify
 ```
 
-Runs version → i18n → i18n audit → lint → changed-file lint → typecheck →
+Runs version → i18n → i18n audit → lint → typecheck →
 coverage → build → bundle → headers → external hosts → Cloudflare config → docs.
 This is what CI runs, so a local pass is the cheapest way to avoid a red PR.
 
@@ -120,7 +118,6 @@ The PR template asks for it, and it catches what jsdom cannot:
 | `i18n:check` key drift | a key added to one locale only, or an empty string |
 | `i18n:audit` hit | a literal in JSX; translate it rather than allowlisting |
 | coverage threshold on a path you touched | the new branch is untested — extend the test, do not lower the floor |
-| `lint:changed` fails while `lint` passes | a warning in *your* changed lines, or `origin/develop` was never fetched |
 | `docs:check` | a required token, route, or endpoint is missing from a maintained doc or its `.zh-TW` companion |
 | `headers:check` | `public/_headers` and `functions/_shared/responseHeaders.js` drifted apart |
 | `version:check` | no version-formatted Git tag reachable; fetch tags rather than editing `package.json` |

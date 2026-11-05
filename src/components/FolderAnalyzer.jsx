@@ -1040,7 +1040,6 @@ export default function FolderAnalyzer() {
                 openFolderInput();
               }
             }}
-            aria-label={t('tool-folder-analyzer.ui.selectAria')}
           >
             <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" className="text-text-muted transition-transform duration-300 hover:scale-110">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>

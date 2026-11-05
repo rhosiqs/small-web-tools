@@ -11,9 +11,10 @@ CONTRIBUTING.md 是正式的工程指南。請參閱 ARCHITECTURE.zh-TW.md 了�
 
 ## 支援環境
 
-- 支援 Node.js 22 與 Node.js 24 兩個 LTS 主要版本；.nvmrc 選取 Node 22 作為儲存庫預設版本。package.json 只接受受支援的 22.x 與 24.x 版本線，不會無限制宣告支援未來的 Node 主要版本。
-- 使用 package.json 的 packageManager 欄位固定的 npm 10.9.2。CI 會拒絕其他
-  npm 版本，因此還原相依套件前請先安裝：
+- 需要 Node.js 22 或更新版本（`engines.node` 為 `>=22`）。.nvmrc 選取最低支援版本
+  Node 22，CI 也在該版本上執行。
+- 使用 package.json 的 packageManager 欄位固定的 npm 10.9.2，讓
+  `package-lock.json` 在不同機器上保持一致：
 
   ```bash
   npm install --global npm@10.9.2
@@ -82,22 +83,18 @@ compatibility date 或 fetch 實作版本變更時才需要重新執行；沒有
 
 npm run verify 會執行 Git 標籤版本解析、Lint 警告預算、baseline、domain 與 UI
 三個 checkJs 專案、覆蓋率、建置／套件大小、標頭、網路清單、Cloudflare 設定與
-文件一致性檢查。CI 會使用兩個獨立 job，同時保留既有 required check 名稱
-`Verify (22)` 與 `Verify (24)`。Node 24 會執行完整 verify、相依檢查、安全稽核、
-Cloudflare 整合、Playwright 瀏覽器流程與 build artifact 產生；相依與 audit gate
-會先於成本較高的整合與瀏覽器流程執行。安全稽核只在變更有可能引入弱點時擋下：
-分支推送、每週排程執行，或修改 `package.json`、`package-lock.json` 的 pull
-request。兩個檔案都沒動的 pull request 不可能引入弱點，因此新公布的 advisory 會
-以警告與 job summary 呈現，而不會讓無關的變更失敗；請用只調整相依套件的變更修
-正，而不是由剛好先跑到 CI 的分支承擔。
+文件一致性檢查。
+
+CI（`.github/workflows/ci.yml`）只有一個 `Verify` job，使用 .nvmrc 的 Node 版本：
+`npm ci`、`npm run verify`、`npm run audit`，接著以 `verify` 產生的建置結果執行
+Playwright 瀏覽器流程。同一 ref 上被新提交取代的舊 CI 會由 workflow concurrency 自動取消。
+相依檢查、dead-code 檢查與 Cloudflare 整合檢查不在 CI 中；變更涉及相依套件或
+Pages／Worker 拓撲時，請在本機執行 `npm run deps:check`、`npm run deadcode:check` 與
+`npm run platform:integration`。安全稽核會擋下所有變更，因此新公布的 advisory 會讓
+CI 變紅，直到相依套件更新修正為止。
 `npm run audit` 會執行 `scripts/check-audit.mjs`：任何 moderate 以上的 advisory 都會失敗，
 除非列在 `config/audit-exceptions.json` 並附上理由、移除條件與到期日；例外過期後閘門
-會再次失敗，而不再對應任何 advisory 的項目會被回報，以便移除。Node 22 則保留為最低執行環境相容性 gate，
-只執行型別檢查、單元測試與正式環境建置。兩個 job 都有明確 timeout，同一 ref 上
-被新提交取代的舊 CI 會由 workflow concurrency 自動取消。workflow 使用
-`actions/checkout@v7`、`actions/setup-node@v6` 與 `actions/upload-artifact@v7`。
-這樣可明確覆蓋兩條受支援的 LTS 版本線，同時避免重複執行成本最高的瀏覽器與 audit
-工作。`npm run typecheck:baseline` 檢查未啟用 strict mode 的廣泛 JavaScript 圖；
+會再次失敗，而不再對應任何 advisory 的項目會被回報，以便移除。`npm run typecheck:baseline` 檢查未啟用 strict mode 的廣泛 JavaScript 圖；
 `npm run typecheck:domain` 保留既有的領域／共用 helper 邊界；
 `npm run typecheck:ui` 則對明確列出的共用 UI 遷移邊界啟用 `strictNullChecks`，包含
 共用分類定義與抽離後的音訊／影片中繼資料領域。只有

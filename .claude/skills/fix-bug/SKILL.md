@@ -104,7 +104,7 @@ existing suites (for example `src/tests/markdownPreviewerIssue42.test.jsx`,
   the `createRoot` + `act` pattern used by the existing regression suites).
 - **Cross-page journeys, real browser APIs, layout, a11y** → a Playwright spec in
   `e2e/`. Add one only when jsdom genuinely cannot express the failure; e2e is far
-  slower and CI runs it on Node 24 only.
+  slower than a unit test.
 - When the fix is tied to a tracked issue, the `<area>Issue<N>.test.jsx` naming
   convention already used in `src/tests/` makes the link obvious to reviewers.
 
