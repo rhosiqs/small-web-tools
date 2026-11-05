@@ -90,12 +90,13 @@ baseline, domain, and UI checkJs projects, coverage, build/bundle, headers, netw
 inventory, Cloudflare configuration, and documentation-consistency gates.
 
 CI (`.github/workflows/ci.yml`) is one `Verify` job on the `.nvmrc` Node version:
-`npm ci`, `npm run verify`, then the Playwright journeys against the build that
-`verify` produced. Workflow concurrency cancels superseded runs for the same ref.
-The dependency, dead-code, security-audit, and Cloudflare-integration checks are
-not in CI; run `npm run deps:check`, `npm run deadcode:check`, `npm run audit`, and
+`npm ci`, `npm run verify`, `npm run audit`, then the Playwright journeys against
+the build that `verify` produced. Workflow concurrency cancels superseded runs for
+the same ref. The dependency, dead-code, and Cloudflare-integration checks are not
+in CI; run `npm run deps:check`, `npm run deadcode:check`, and
 `npm run platform:integration` locally when a change touches dependencies or the
-Pages/Worker topology. `npm run audit` runs `scripts/check-audit.mjs`, which fails
+Pages/Worker topology. The audit blocks every change, so a newly published
+advisory turns CI red until a dependency update fixes it. `npm run audit` runs `scripts/check-audit.mjs`, which fails
 on any moderate-or-higher advisory unless `config/audit-exceptions.json` lists it
 with a reason, a removal condition, and an expiry date; an expired entry fails the
 gate again, and an entry that no longer matches an advisory is reported so it can

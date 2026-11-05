@@ -7,8 +7,8 @@ invent new scripts for a bug fix.
 ## Environment
 
 Node 22 or newer, npm pinned to 10.9.2 (`npm install --global npm@10.9.2`, then
-`npm ci`). CI runs one job on Node 22 (`.nvmrc`): `npm run verify`, then
-Playwright. Audit, Knip, and the Cloudflare integration run only locally.
+`npm ci`). CI runs one job on Node 22 (`.nvmrc`): `npm run verify`,
+`npm run audit`, then Playwright. Knip and the Cloudflare integration run only locally.
 
 ## Inner loop — the failing test
 

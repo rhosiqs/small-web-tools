@@ -124,7 +124,7 @@ English 是預設與 fallback 語言。選定的地區設定會以 `small-web-to
 
 ## 在本機執行
 
-需要 Node.js 22 或 Node.js 24，以及 npm 10.9.2。Node 22 是儲存庫的預設版本（`.nvmrc`）；`package.json` 固定 npm 版本，而 CI 會使用完全相同的 npm 版本驗證兩個支援的 Node.js 版本。
+需要 Node.js 22 或更新版本，以及 npm 10.9.2。Node 22 是儲存庫的預設版本（`.nvmrc`），也是 CI 使用的版本；`package.json` 固定 npm 版本。
 
 ```bash
 npm install --global npm@10.9.2

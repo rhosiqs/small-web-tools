@@ -86,11 +86,12 @@ npm run verify 會執行 Git 標籤版本解析、Lint 警告預算、baseline�
 文件一致性檢查。
 
 CI（`.github/workflows/ci.yml`）只有一個 `Verify` job，使用 .nvmrc 的 Node 版本：
-`npm ci`、`npm run verify`，接著以 `verify` 產生的建置結果執行 Playwright 瀏覽器流程。
-同一 ref 上被新提交取代的舊 CI 會由 workflow concurrency 自動取消。相依檢查、
-dead-code 檢查、安全稽核與 Cloudflare 整合檢查不在 CI 中；變更涉及相依套件或
-Pages／Worker 拓撲時，請在本機執行 `npm run deps:check`、`npm run deadcode:check`、
-`npm run audit` 與 `npm run platform:integration`。
+`npm ci`、`npm run verify`、`npm run audit`，接著以 `verify` 產生的建置結果執行
+Playwright 瀏覽器流程。同一 ref 上被新提交取代的舊 CI 會由 workflow concurrency 自動取消。
+相依檢查、dead-code 檢查與 Cloudflare 整合檢查不在 CI 中；變更涉及相依套件或
+Pages／Worker 拓撲時，請在本機執行 `npm run deps:check`、`npm run deadcode:check` 與
+`npm run platform:integration`。安全稽核會擋下所有變更，因此新公布的 advisory 會讓
+CI 變紅，直到相依套件更新修正為止。
 `npm run audit` 會執行 `scripts/check-audit.mjs`：任何 moderate 以上的 advisory 都會失敗，
 除非列在 `config/audit-exceptions.json` 並附上理由、移除條件與到期日；例外過期後閘門
 會再次失敗，而不再對應任何 advisory 的項目會被回報，以便移除。`npm run typecheck:baseline` 檢查未啟用 strict mode 的廣泛 JavaScript 圖；

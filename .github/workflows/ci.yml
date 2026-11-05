@@ -43,6 +43,9 @@ jobs:
       - name: Verify
         run: npm run verify
 
+      - name: Security audit
+        run: npm run audit
+
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
