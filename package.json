@@ -47,7 +47,7 @@
     "@playwright/test": "^1.62.0",
     "@testing-library/jest-dom": "^7.0.1",
     "@types/node": "^24.13.3",
-    "@types/react": "^18.3.31",
+    "@types/react": "^19.3.0",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.3.1",
     "@vitest/coverage-v8": "^4.1.12",
@@ -89,7 +89,7 @@
     "jszip": "^3.10.1",
     "mermaid": "^11.17.2",
     "qrcode": "^1.5.3",
-    "react": "^18.3.1",
+    "react": "^19.3.1",
     "react-dom": "^18.3.1",
     "react-i18next": "^17.0.12"
   }
