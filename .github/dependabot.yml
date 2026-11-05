@@ -8,6 +8,14 @@ updates:
       interval: "monthly"
     open-pull-requests-limit: 3
     groups:
+      # react, react-dom, and their type packages must move together; split
+      # pull requests cannot install, so each one fails CI on its own.
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
       development-dependencies:
         dependency-type: "development"
         update-types:
