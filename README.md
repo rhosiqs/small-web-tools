@@ -139,9 +139,8 @@ labels, and your browser permissions before using sensitive content.
 
 ## Run locally
 
-Requires Node.js 22 or Node.js 24 and npm 10.9.2. Node 22 is the repository
-default (`.nvmrc`); `package.json` pins the npm version, and CI verifies both
-supported Node.js releases with that exact npm release.
+Requires Node.js 22 or newer and npm 10.9.2. Node 22 is the repository
+default (`.nvmrc`) and the version CI runs on; `package.json` pins the npm version.
 
 ```bash
 npm install --global npm@10.9.2
