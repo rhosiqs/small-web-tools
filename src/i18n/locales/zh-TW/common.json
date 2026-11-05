@@ -1,6 +1,6 @@
 {
   "productName": "Small Web Tools",
-  "language": { "label": "語言", "en-US": "English", "zh-TW": "繁體中文" },
+  "language": { "label": "語言", "trigger": "{{current}}，語言", "en-US": "English", "zh-TW": "繁體中文" },
   "actions": { "close": "關閉", "cancel": "取消", "confirm": "確認", "copy": "複製", "copied": "已複製", "download": "下載", "reset": "重設", "clear": "清除", "start": "開始", "stop": "停止", "retry": "重試", "open": "開啟", "save": "儲存", "remove": "移除", "add": "新增", "selectFile": "選擇檔案" },
   "states": { "loading": "載入中…", "loadingTool": "正在載入工具…", "empty": "沒有結果", "ready": "就緒", "processing": "處理中…", "pasting": "貼上中", "pasted": "已貼上" },
   "converter": { "source": "來源", "result": "結果", "mode": "轉換模式", "auto": "自動", "encode": "編碼", "decode": "解碼", "paste": "貼上", "pasteLabel": "從剪貼簿貼上", "retryPaste": "重試從剪貼簿貼上", "sourceInput": "來源輸入", "copyLabel": "複製轉換結果", "retryCopy": "重試複製轉換結果", "fixInput": "請修正來源輸入以查看結果。", "convertedResult": "轉換結果" },

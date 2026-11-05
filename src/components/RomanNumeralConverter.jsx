@@ -148,9 +148,6 @@ export default function RomanNumeralConverter() {
                     type="button"
                     onClick={() => updateInput(String(decimal))}
                     className="flex items-baseline justify-between gap-2 rounded bg-app px-3 py-2 text-left transition-colors hover:bg-accent-light"
-                    aria-label={t('tool-roman.ui.convertAria', {
-                      decimal: decimal.toLocaleString(i18n.language), roman,
-                    })}
                   >
                     <span className="font-mono text-sm text-accent">{roman}</span>
                     <span className="font-mono text-[0.6875rem] text-text-muted">

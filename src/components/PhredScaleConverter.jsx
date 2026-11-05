@@ -259,7 +259,6 @@ export default function PhredScaleConverter() {
                 key={mark}
                 type="button"
                 onClick={() => applyReferenceScore(mark)}
-                aria-label={t('tool-phred.ui.useScoreAria', { score: mark })}
                 aria-pressed={active}
                 style={{ left: `${(mark / SCALE_MAX) * 100}%` }}
                 className={`absolute top-0 -translate-x-1/2 whitespace-nowrap border-0 bg-transparent px-2 pt-1.5 transition-colors ${

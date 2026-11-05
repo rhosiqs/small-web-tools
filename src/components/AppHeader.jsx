@@ -49,7 +49,7 @@ export default function AppHeader({
         id="desktop-brand-logo"
         className="flex cursor-pointer items-center gap-[10px] border-none bg-transparent p-0 text-accent transition-opacity duration-200 hover:opacity-85"
         title={t('navigation:goHome')}
-        aria-label={t('navigation:goHome')}
+        aria-label={t('navigation:brandHome', { product: t('common:productName') })}
         onClick={onGoHome}
       >
         <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-accent-gradient text-white shadow-[0_4px_10px_rgba(99,102,241,0.15)] [&_svg]:w-[18px]">

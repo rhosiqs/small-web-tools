@@ -132,7 +132,7 @@ export default function LanguageSwitcher({
         ref={triggerRef}
         type="button"
         className={`${isMobile ? MOBILE_TRIGGER_CLASSES : DESKTOP_TRIGGER_CLASSES} ${isOpen ? 'border-accent text-accent shadow-[0_0_0_2px_var(--focus-ring)]' : ''}`}
-        aria-label={t('language.label')}
+        aria-label={isMobile ? t('language.label') : t('language.trigger', { current: t(`language.${currentLocale}`) })}
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-controls={menuId}

@@ -29,8 +29,8 @@
     "consentMode": {"explicit-consent": "明確同意", "point-of-use-disclosure": "使用處揭露", "user-navigation": "使用者導覽", "hosting-infrastructure": "託管基礎架構"},
     "consent": {
       "description": "下列服務在你明確允許之前都保持封鎖。執行階段下載與你自行選取的外部連結另有使用處揭露。",
-      "allow": "允許 {{service}}",
-      "revoke": "撤銷 {{service}}",
+      "allow": "允許 {{service}}：{{state}}",
+      "revoke": "撤銷 {{service}}：{{state}}",
       "allowed": "已允許（點擊即撤銷）",
       "blocked": "已封鎖（點擊即允許）",
       "allowedAnnouncement": "已允許 {{service}}。",

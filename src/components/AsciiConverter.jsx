@@ -53,7 +53,6 @@ function AsciiCell({ entry, selected, dimmed, wide, onPick, label }) {
     <button
       type="button"
       aria-pressed={selected}
-      aria-label={label}
       title={`${entry.code} (0x${entry.code.toString(16).toUpperCase().padStart(2, '0')}) · ${entry.name}`}
       onClick={() => onPick(String(entry.code))}
       className={`rounded px-1.5 py-2 text-center transition-colors ${wide ? 'min-w-[54px]' : 'min-w-[42px]'} ${
@@ -66,6 +65,7 @@ function AsciiCell({ entry, selected, dimmed, wide, onPick, label }) {
     >
       <span className="block font-mono text-sm leading-none">{entry.symbol}</span>
       <span className="mt-1.5 block font-mono text-[0.5938rem] leading-none">{entry.code}</span>
+      <span className="sr-only">{label}</span>
     </button>
   );
 }
@@ -100,7 +100,6 @@ function AsciiReferenceTable({ input, setInput }) {
               key={band.id}
               type="button"
               aria-pressed={active}
-              aria-label={t('tool-ascii.ui.rangeAria', { label, range: band.range })}
               onClick={() => setActiveRangeId(band.id)}
               className={`rounded px-3 py-2.5 text-left transition-colors ${
                 active

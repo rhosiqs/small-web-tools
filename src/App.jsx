@@ -277,7 +277,7 @@ export default function App() {
             className={`flex items-center gap-[10px] cursor-pointer bg-transparent border-none p-0 text-left ${isSidebarCollapsed ? 'md:justify-center' : ''}`}
             id="brand-logo-btn"
             title={t('navigation:goHome')}
-            aria-label={t('navigation:goHome')}
+            aria-label={t('navigation:brandHome', { product: t('common:productName') })}
             onClick={() => {
               handleAllToolsHomeClick();
             }}
@@ -289,7 +289,7 @@ export default function App() {
               </svg>
             </div>
             {/* Brand Text — hidden when collapsed on desktop */}
-            <span className={`font-display text-[0.95rem] font-extrabold tracking-[-0.02em] text-text-sidebar ${isSidebarCollapsed ? 'md:hidden' : ''}`}>Small Web Tools</span>
+            <span className={`font-display text-[0.95rem] font-extrabold tracking-[-0.02em] text-text-sidebar ${isSidebarCollapsed ? 'md:hidden' : ''}`}>{t('common:productName')}</span>
           </button>
 
           {/* Collapse button — hidden on mobile */}
