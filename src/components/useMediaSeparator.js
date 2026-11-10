@@ -1,5 +1,18 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
-import { ensureFFmpegLoaded, terminateFFmpeg, AUDIO_FORMATS, VIDEO_FORMATS, getExt, guessMime } from './mediaSeparatorEngine';
+import {
+  ensureFFmpegLoaded,
+  terminateFFmpeg,
+  discardFFmpeg,
+  AUDIO_FORMATS,
+  VIDEO_FORMATS,
+  FALLBACK_AUDIO_EXT,
+  FALLBACK_VIDEO_EXT,
+  getExt,
+  guessMime,
+  parseInputStreams,
+  resolveAudioOutputExt,
+  resolveVideoOutputExt,
+} from './mediaSeparatorEngine';
 import { getMediaSeparatorPolicy, validateResourceAddition } from '../lib/resourceLimits';
 import useObjectUrlRegistry from '../hooks/useObjectUrlRegistry';
 import { toPublicProcessingError } from '../lib/publicErrors';
@@ -38,7 +51,12 @@ export function useMediaSeparator() {
   const stopRef = useRef(false);
 
   const updateItem = useCallback((id, patch) => {
-    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...patch } : it)));
+    const apply = (list) => list.map((it) => (it.id === id ? { ...it, ...patch } : it));
+    // runQueue picks the next item from itemsRef. Mirror the patch there now:
+    // when an item fails without yielding to React, an un-rendered ref still
+    // shows it as ready and the loop would pick the same item forever.
+    itemsRef.current = apply(itemsRef.current);
+    setItems(apply);
   }, []);
 
   const addFiles = useCallback((fileList) => {
@@ -62,6 +80,8 @@ export function useMediaSeparator() {
       videoBlob: null,
       audioURL: null,
       videoURL: null,
+      audioExt: null,
+      videoExt: null,
       error: null,
     }));
     setItems((prev) => [...prev, ...newItems]);
@@ -102,19 +122,13 @@ export function useMediaSeparator() {
     async (item) => {
       const ffmpeg = await ensureFFmpegLoaded();
 
-      const sourceExt = getExt(item.file.name) || 'mp4';
-      const inputName = `input-${item.id}.${sourceExt}`;
+      const sourceExt = getExt(item.file.name);
+      const inputName = `input-${item.id}.${sourceExt || 'bin'}`;
       const fileBuffer = new Uint8Array(await item.file.arrayBuffer());
       await ffmpeg.writeFile(inputName, fileBuffer);
 
       const audioFormat = AUDIO_FORMATS.find((f) => f.value === item.audioFormat);
       const videoFormat = VIDEO_FORMATS.find((f) => f.value === item.videoFormat);
-
-      const audioExt = audioFormat.outputExt || sourceExt;
-      const videoExt = videoFormat.outputExt || sourceExt;
-
-      const audioOutName = `audio-${item.id}.${audioExt}`;
-      const videoOutName = `video-${item.id}.${videoExt}`;
 
       // Split overall progress between audio stage (0-50%) and video stage (50-100%).
       let stage = 0;
@@ -125,53 +139,90 @@ export function useMediaSeparator() {
       };
       ffmpeg.on('progress', onProgress);
 
-      const audioLogs = [];
+      let logs = [];
       const logCollector = ({ message }) => {
-        audioLogs.push(message);
+        logs.push(message);
       };
       ffmpeg.on('log', logCollector);
 
-      try {
-        stage = 0;
-        const audioExitCode = await ffmpeg.exec(['-i', inputName, ...audioFormat.buildArgs(), audioOutName]);
-        if (audioExitCode !== 0) {
-          const logSummary = audioLogs.join('\n');
-          if (
-            logSummary.includes("matches no streams") ||
-            logSummary.includes("does not contain any stream") ||
-            logSummary.includes("does not contain any audio stream")
-          ) {
-            throw new Error("No audio track detected in the video");
+      const outputNames = new Set();
+      // A thrown exec (a WebAssembly trap, not a non-zero exit code) can leave
+      // the runtime corrupted so later queue items fail with the same trap.
+      // Discard it so the next item loads a fresh runtime.
+      const run = async (args) => {
+        logs = [];
+        try {
+          return await ffmpeg.exec(args);
+        } catch (err) {
+          discardFFmpeg(ffmpeg);
+          throw err;
+        }
+      };
+      // Write one track; a stream copy that the preferred container rejects is
+      // retried once in Matroska, which accepts virtually any codec.
+      const extract = async (kind, buildArgs, preferredExt, fallbackExt) => {
+        const exts = preferredExt === fallbackExt ? [preferredExt] : [preferredExt, fallbackExt];
+        for (const ext of exts) {
+          const outName = `${kind}-${item.id}.${ext}`;
+          outputNames.add(outName);
+          if ((await run(['-i', inputName, ...buildArgs(), outName])) === 0) {
+            const data = await ffmpeg.readFile(outName);
+            if (data.byteLength > 0) {
+              const blob = new Blob([data], { type: guessMime(ext, kind) });
+              return { blob, ext };
+            }
           }
-          throw new Error("Audio extraction failed (check video format)");
+          await safeDelete(ffmpeg, outName);
         }
-        
-        stage = 1;
-        const videoExitCode = await ffmpeg.exec(['-i', inputName, ...videoFormat.buildArgs(), videoOutName]);
-        if (videoExitCode !== 0) {
-          throw new Error("Video extraction failed");
+        throw new Error(`${kind} extraction failed`);
+      };
+
+      try {
+        await run(['-hide_banner', '-i', inputName]);
+        const { audioCodec, videoCodec } = parseInputStreams(logs);
+        if (!audioCodec && !videoCodec) {
+          throw new Error('No audio or video track detected');
         }
 
-        const audioData = await ffmpeg.readFile(audioOutName);
-        const videoData = await ffmpeg.readFile(videoOutName);
+        let audio = null;
+        if (audioCodec) {
+          stage = 0;
+          const copy = audioFormat.value === 'source';
+          audio = await extract(
+            'audio',
+            audioFormat.buildArgs,
+            resolveAudioOutputExt(audioFormat, audioCodec),
+            copy ? FALLBACK_AUDIO_EXT : audioFormat.outputExt,
+          );
+        }
 
-        const audioBlob = new Blob([audioData.buffer], { type: guessMime(audioExt, 'audio') });
-        const videoBlob = new Blob([videoData.buffer], { type: guessMime(videoExt, 'video') });
+        let video = null;
+        if (videoCodec) {
+          stage = 1;
+          const copy = videoFormat.value === 'source';
+          video = await extract(
+            'video',
+            videoFormat.buildArgs,
+            resolveVideoOutputExt(videoFormat, sourceExt),
+            copy ? FALLBACK_VIDEO_EXT : videoFormat.outputExt,
+          );
+        }
 
         updateItem(item.id, {
           status: STATUS.DONE,
           progress: 100,
-          audioBlob,
-          videoBlob,
-          audioURL: createObjectUrl(audioBlob),
-          videoURL: createObjectUrl(videoBlob),
+          audioBlob: audio?.blob || null,
+          videoBlob: video?.blob || null,
+          audioExt: audio?.ext || null,
+          videoExt: video?.ext || null,
+          audioURL: audio ? createObjectUrl(audio.blob) : null,
+          videoURL: video ? createObjectUrl(video.blob) : null,
         });
       } finally {
         ffmpeg.off('progress', onProgress);
         ffmpeg.off('log', logCollector);
         await safeDelete(ffmpeg, inputName);
-        await safeDelete(ffmpeg, audioOutName);
-        await safeDelete(ffmpeg, videoOutName);
+        for (const outName of outputNames) await safeDelete(ffmpeg, outName);
       }
     },
     [createObjectUrl, updateItem],
