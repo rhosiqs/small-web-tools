@@ -1,4 +1,5 @@
 import JSZip from 'jszip';
+import { bytesToBinaryString } from '../../../lib/binaryEncoding.js';
 import { readZipEntryText, validateZipArchive } from '../../../lib/resourceLimits';
 
 export const OPEN_DOCUMENT_TYPES = ['odt', 'ods', 'odp', 'odg'];
@@ -19,7 +20,9 @@ const DEFAULT_XML_DECLARATION = '<?xml version="1.0" encoding="UTF-8" standalone
 // instead of blanked. Blanking stays correct for free-text properties.
 const CORE_DATE_PROPERTIES = ['created', 'modified', 'lastPrinted'];
 const APP_NUMERIC_PROPERTIES = ['TotalTime'];
-const OPEN_DOCUMENT_TYPED_PROPERTIES = ['creation-date', 'date', 'editing-duration'];
+// Free-text organisation details the result view reports as removed in 'all'.
+const APP_TEXT_PROPERTIES = ['Company', 'Manager', 'HyperlinkBase'];
+const OPEN_DOCUMENT_TYPED_PROPERTIES = ['creation-date', 'date', 'editing-duration', 'print-date'];
 
 const localNameOf = (element) => element.localName || element.tagName.split(':').pop();
 
@@ -35,10 +38,12 @@ const xmlDeclarationOf = (text) => {
 };
 
 // Serializers disagree about the XML declaration: Chrome emits a canonical one
-// for a Document, jsdom emits none. Carrying the original over keeps the part
-// faithful either way, and keeps the unit tests honest about what ships.
+// for a Document, jsdom emits none. The serializer's own declaration is dropped
+// and the original carried over, so the part has exactly one either way — a
+// second declaration is malformed XML that Office and LibreOffice refuse.
 const serializeXml = (xmlDoc, originalText) => (
-  xmlDeclarationOf(originalText) + new XMLSerializer().serializeToString(xmlDoc)
+  xmlDeclarationOf(originalText)
+  + new XMLSerializer().serializeToString(xmlDoc).replace(/^\s*<\?xml[^?]*\?>\s*/i, '')
 );
 
 // DOMParser reports malformed XML by returning a <parsererror> document rather
@@ -59,7 +64,8 @@ async function rewritePart(zip, partPath, mutate) {
   const text = await readMetadataPart(partFile);
   const xmlDoc = parseXmlPart(text, partPath);
   if (!mutate(xmlDoc)) return false;
-  zip.file(partPath, serializeXml(xmlDoc, text));
+  // JSZip would otherwise add a "docProps/" folder entry the package never had.
+  zip.file(partPath, serializeXml(xmlDoc, text), { createFolders: false });
   return true;
 }
 
@@ -113,6 +119,7 @@ export async function applyOfficeMetadataStrip(zip, mode) {
   await rewritePart(zip, 'docProps/app.xml', (xmlDoc) => {
     for (const element of [...xmlDoc.getElementsByTagName('*')]) {
       if (APP_NUMERIC_PROPERTIES.includes(localNameOf(element))) removeElement(element);
+      else if (mode === 'all' && APP_TEXT_PROPERTIES.includes(localNameOf(element))) element.textContent = '';
     }
     return true;
   });
@@ -123,8 +130,8 @@ export async function applyOfficeMetadataStrip(zip, mode) {
 
 export async function applyOpenDocumentMetadataStrip(zip, mode) {
   const clearedProperties = mode === 'private'
-    ? ['creator', 'initial-creator', 'creation-date', 'date', 'editing-duration']
-    : ['creator', 'initial-creator', 'creation-date', 'date', 'editing-duration', 'generator', 'title', 'subject', 'description', 'keyword'];
+    ? ['creator', 'initial-creator', 'creation-date', 'date', 'editing-duration', 'printed-by', 'print-date']
+    : ['creator', 'initial-creator', 'creation-date', 'date', 'editing-duration', 'printed-by', 'print-date', 'generator', 'title', 'subject', 'description', 'keyword'];
 
   await rewritePart(zip, 'meta.xml', (xmlDoc) => {
     for (const element of [...xmlDoc.getElementsByTagName('*')]) {
@@ -142,32 +149,142 @@ export async function applyOpenDocumentMetadataStrip(zip, mode) {
   return zip;
 }
 
-export function stripPdfMetadata(arrayBuffer, mode) {
-  let text = new TextDecoder('latin1').decode(new Uint8Array(arrayBuffer));
+const PDF_PRIVATE_INFO_KEYS = ['Author', 'CreationDate', 'ModDate'];
+const PDF_ALL_INFO_KEYS = ['Title', 'Author', 'Subject', 'Keywords', 'Creator', 'Producer', 'CreationDate', 'ModDate'];
+const PDF_SPACE = 0x20;
+const PDF_XMP_PRIVATE_PROPERTIES = /<([\w-]+):(creator|Author|CreateDate|ModifyDate|MetadataDate)\b[^>]*?(?:\/>|>[\s\S]*?<\/\1:\2>)|\s[\w-]+:(?:creator|Author|CreateDate|ModifyDate|MetadataDate)\s*=\s*(?:"[^"]*"|'[^']*')/gu;
+const PDF_DELIMITER_OR_SPACE = /[\s()<>[\]{}/%]/u;
 
-  if (mode === 'private') {
-    text = text.replace(/\/Author\s*\([^)]*\)/g, '/Author ()')
-               .replace(/\/Author\s*<[^>]*>/g, '/Author ()')
-               .replace(/\/CreationDate\s*\([^)]*\)/g, '/CreationDate ()')
-               .replace(/\/ModDate\s*\([^)]*\)/g, '/ModDate ()');
-  } else {
-    text = text.replace(/\/Title\s*\([^)]*\)/g, '/Title ()')
-               .replace(/\/Author\s*\([^)]*\)/g, '/Author ()')
-               .replace(/\/Subject\s*\([^)]*\)/g, '/Subject ()')
-               .replace(/\/Keywords\s*\([^)]*\)/g, '/Keywords ()')
-               .replace(/\/Creator\s*\([^)]*\)/g, '/Creator ()')
-               .replace(/\/Producer\s*\([^)]*\)/g, '/Producer ()')
-               .replace(/\/CreationDate\s*\([^)]*\)/g, '/CreationDate ()')
-               .replace(/\/ModDate\s*\([^)]*\)/g, '/ModDate ()')
-               .replace(/<x:xmpmeta[\s\S]*?<\/x:xmpmeta>/gi, '');
+// Index of the byte after a PDF literal string that opens at `start`. Literal
+// strings nest balanced parentheses and escape unbalanced ones with `\`.
+const endOfPdfLiteralString = (text, start) => {
+  let depth = 0;
+  for (let index = start; index < text.length; index += 1) {
+    const character = text[index];
+    if (character === '\\') index += 1;
+    else if (character === '(') depth += 1;
+    else if (character === ')') {
+      depth -= 1;
+      if (depth === 0) return index + 1;
+    }
   }
-  return new Blob([new TextEncoder().encode(text)], { type: 'application/pdf' });
+  return -1;
+};
+
+// Index of the byte after the value that starts at `start`: a literal string,
+// a hex string, an indirect reference, or a single token.
+const endOfPdfValue = (text, start) => {
+  if (text[start] === '(') return endOfPdfLiteralString(text, start);
+  if (text[start] === '<' && text[start + 1] !== '<') {
+    const close = text.indexOf('>', start);
+    return close < 0 ? -1 : close + 1;
+  }
+  const reference = /^\d+\s+\d+\s+R/u.exec(text.slice(start, start + 32));
+  if (reference) return start + reference[0].length;
+  let index = start + 1;
+  while (index < text.length && !PDF_DELIMITER_OR_SPACE.test(text[index])) index += 1;
+  return index;
+};
+
+const blankPdfRange = (bytes, start, end) => {
+  bytes.fill(PDF_SPACE, start, end);
+};
+
+// The Info dictionaries are the objects that a trailer (or cross-reference
+// stream) names with /Info. Other dictionaries reuse the same key names for
+// document content: an outline item's /Title is the bookmark's label.
+const pdfInfoDictionaryRanges = (text) => {
+  const ranges = [];
+  const references = new Set();
+  for (const match of text.matchAll(/\/Info\s+(\d+)\s+(\d+)\s+R/gu)) {
+    references.add(`${match[1]} ${match[2]}`);
+  }
+  for (const reference of references) {
+    const [number, generation] = reference.split(' ');
+    const header = new RegExp(`(?<![\\d])${number}\\s+${generation}\\s+obj\\b`, 'gu');
+    for (const match of text.matchAll(header)) {
+      const bodyStart = /** @type {number} */ (match.index) + match[0].length;
+      const dictionaryStart = text.indexOf('<<', bodyStart);
+      const objectEnd = text.indexOf('endobj', bodyStart);
+      if (dictionaryStart < 0 || (objectEnd >= 0 && dictionaryStart > objectEnd)) continue;
+      const dictionaryEnd = text.indexOf('>>', dictionaryStart + 2);
+      if (dictionaryEnd < 0) continue;
+      ranges.push([dictionaryStart + 2, dictionaryEnd]);
+    }
+  }
+  return ranges;
+};
+
+// A PDF is byte-addressed: the cross-reference table records the offset of
+// every object, and stream payloads are arbitrary binary. Metadata is therefore
+// overwritten in place with spaces — whitespace between dictionary entries, and
+// inside an XMP packet, is valid — so the file keeps its length, every offset,
+// and every non-metadata byte. Removing a key together with its value also
+// avoids leaving an empty string where a date is expected.
+export function stripPdfMetadata(arrayBuffer, mode) {
+  const bytes = new Uint8Array(arrayBuffer).slice();
+  const text = bytesToBinaryString(bytes);
+  const keys = mode === 'private' ? PDF_PRIVATE_INFO_KEYS : PDF_ALL_INFO_KEYS;
+  const keyPattern = new RegExp(`/(${keys.join('|')})(?=[\\s(<\\[/0-9])\\s*`, 'gu');
+
+  for (const [start, end] of pdfInfoDictionaryRanges(text)) {
+    const dictionary = text.slice(start, end);
+    for (const match of dictionary.matchAll(keyPattern)) {
+      const keyStart = start + /** @type {number} */ (match.index);
+      const valueEnd = endOfPdfValue(text, keyStart + match[0].length);
+      if (valueEnd < 0 || valueEnd > end) continue;
+      blankPdfRange(bytes, keyStart, valueEnd);
+    }
+  }
+
+  for (const match of text.matchAll(/<x:xmpmeta[\s\S]*?<\/x:xmpmeta>/giu)) {
+    const start = /** @type {number} */ (match.index);
+    if (mode !== 'private') {
+      blankPdfRange(bytes, start, start + match[0].length);
+      continue;
+    }
+    // Readers prefer XMP over the Info dictionary, so private mode removes the
+    // same author and date properties from the packet. A whole element or
+    // attribute becomes whitespace, which leaves the XML well formed.
+    for (const property of match[0].matchAll(PDF_XMP_PRIVATE_PROPERTIES)) {
+      const propertyStart = start + /** @type {number} */ (property.index);
+      blankPdfRange(bytes, propertyStart, propertyStart + property[0].length);
+    }
+  }
+  return new Blob([bytes], { type: 'application/pdf' });
 }
 
 export async function loadSafeZip(file) {
   const archiveCheck = await validateZipArchive(file);
   if (!archiveCheck.valid) throw new Error(archiveCheck.error);
   return JSZip.loadAsync(file);
+}
+
+const PACKAGE_MIME_TYPES = {
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  odt: 'application/vnd.oasis.opendocument.text',
+  ods: 'application/vnd.oasis.opendocument.spreadsheet',
+  odp: 'application/vnd.oasis.opendocument.presentation',
+  odg: 'application/vnd.oasis.opendocument.graphics',
+};
+
+// JSZip's default is to STORE every entry, which inflates the whole package
+// (typically two to three times its original size). DEFLATE reuses the
+// original compressed bytes of untouched entries. OpenDocument requires its
+// `mimetype` entry to stay first and uncompressed, so that one entry is pinned
+// to STORE; reassigning an existing name keeps its position in the archive.
+async function generatePackage(zip, type) {
+  const mimetypeEntry = zip.file('mimetype');
+  if (mimetypeEntry) {
+    zip.file('mimetype', await mimetypeEntry.async('uint8array'), { compression: 'STORE', createFolders: false });
+  }
+  return zip.generateAsync({
+    type: 'blob',
+    compression: 'DEFLATE',
+    mimeType: PACKAGE_MIME_TYPES[type] || 'application/octet-stream',
+  });
 }
 
 export async function stripDocumentMetadata(fileObj, mode, type) {
@@ -181,5 +298,5 @@ export async function stripDocumentMetadata(fileObj, mode, type) {
   } else {
     await applyOfficeMetadataStrip(zip, mode);
   }
-  return zip.generateAsync({ type: 'blob' });
+  return generatePackage(zip, type);
 }

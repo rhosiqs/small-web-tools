@@ -129,18 +129,24 @@ export const AUDIO_CODEC_MAP = {
   'dtsc': 'DTS Core', 'dtse': 'DTS-HD LBR', 'dtsh': 'DTS-HD', 'dtsl': 'DTS-HD Lossless',
 };
 
+// esds objectTypeIndication values for MPEG-1/2 audio layers (MP3 and MP2).
+const MPEG_AUDIO_LAYER_OBJECT_TYPES = [0x69, 0x6b];
+
 const SUBTITLE_HANDLER_TYPES = ['sbtl', 'text', 'subt', 'clcp', 'subp'];
 
 export const getAudioExtension = (codecFourCC, codecName) => {
   const codecc = (codecFourCC || '').toLowerCase();
   const name = (codecName || '').toLowerCase();
+  // MP3 can sit in a generic mp4a sample entry, and "e-ac-3" contains "ac-3":
+  // the more specific codec is matched first so each stream gets a container
+  // whose muxer accepts it.
+  if (codecc === 'mp3' || name.includes('mp3')) return 'mp3';
   if (codecc === 'mp4a' || name.includes('aac')) return 'm4a';
-  if (codecc === 'ac-3' || name.includes('ac-3') || name.includes('dolby digital')) return 'ac3';
   if (codecc === 'ec-3' || name.includes('e-ac-3')) return 'eac3';
+  if (codecc === 'ac-3' || name.includes('ac-3') || name.includes('dolby digital')) return 'ac3';
   if (codecc === 'flac' || name.includes('flac')) return 'flac';
   if (codecc === 'opus' || name.includes('opus')) return 'opus';
   if (codecc === 'vorbis' || name.includes('vorbis')) return 'ogg';
-  if (codecc === 'mp3' || name.includes('mp3')) return 'mp3';
   if (codecc === 'alac' || name.includes('alac')) return 'm4a';
   return 'mka';
 };
@@ -204,6 +210,42 @@ export function parseMP4(uint8) {
     }
   }
 
+  // Reads objectTypeIndication from the esds DecoderConfigDescriptor of an mp4a
+  // sample entry (inside a QuickTime 'wave' box when present), or null.
+  function mpegAudioObjectType(start, end) {
+    let pos = start;
+    while (pos + 8 <= end) {
+      const size = readUint32BE(uint8, pos);
+      const boxType = rs(pos + 4, 4);
+      if (size < 8 || pos + size > end) return null;
+      if (boxType === 'wave') return mpegAudioObjectType(pos + 8, pos + size);
+      if (boxType === 'esds') {
+        let cursor = pos + 12;
+        const boxEnd = pos + size;
+        const readDescriptorHeader = () => {
+          const tag = uint8[cursor++];
+          let length = 0;
+          for (let i = 0; i < 4 && cursor < boxEnd; i++) {
+            const byte = uint8[cursor++];
+            length = (length << 7) | (byte & 0x7f);
+            if ((byte & 0x80) === 0) break;
+          }
+          return { tag, length };
+        };
+        if (cursor >= boxEnd || readDescriptorHeader().tag !== 0x03) return null;
+        const flags = uint8[cursor + 2];
+        cursor += 3;
+        if (flags & 0x80) cursor += 2;
+        if (flags & 0x40) cursor += 1 + uint8[cursor];
+        if (flags & 0x20) cursor += 2;
+        if (cursor >= boxEnd || readDescriptorHeader().tag !== 0x04 || cursor >= boxEnd) return null;
+        return uint8[cursor];
+      }
+      pos += size;
+    }
+    return null;
+  }
+
   function handleAtom(type, start, end) {
     if (type === 'ftyp') {
       result.brand = rs(start, 4).trim();
@@ -232,7 +274,9 @@ export function parseMP4(uint8) {
       currentTrack = trackStack.length > 0 ? trackStack[trackStack.length - 1] : null;
       return;
     }
-    if (type === 'hdlr' && currentTrack) {
+    // QuickTime puts a data-handler hdlr (component type 'dhlr') inside minf; it
+    // describes storage, not the media type, and must not retype the track.
+    if (type === 'hdlr' && currentTrack && rs(start + 4, 4) !== 'dhlr') {
       const ht = rs(start + 8, 4).trim();
       currentTrack.handlerType = ht;
       const ns = start + 24;
@@ -288,6 +332,12 @@ export function parseMP4(uint8) {
             currentTrack.channels = readUint16BE(uint8, bo + 16);
             currentTrack.bitsPerSample = readUint16BE(uint8, bo + 18);
             currentTrack.sampleRate = readUint32BE(uint8, bo + 24) >>> 16;
+            if (eType === 'mp4a') {
+              const version = readUint16BE(uint8, bo + 8);
+              const childStart = ePos + 36 + (version === 1 ? 16 : version === 2 ? 36 : 0);
+              const objectType = mpegAudioObjectType(childStart, eEnd);
+              if (MPEG_AUDIO_LAYER_OBJECT_TYPES.includes(objectType)) currentTrack.codec = 'MPEG Audio (MP3)';
+            }
           }
         } else if (currentTrack.type === 'timecode') {
           if (eSize >= 34) {
