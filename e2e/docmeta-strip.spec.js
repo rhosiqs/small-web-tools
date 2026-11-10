@@ -68,6 +68,11 @@ test('a stripped presentation stays a valid package', async ({ page }) => {
     expect(core).not.toMatch(empty);
   }
   expect(app).not.toMatch(/<TotalTime[^>]*\/>/);
+  // Chrome's XMLSerializer emits its own declaration; a second one in front of
+  // it is malformed XML that LibreOffice and PowerPoint refuse to open.
+  for (const part of [core, app, contentTypes, rels]) {
+    expect(part.match(/<\?xml/g)).toHaveLength(1);
+  }
   expect(core).not.toContain('Alice Chen');
   expect(core).not.toContain('Bob Wu');
   expect(await zip.file('ppt/slides/slide1.xml').async('string')).toBe(SLIDE);

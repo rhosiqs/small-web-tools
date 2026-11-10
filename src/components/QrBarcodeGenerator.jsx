@@ -13,6 +13,7 @@ import FieldInput from './ui/FieldInput';
 import ToggleSwitch from './ui/ToggleSwitch';
 import {
   escapeWifiString,
+  escapeXml,
   estimateTextWidth,
   validateBarcode,
 } from './QrBarcodeGenerator/lib/encoding';
@@ -652,7 +653,7 @@ const generateQRSVG = (text, options) => {
       strokeAttrs = `stroke="${textStrokeColor}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" stroke-linejoin="round"`;
     }
 
-    svgContent += `<text x="${labelX}" y="${labelY}" font-family="${textFont}" font-size="${textSize}" font-weight="${textWeight}" font-style="${textStyle}" text-anchor="middle" dominant-baseline="central" fill="${textColor}" ${strokeAttrs}>${textLabel}</text>\n`;
+    svgContent += `<text x="${labelX}" y="${labelY}" font-family="${textFont}" font-size="${textSize}" font-weight="${textWeight}" font-style="${textStyle}" text-anchor="middle" dominant-baseline="central" fill="${textColor}" ${strokeAttrs}>${escapeXml(textLabel)}</text>\n`;
   }
 
   // Draw Embedded Text SVG
@@ -682,10 +683,10 @@ const generateQRSVG = (text, options) => {
       strokeAttrs = `stroke="${textStrokeColor}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" stroke-linejoin="round"`;
     }
 
-    svgContent += `<text x="${embedX}" y="${embedY}" font-family="${textFont}" font-size="${textSize}" font-weight="${textWeight}" font-style="${textStyle}" text-anchor="middle" dominant-baseline="central" fill="${textColor}" ${strokeAttrs}>${textLabel}</text>\n`;
+    svgContent += `<text x="${embedX}" y="${embedY}" font-family="${textFont}" font-size="${textSize}" font-weight="${textWeight}" font-style="${textStyle}" text-anchor="middle" dominant-baseline="central" fill="${textColor}" ${strokeAttrs}>${escapeXml(textLabel)}</text>\n`;
   }
 
-  return `<svg width="100%" height="100%" viewBox="0 0 ${size} ${totalHeight}" xmlns="http://www.w3.org/2000/svg">\n${svgContent}</svg>`;
+  return `<svg width="${size}" height="${totalHeight}" viewBox="0 0 ${size} ${totalHeight}" xmlns="http://www.w3.org/2000/svg">\n${svgContent}</svg>`;
 };
 
 export default function QrBarcodeGenerator({ initialTab = 'qr' }) {
@@ -1153,7 +1154,13 @@ export default function QrBarcodeGenerator({ initialTab = 'qr' }) {
   // Download Barcode SVG
   const handleBarcodeDownloadSVG = () => {
     if (!barcodeSvgRef.current || barcodeError) return;
-    const svgString = new XMLSerializer().serializeToString(barcodeSvgRef.current);
+    // The in-page SVG is hidden with an inline style; the exported file must not inherit it.
+    // JsBarcode also writes `xmlns` as a plain attribute, which some serializers emit a
+    // second time next to the element's own namespace declaration (invalid XML).
+    const exportSvg = barcodeSvgRef.current.cloneNode(true);
+    exportSvg.removeAttribute('style');
+    exportSvg.removeAttribute('xmlns');
+    const svgString = new XMLSerializer().serializeToString(exportSvg);
     const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -2092,21 +2099,25 @@ export default function QrBarcodeGenerator({ initialTab = 'qr' }) {
                       </svg>
                       <p className="text-xs font-medium">{t('tool-qrbarcode.ui.enterBarcodeValue')}</p>
                     </div>
-                  ) : barcodeError ? (
-                    <div className="flex flex-col items-center gap-2 text-red-500/70 text-center">
-                      <svg viewBox="0 0 24 24" width="36" height="36" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" className="opacity-80">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                      </svg>
-                      <p className="text-xs font-semibold">{barcodeError}</p>
-                    </div>
                   ) : (
-                    <div className="max-h-full max-w-full flex justify-center overflow-x-auto p-1 bg-white rounded-lg">
-                      <canvas ref={barcodeCanvasRef} className="max-h-full max-w-full object-contain" />
-                      {/* Hidden SVG reference specifically for high-fidelity export */}
-                      <svg ref={barcodeSvgRef} style={{ display: 'none' }} />
-                    </div>
+                    <>
+                      {barcodeError && (
+                        <div className="flex flex-col items-center gap-2 text-red-500/70 text-center">
+                          <svg viewBox="0 0 24 24" width="36" height="36" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" className="opacity-80">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                          </svg>
+                          <p className="text-xs font-semibold">{barcodeError}</p>
+                        </div>
+                      )}
+                      {/* Stays mounted while the value is invalid so the drawing effect always has its targets. */}
+                      <div className={`max-h-full max-w-full justify-center overflow-x-auto p-1 bg-white rounded-lg ${barcodeError ? 'hidden' : 'flex'}`}>
+                        <canvas ref={barcodeCanvasRef} className="max-h-full max-w-full object-contain" />
+                        {/* Hidden SVG reference specifically for high-fidelity export */}
+                        <svg ref={barcodeSvgRef} style={{ display: 'none' }} />
+                      </div>
+                    </>
                   )}
                 </div>
               )}

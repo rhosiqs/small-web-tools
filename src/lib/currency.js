@@ -43,3 +43,23 @@ export function convertCurrencyAmount(amount, rate) {
   const result = numericAmount * validRate;
   return Number.isFinite(result) ? result : null;
 }
+
+/**
+ * Formats an exchange rate with at least five significant digits. The plain
+ * currency format rounds to the minor unit, which turns 1 TWD = 0.03086 USD
+ * into "$0.03" and 1 VND = 0.000038 USD into "$0.00".
+ */
+export function formatCurrencyRate(value, code, locale) {
+  const base = new Intl.NumberFormat(locale, { style: 'currency', currency: code });
+  if (!Number.isFinite(value) || value === 0) return base.format(value);
+
+  const minimumFractionDigits = base.resolvedOptions().minimumFractionDigits;
+  const magnitude = Math.floor(Math.log10(Math.abs(value)));
+  const maximumFractionDigits = Math.min(20, Math.max(minimumFractionDigits, 4 - magnitude));
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: code,
+    minimumFractionDigits,
+    maximumFractionDigits,
+  }).format(value);
+}

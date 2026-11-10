@@ -232,6 +232,32 @@ describe('audio metadata domain', () => {
     expect([...new Uint8Array(stripMp3Metadata(bytes.buffer))]).toEqual([9, 8, 7]);
   });
 
+  it('also strips the footer of an ID3v2.4 tag that declares one', () => {
+    // The tag size excludes both the 10-byte header and the 10-byte footer, so
+    // a footer left behind would sit in front of the first MPEG frame.
+    const bytes = new Uint8Array(10 + 4 + 10 + 3);
+    writeAscii(bytes, 0, 'ID3');
+    bytes[3] = 4;
+    bytes[5] = 0x10;
+    bytes[9] = 4;
+    writeAscii(bytes, 14, '3DI');
+    bytes[17] = 4;
+    bytes[19] = 0x10;
+    bytes[23] = 4;
+    bytes.set([0xff, 0xfb, 0x90], 24);
+
+    expect([...new Uint8Array(stripMp3Metadata(bytes.buffer))]).toEqual([0xff, 0xfb, 0x90]);
+  });
+
+  it('refuses to produce an empty file from a tag that claims more bytes than exist', () => {
+    const bytes = new Uint8Array(10 + 3);
+    writeAscii(bytes, 0, 'ID3');
+    bytes[3] = 3;
+    bytes[8] = 0x7f;
+
+    expect(() => stripMp3Metadata(bytes.buffer)).toThrow();
+  });
+
   it('makes preview and derived URL ownership explicit', () => {
     const createObjectUrl = vi.fn()
       .mockReturnValueOnce('blob:preview')

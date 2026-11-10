@@ -113,6 +113,76 @@ describe('video metadata domain', () => {
   });
 });
 
+// Sample entry for an MPEG audio track: a sound description followed by an
+// esds box whose DecoderConfigDescriptor names the real codec. `mp4a` is a
+// generic MPEG-4 audio entry; object type 0x6B is MPEG-1 audio (MP3), which the
+// M4A muxer rejects, so extraction has to pick the MP3 container instead.
+function mpegAudioSampleEntry(objectTypeIndication) {
+  const esds = atom('esds', new Uint8Array([
+    0, 0, 0, 0,
+    0x03, 0x19, 0x00, 0x02, 0x00,
+    0x04, 0x11, objectTypeIndication, 0x15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0x06, 0x01, 0x02,
+  ]));
+  const entry = new Uint8Array(36 + esds.length);
+  const view = new DataView(entry.buffer);
+  view.setUint32(0, entry.length);
+  entry.set(ascii('mp4a'), 4);
+  view.setUint16(24, 2);
+  view.setUint16(26, 16);
+  view.setUint32(32, 44_100 << 16);
+  entry.set(esds, 36);
+  return entry;
+}
+
+function handler(componentType, handlerType) {
+  const payload = new Uint8Array(25);
+  payload.set(ascii(componentType), 4);
+  payload.set(ascii(handlerType), 8);
+  return atom('hdlr', payload);
+}
+
+// QuickTime (.mov) tracks carry a second hdlr inside minf: the data handler
+// (component type 'dhlr', subtype 'alis' or 'url '), which says how media is
+// stored, not what kind of media the track holds.
+function audioMovie(sampleEntry, { dataHandler = false } = {}) {
+  const stsdPayload = new Uint8Array(8 + sampleEntry.length);
+  new DataView(stsdPayload.buffer).setUint32(4, 1);
+  stsdPayload.set(sampleEntry, 8);
+  const minf = atom('minf', concat(
+    ...(dataHandler ? [handler('dhlr', 'url ')] : []),
+    atom('stbl', atom('stsd', stsdPayload)),
+  ));
+  return concat(atom('moov', atom('trak', atom('mdia', concat(
+    atom('mdhd', new Uint8Array(24)),
+    handler(dataHandler ? 'mhlr' : '\0\0\0\0', 'soun'),
+    minf,
+  )))));
+}
+
+describe('video audio extraction container choice', () => {
+  it('extracts E-AC-3 as .eac3 rather than .ac3 when given the parsed codec name', () => {
+    const track = parseMP4(audioMovie(new Uint8Array([0, 0, 0, 8, ...ascii('ec-3')]))).tracks[0];
+    expect(getAudioExtension(track.codecFourCC, track.codec)).toBe('eac3');
+    expect(getAudioExtension('ac-3', 'Dolby Digital (AC-3)')).toBe('ac3');
+  });
+
+  it('extracts MP3 carried in an mp4a sample entry as .mp3', () => {
+    const mp3 = parseMP4(audioMovie(mpegAudioSampleEntry(0x6b))).tracks[0];
+    expect(mp3.codec).toMatch(/MP3/);
+    expect(getAudioExtension(mp3.codecFourCC, mp3.codec)).toBe('mp3');
+
+    const aac = parseMP4(audioMovie(mpegAudioSampleEntry(0x40))).tracks[0];
+    expect(aac.codec).toBe('AAC');
+    expect(getAudioExtension(aac.codecFourCC, aac.codec)).toBe('m4a');
+  });
+
+  it('keeps QuickTime audio tracks typed as audio despite the data handler', () => {
+    const track = parseMP4(audioMovie(mpegAudioSampleEntry(0x40), { dataHandler: true })).tracks[0];
+    expect(track).toMatchObject({ type: 'audio', handlerType: 'soun', codec: 'AAC', channels: 2 });
+  });
+});
+
 describe('video audio extraction lifecycle', () => {
   function setup({ exitCode = 0 } = {}) {
     const listeners = new Map();

@@ -91,6 +91,17 @@ export function terminateFFmpeg() {
   logSink = null;
 }
 
+/**
+ * Terminate `instance` if it is still the shared runtime. Used after a
+ * WebAssembly trap, which leaves the runtime unusable for later commands. A
+ * stale instance (already replaced after a stop) is left alone so the current
+ * runtime is not torn down.
+ * @param {unknown} instance
+ */
+export function discardFFmpeg(instance) {
+  if (instance && instance === ffmpegInstance) terminateFFmpeg();
+}
+
 export const AUDIO_FORMATS = [
   {
     value: 'source',
@@ -135,15 +146,90 @@ export const VIDEO_FORMATS = [
     value: 'mp4',
     label: 'MP4 (H.264 Re-encode)',
     outputExt: 'mp4',
-    buildArgs: () => ['-an', '-vcodec', 'libx264', '-preset', 'veryfast', '-crf', '23'],
+    // Without an explicit 8-bit 4:2:0 pixel format, libx264 keeps the source
+    // chroma/bit depth and writes High 4:4:4, 4:2:2, or High 10 streams that
+    // QuickTime, Windows, and most browsers refuse to play. 4:2:0 also needs
+    // even dimensions, so odd-sized sources are trimmed by one pixel.
+    buildArgs: () => [
+      '-an', '-vcodec', 'libx264', '-preset', 'veryfast', '-crf', '23',
+      '-pix_fmt', 'yuv420p', '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2',
+    ],
   },
   {
     value: 'webm',
-    label: 'WebM (VP9 Re-encode)',
+    label: 'WebM (VP8 Re-encode)',
     outputExt: 'webm',
-    buildArgs: () => ['-an', '-vcodec', 'libvpx-vp9', '-crf', '32', '-b:v', '0'],
+    // libvpx-vp9 in the pinned single-thread core traps with "memory access out
+    // of bounds" after a few frames, so WebM output uses VP8 (libvpx) instead.
+    buildArgs: () => ['-an', '-vcodec', 'libvpx', '-crf', '10', '-b:v', '4M'],
   },
 ];
+
+/** Matroska accepts virtually any codec, so it is the safe container for stream copies. */
+export const FALLBACK_AUDIO_EXT = 'mka';
+export const FALLBACK_VIDEO_EXT = 'mkv';
+
+// Containers that common desktop players open natively, keyed by the copied codec.
+const AUDIO_COPY_CONTAINERS = {
+  aac: 'm4a',
+  alac: 'm4a',
+  mp3: 'mp3',
+  flac: 'flac',
+  vorbis: 'ogg',
+  opus: 'opus',
+  pcm_s16le: 'wav',
+  pcm_s24le: 'wav',
+  pcm_s32le: 'wav',
+  pcm_f32le: 'wav',
+  pcm_u8: 'wav',
+};
+
+// Source extensions FFmpeg can also write as an output container. Anything else
+// (".qt", ".divx", no extension, ...) has no muxer, so the copy goes to Matroska.
+const VIDEO_COPY_CONTAINERS = new Set([
+  'mp4', 'm4v', 'mov', 'mkv', 'webm', 'avi', 'ts', 'mts', 'm2ts', 'mpg', 'mpeg',
+  'flv', 'ogv', '3gp', '3g2', 'wmv', 'asf',
+]);
+
+/**
+ * Read the first audio and video codec from the log of `ffmpeg -i <input>`.
+ * Embedded cover art (`attached pic`) is not a video track.
+ * @param {string[]} logLines
+ * @returns {{ audioCodec: string | null, videoCodec: string | null }}
+ */
+export function parseInputStreams(logLines) {
+  let audioCodec = null;
+  let videoCodec = null;
+  for (const line of logLines) {
+    const match = /^\s*Stream #\d+:\d+.*?: (Audio|Video): ([A-Za-z0-9_]+)/u.exec(line);
+    if (!match) continue;
+    if (match[1] === 'Audio' && !audioCodec) audioCodec = match[2];
+    if (match[1] === 'Video' && !videoCodec && !line.includes('(attached pic)')) videoCodec = match[2];
+  }
+  return { audioCodec, videoCodec };
+}
+
+/**
+ * Output extension for the audio track. A stream copy goes into the codec's own
+ * container when one exists so the file opens outside the browser.
+ * @param {{ value: string, outputExt: string | null }} format
+ * @param {string | null} audioCodec
+ */
+export function resolveAudioOutputExt(format, audioCodec) {
+  if (format.value !== 'source') return format.outputExt;
+  return AUDIO_COPY_CONTAINERS[audioCodec] || FALLBACK_AUDIO_EXT;
+}
+
+/**
+ * Output extension for the video track. A stream copy reuses the source
+ * container only when FFmpeg can write it.
+ * @param {{ outputExt: string | null }} format
+ * @param {string} sourceExt
+ */
+export function resolveVideoOutputExt(format, sourceExt) {
+  if (format.outputExt) return format.outputExt;
+  return VIDEO_COPY_CONTAINERS.has(sourceExt) ? sourceExt : FALLBACK_VIDEO_EXT;
+}
 
 export function getExt(filename) {
   const match = /\.([a-zA-Z0-9]+)$/u.exec(filename || '');
@@ -155,12 +241,26 @@ const MIME_MAP = {
   wav: 'audio/wav',
   m4a: 'audio/mp4',
   ogg: 'audio/ogg',
+  opus: 'audio/ogg',
+  flac: 'audio/flac',
   mka: 'audio/x-matroska',
   mp4: 'video/mp4',
+  m4v: 'video/mp4',
   webm: 'video/webm',
   mkv: 'video/x-matroska',
   mov: 'video/quicktime',
   avi: 'video/x-msvideo',
+  ts: 'video/mp2t',
+  mts: 'video/mp2t',
+  m2ts: 'video/mp2t',
+  mpg: 'video/mpeg',
+  mpeg: 'video/mpeg',
+  flv: 'video/x-flv',
+  ogv: 'video/ogg',
+  '3gp': 'video/3gpp',
+  '3g2': 'video/3gpp2',
+  wmv: 'video/x-ms-wmv',
+  asf: 'video/x-ms-asf',
 };
 
 export function guessMime(ext, kind) {

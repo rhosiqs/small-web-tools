@@ -1,4 +1,23 @@
 const SECONDS_PER_DAY = 24 * 60 * 60;
+const MS_PER_DAY = SECONDS_PER_DAY * 1000;
+
+/** Parses YYYY-MM-DD to a UTC timestamp; setUTCFullYear keeps years 0-99 literal. */
+export function parseDateToUTC(dateString) {
+  if (!dateString) return null;
+  const [year, month, day] = dateString.split('-').map(Number);
+  if (!year || !month || !day) return null;
+
+  const date = new Date(0);
+  date.setUTCFullYear(year, month - 1, day);
+  return date.getTime();
+}
+
+export function calendarDaysBetween(startDate, endDate) {
+  const startMs = parseDateToUTC(startDate);
+  const endMs = parseDateToUTC(endDate);
+  if (startMs === null || endMs === null) return null;
+  return Math.round((endMs - startMs) / MS_PER_DAY);
+}
 
 export function parseTimeToSeconds(value) {
   const match = /^(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(value);

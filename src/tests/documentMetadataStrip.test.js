@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   applyOfficeMetadataStrip,
   applyOpenDocumentMetadataStrip,
@@ -109,6 +109,64 @@ describe('DocMeta OOXML metadata stripping', () => {
     expect(core).not.toContain('Alice');
     expect(core).not.toContain('Bob');
     expect(zip.file('docProps/custom.xml')).not.toBeNull();
+  });
+});
+
+// Chrome's XMLSerializer prefixes a serialized Document with its own XML
+// declaration (jsdom does not). Carrying the original declaration over on top
+// of that produced two declarations, which is malformed XML: LibreOffice
+// refused the downloaded PowerPoint file with "Unspecified Application Error".
+class ChromeLikeXmlSerializer {
+  serializeToString(node) {
+    const serialized = new NativeXmlSerializer().serializeToString(node);
+    return node.nodeType === 9 ? `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>${serialized}` : serialized;
+  }
+}
+const NativeXmlSerializer = globalThis.XMLSerializer;
+
+describe('DocMeta XML declaration under a browser serializer', () => {
+  it.each(['private', 'all'])('writes exactly one declaration per rewritten part in %s mode', async (mode) => {
+    vi.stubGlobal('XMLSerializer', ChromeLikeXmlSerializer);
+    try {
+      const zip = buildPresentation();
+      await applyOfficeMetadataStrip(zip, mode);
+      for (const part of ['docProps/core.xml', 'docProps/app.xml', '[Content_Types].xml', '_rels/.rels']) {
+        const text = await readPart(zip, part);
+        expect(text.match(/<\?xml/g)).toHaveLength(1);
+        expect(text).toMatch(/^<\?xml version="1\.0" encoding="UTF-8" standalone="yes"\?>\r\n</);
+      }
+
+      const document = buildPresentationDocument();
+      await applyOpenDocumentMetadataStrip(document, mode);
+      expect((await readPart(document, 'meta.xml')).match(/<\?xml/g)).toHaveLength(1);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
+describe('DocMeta strip completeness', () => {
+  it('clears company and manager in all mode, which the result view reports as removed', async () => {
+    const zip = buildPresentation();
+    zip.file('docProps/app.xml', `${DECLARATION}<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><TotalTime>5</TotalTime><Company>ACME Secret Corp</Company><Manager>Carol Boss</Manager><HyperlinkBase>https://intranet.example/</HyperlinkBase><Slides>2</Slides></Properties>`);
+    await applyOfficeMetadataStrip(zip, 'all');
+
+    const app = await readPart(zip, 'docProps/app.xml');
+    expect(app).not.toContain('ACME');
+    expect(app).not.toContain('Carol');
+    expect(app).not.toContain('intranet');
+    expect(app).toContain('<Slides>2</Slides>');
+  });
+
+  it('removes who printed an OpenDocument file and when in private mode', async () => {
+    const zip = new JSZip();
+    zip.file('meta.xml', `${DECLARATION}<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/"><office:meta><meta:printed-by>Alice Printer</meta:printed-by><meta:print-date>2024-03-04T05:06:07</meta:print-date><dc:title>Kept</dc:title></office:meta></office:document-meta>`);
+    await applyOpenDocumentMetadataStrip(zip, 'private');
+
+    const meta = await readPart(zip, 'meta.xml');
+    expect(meta).not.toContain('Alice');
+    expect(elementsOf(meta, 'print-date')).toHaveLength(0);
+    expect(meta).toContain('<dc:title>Kept</dc:title>');
   });
 });
 

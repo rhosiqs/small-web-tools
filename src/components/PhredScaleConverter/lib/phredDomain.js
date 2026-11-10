@@ -8,12 +8,15 @@ function isSupportedFastqOffset(offset) {
 }
 
 export function decodeFastqQualityString(rawValue, offset) {
-  if (typeof rawValue !== 'string' || rawValue.length === 0) return null;
-  if (!isSupportedFastqOffset(offset)) return null;
+  if (typeof rawValue !== 'string' || !isSupportedFastqOffset(offset)) return null;
+  // A pasted FASTQ quality line usually carries a line ending; whitespace is
+  // never a valid quality character, so only the ends are trimmed.
+  const quality = rawValue.trim();
+  if (quality.length === 0) return null;
 
   const scores = [];
-  for (let index = 0; index < rawValue.length; index += 1) {
-    const code = rawValue.charCodeAt(index);
+  for (let index = 0; index < quality.length; index += 1) {
+    const code = quality.charCodeAt(index);
     if (code < offset || code > 126) return null;
     scores.push(code - offset);
   }
@@ -25,6 +28,9 @@ export function parseFastqQualityScores(rawValue, offset) {
 
   const maxScore = 126 - offset;
   const tokens = rawValue.trim().split(/[\s,]+/);
+  // Empty entries (a trailing comma) and hex/exponent forms are not scores;
+  // Number('') is 0 and Number('0x10') is 16, so they must be rejected first.
+  if (tokens.some((token) => !/^[+-]?\d+(?:\.\d+)?$/.test(token))) return null;
   const scores = tokens.map((token) => Number(token));
   if (scores.some((score) => !Number.isInteger(score) || score < 0 || score > maxScore)) return null;
   return scores;

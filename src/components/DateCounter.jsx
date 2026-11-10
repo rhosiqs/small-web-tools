@@ -4,18 +4,7 @@ import Card from './ui/Card';
 import FieldInput from './ui/FieldInput';
 import ToolHeader from './ui/ToolHeader';
 import ToggleSwitch from './ui/ToggleSwitch';
-import { calculateTimeDifference } from './DateCounter/lib/timeDomain';
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-function parseDateToUTC(dateString) {
-  if (!dateString) return null;
-
-  const [year, month, day] = dateString.split('-').map(Number);
-  if (!year || !month || !day) return null;
-
-  return Date.UTC(year, month - 1, day);
-}
+import { calculateTimeDifference, calendarDaysBetween } from './DateCounter/lib/timeDomain';
 
 export default function DateCounter() {
   const { t, i18n } = useTranslation('tools');
@@ -27,12 +16,10 @@ export default function DateCounter() {
   const [endNextDay, setEndNextDay] = useState(false);
 
   const calculateDateDiff = () => {
-    const startMs = parseDateToUTC(startDate);
-    const endMs = parseDateToUTC(endDate);
+    const diffDays = calendarDaysBetween(startDate, endDate);
 
-    if (startMs === null || endMs === null) return t('tool-date.ui.selectDates');
+    if (diffDays === null) return t('tool-date.ui.selectDates');
 
-    const diffDays = Math.round((endMs - startMs) / MS_PER_DAY);
     return t('tool-date.ui.dateDifference', {
       count: diffDays,
       formattedCount: diffDays.toLocaleString(i18n.language),

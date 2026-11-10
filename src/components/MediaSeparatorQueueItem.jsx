@@ -122,35 +122,43 @@ export default function MediaSeparatorQueueItem({ item, onAudioFormatChange, onV
 
       {item.status === 'done' && (
         <div className="flex flex-col gap-6 pt-4 border-t border-dashed border-border">
-          <div className="flex flex-col gap-2 w-full">
-            <p className="m-0 mb-1 text-[0.85rem] font-bold text-text-main uppercase tracking-[0.05em]">{t('tools:tool-mediasplit.ui.audioTrack')}</p>
-            <MediaSeparatorWaveform
-              audioURL={item.audioURL}
-              className="bg-app border border-border rounded-lg p-3"
-            />
-            <a
-              href={item.audioURL}
-              download={buildDownloadName(item, 'audio')}
-              className="inline-flex items-center justify-center py-2 px-4 text-[0.85rem] font-semibold no-underline rounded-md bg-accent-light text-accent-hover border border-transparent transition-all duration-200 text-center hover:bg-accent-fill hover:text-accent-on-fill"
-            >
-              {t('tools:tool-mediasplit.ui.downloadAudio')}
-            </a>
-          </div>
-          <div className="flex flex-col gap-2 w-full max-w-[560px] mx-auto items-center">
-            <p className="m-0 mb-1 text-[0.85rem] font-bold text-text-main uppercase tracking-[0.05em]">{t('tools:tool-mediasplit.ui.silentVideo')}</p>
-            <video
-              src={item.videoURL}
-              controls
-              className="w-full h-[315px] bg-black rounded-lg border border-border object-contain shadow-[0_4px_12px_rgba(0,0,0,0.15)]"
-            />
-            <a
-              href={item.videoURL}
-              download={buildDownloadName(item, 'video')}
-              className="inline-flex items-center justify-center py-2 px-4 text-[0.85rem] font-semibold no-underline rounded-md bg-accent-light text-accent-hover border border-transparent transition-all duration-200 text-center hover:bg-accent-fill hover:text-accent-on-fill w-full max-w-[240px]"
-            >
-              {t('tools:tool-mediasplit.ui.downloadVideo')}
-            </a>
-          </div>
+          {item.audioURL ? (
+            <div className="flex flex-col gap-2 w-full">
+              <p className="m-0 mb-1 text-[0.85rem] font-bold text-text-main uppercase tracking-[0.05em]">{t('tools:tool-mediasplit.ui.audioTrack')}</p>
+              <MediaSeparatorWaveform
+                audioURL={item.audioURL}
+                className="bg-app border border-border rounded-lg p-3"
+              />
+              <a
+                href={item.audioURL}
+                download={buildDownloadName(item, 'audio')}
+                className="inline-flex items-center justify-center py-2 px-4 text-[0.85rem] font-semibold no-underline rounded-md bg-accent-light text-accent-hover border border-transparent transition-all duration-200 text-center hover:bg-accent-fill hover:text-accent-on-fill"
+              >
+                {t('tools:tool-mediasplit.ui.downloadAudio')}
+              </a>
+            </div>
+          ) : (
+            <p className="m-0 text-[0.85rem] text-text-muted">{t('tools:tool-mediasplit.ui.noAudioTrack')}</p>
+          )}
+          {item.videoURL ? (
+            <div className="flex flex-col gap-2 w-full max-w-[560px] mx-auto items-center">
+              <p className="m-0 mb-1 text-[0.85rem] font-bold text-text-main uppercase tracking-[0.05em]">{t('tools:tool-mediasplit.ui.silentVideo')}</p>
+              <video
+                src={item.videoURL}
+                controls
+                className="w-full h-[315px] bg-black rounded-lg border border-border object-contain shadow-[0_4px_12px_rgba(0,0,0,0.15)]"
+              />
+              <a
+                href={item.videoURL}
+                download={buildDownloadName(item, 'video')}
+                className="inline-flex items-center justify-center py-2 px-4 text-[0.85rem] font-semibold no-underline rounded-md bg-accent-light text-accent-hover border border-transparent transition-all duration-200 text-center hover:bg-accent-fill hover:text-accent-on-fill w-full max-w-[240px]"
+              >
+                {t('tools:tool-mediasplit.ui.downloadVideo')}
+              </a>
+            </div>
+          ) : (
+            <p className="m-0 text-[0.85rem] text-text-muted">{t('tools:tool-mediasplit.ui.noVideoTrack')}</p>
+          )}
         </div>
       )}
     </li>
@@ -159,11 +167,9 @@ export default function MediaSeparatorQueueItem({ item, onAudioFormatChange, onV
 
 function buildDownloadName(item, kind) {
   const base = item.file.name.replace(/\.[^.]+$/, '');
-  const format =
-    kind === 'audio'
-      ? AUDIO_FORMATS.find((f) => f.value === item.audioFormat)
-      : VIDEO_FORMATS.find((f) => f.value === item.videoFormat);
-  const ext = format?.outputExt || item.file.name.split('.').pop();
+  // The extension FFmpeg actually wrote; the source name's extension can be
+  // missing or name a container the output was not written in.
+  const ext = kind === 'audio' ? item.audioExt : item.videoExt;
   return `${base}-${kind}.${ext}`;
 }
 

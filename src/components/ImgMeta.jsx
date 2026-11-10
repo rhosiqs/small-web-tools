@@ -10,8 +10,62 @@ import ExternalMapPreview from './ExternalMapPreview';
 import useObjectUrlRegistry from '../hooks/useObjectUrlRegistry';
 import { createEphemeralId } from '../lib/ephemeralId.js';
 
+// Reads the EXIF Orientation (IFD0 tag 0x0112) from an APP1 segment payload,
+// or returns null when the segment is not EXIF or carries no orientation.
+function readExifOrientation(bytes) {
+  const isExif = bytes.length >= 14 && bytes[0] === 0x45 && bytes[1] === 0x78
+    && bytes[2] === 0x69 && bytes[3] === 0x66 && bytes[4] === 0 && bytes[5] === 0;
+  if (!isExif) return null;
+  const tiff = new DataView(bytes.buffer, bytes.byteOffset + 6, bytes.byteLength - 6);
+  const order = tiff.getUint16(0);
+  if (order !== 0x4949 && order !== 0x4D4D) return null;
+  const little = order === 0x4949;
+  const ifd = tiff.getUint32(4, little);
+  if (ifd + 2 > tiff.byteLength) return null;
+  const count = tiff.getUint16(ifd, little);
+  for (let index = 0; index < count; index++) {
+    const entry = ifd + 2 + index * 12;
+    if (entry + 12 > tiff.byteLength) return null;
+    if (tiff.getUint16(entry, little) === 0x0112) {
+      const value = tiff.getUint16(entry + 8, little);
+      return value >= 1 && value <= 8 ? value : null;
+    }
+  }
+  return null;
+}
+
+// A minimal APP1 EXIF segment whose only entry is Orientation.
+function orientationOnlyExifSegment(orientation) {
+  const segment = new Uint8Array(36);
+  const view = new DataView(segment.buffer);
+  view.setUint16(0, 0xFFE1);
+  view.setUint16(2, 34);
+  segment.set([0x45, 0x78, 0x69, 0x66, 0, 0, 0x4D, 0x4D, 0, 0x2A], 4);
+  view.setUint32(14, 8);
+  view.setUint16(18, 1);
+  view.setUint16(20, 0x0112);
+  view.setUint16(22, 3);
+  view.setUint32(24, 1);
+  view.setUint16(28, orientation);
+  view.setUint32(32, 0);
+  return segment;
+}
+
+// The lossless JPEG path is chosen by content, not by file name: a ".jfif"
+// photo is a JPEG, and a ".jpg" that is really PNG or HEIC is not.
+export function isJpegBuffer(arrayBuffer) {
+  const bytes = new Uint8Array(arrayBuffer, 0, Math.min(3, arrayBuffer?.byteLength || 0));
+  return bytes.length === 3 && bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF;
+}
+
+export function strippedImageFileName(name, extension) {
+  const dot = name.lastIndexOf('.');
+  const base = dot > 0 ? name.substring(0, dot) : name;
+  return `${base}_stripped.${extension}`;
+}
+
 // Jpeg Metadata Stripping Logic
-function stripJpegMetadata(arrayBuffer, mode) {
+export function stripJpegMetadata(arrayBuffer, mode) {
   // mode can be: 'private' (strips APP1, APP13) or 'all' (strips APP1, APP2, APP13)
   const view = new DataView(arrayBuffer);
   const length = arrayBuffer.byteLength;
@@ -22,6 +76,7 @@ function stripJpegMetadata(arrayBuffer, mode) {
   
   const chunks = [];
   chunks.push(new Uint8Array(arrayBuffer, 0, 2)); // Add SOI (0xFFD8)
+  let orientation = null;
   
   let offset = 2;
   while (offset < length) {
@@ -74,6 +129,7 @@ function stripJpegMetadata(arrayBuffer, mode) {
     let strip = false;
     if (marker === 0xFFE1) { // APP1 (EXIF, GPS, XMP)
       strip = true;
+      orientation ??= readExifOrientation(new Uint8Array(arrayBuffer, offset + 4, segLength - 2));
     } else if (marker === 0xFFED) { // APP13 (IPTC)
       strip = true;
     } else if (marker === 0xFFE2) { // APP2 (ICC Profile)
@@ -89,6 +145,15 @@ function stripJpegMetadata(arrayBuffer, mode) {
     offset += totalSegSize;
   }
   
+  // Orientation is display information, not private metadata: without it a
+  // phone's portrait photo turns sideways. Keep it in an EXIF block that holds
+  // nothing else, after JFIF APP0 when present (JFIF must follow SOI directly).
+  if (orientation && orientation !== 1) {
+    const firstSegment = chunks[1];
+    const insertAt = firstSegment && firstSegment.byteLength >= 2 && firstSegment[0] === 0xFF && firstSegment[1] === 0xE0 ? 2 : 1;
+    chunks.splice(insertAt, 0, orientationOnlyExifSegment(orientation));
+  }
+
   // Combine all chunks into a single Uint8Array
   let totalBytes = 0;
   for (const chunk of chunks) {
@@ -930,7 +995,7 @@ export default function ImgMeta() {
 
   const handleStripMetadata = async (image, mode) => {
     try {
-      const isJpeg = image.type === 'JPEG' || image.type === 'JPG' || image.name.toLowerCase().endsWith('.jpg') || image.name.toLowerCase().endsWith('.jpeg');
+      const isJpeg = isJpegBuffer(image.originalBuffer);
       const sourceMimeType = image.file?.type || '';
       let strippedBuffer;
       let outputMimeType;
@@ -1034,8 +1099,7 @@ export default function ImgMeta() {
     const a = document.createElement('a');
     a.href = url;
     
-    const nameWithoutExt = image.name.substring(0, image.name.lastIndexOf('.'));
-    a.download = `${nameWithoutExt}_stripped.${image.strippedInfo.extension}`;
+    a.download = strippedImageFileName(image.name, image.strippedInfo.extension);
     
     document.body.appendChild(a);
     a.click();
@@ -1054,8 +1118,7 @@ export default function ImgMeta() {
         
         let filename = image.name;
         if (image.strippedInfo) {
-          const nameWithoutExt = image.name.substring(0, image.name.lastIndexOf('.'));
-          filename = `${nameWithoutExt}_stripped.${image.strippedInfo.extension}`;
+          filename = strippedImageFileName(image.name, image.strippedInfo.extension);
         }
         
         zip.file(filename, buffer);
@@ -1385,7 +1448,7 @@ export default function ImgMeta() {
   const renderThumbnailsBar = () => {
     if (images.length === 0) return null;
     
-    const isJpeg = activeImage && (activeImage.type === 'JPEG' || activeImage.type === 'JPG' || activeImage.name.toLowerCase().endsWith('.jpg') || activeImage.name.toLowerCase().endsWith('.jpeg'));
+    const isJpeg = activeImage && isJpegBuffer(activeImage.originalBuffer);
     const canStripMetadata = activeImage && activeImage.type !== 'Canon CR3 RAW' && Boolean(activeImage.previewSrc);
     
     return (

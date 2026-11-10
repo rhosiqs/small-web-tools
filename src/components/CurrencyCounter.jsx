@@ -5,6 +5,7 @@ import ToolHeader from './ui/ToolHeader';
 import ResultDisplay from './ui/ResultDisplay';
 import {
   convertCurrencyAmount,
+  formatCurrencyRate,
   getConversionRate,
   parsePositiveRate,
   swapCurrencies,
@@ -269,7 +270,7 @@ export default function CurrencyCounter() {
                 activeTab === 'single' ? fromCurrency : bulkFromCurrency,
                 activeTab === 'single' ? toCurrency : bulkToCurrency
               );
-              if (currentNormalRate !== null) setManualRate(currentNormalRate.toFixed(6));
+              if (currentNormalRate !== null) setManualRate(String(Number(currentNormalRate.toPrecision(8))));
             }
           }}
         />
@@ -372,10 +373,10 @@ export default function CurrencyCounter() {
                 <span>{t('tool-currency.ui.provideRate')}</span>
               ) : (
                 <>
-                  {formatCurrency(1, fromCurrency)} = {formatCurrency(currentRate, toCurrency)}
+                  {formatCurrency(1, fromCurrency)} = {formatCurrencyRate(currentRate, toCurrency, i18n.language)}
                   <br />
                   <span className="text-xs opacity-85">
-                    {formatCurrency(1, toCurrency)} = {formatCurrency(1 / currentRate, fromCurrency)}
+                    {formatCurrency(1, toCurrency)} = {formatCurrencyRate(1 / currentRate, fromCurrency, i18n.language)}
                   </span>
                 </>
               )}
