@@ -1,6 +1,5 @@
 const BLOCKED_ELEMENTS = new Set([
   'script',
-  'style',
   'foreignobject',
   'iframe',
   'object',
@@ -8,7 +7,20 @@ const BLOCKED_ELEMENTS = new Set([
 ]);
 
 const URL_ATTRIBUTES = new Set(['href', 'xlink:href', 'src']);
-const NUMBER_WITH_OPTIONAL_PX = /^\s*(\d+(?:\.\d+)?)\s*(?:px)?\s*$/i;
+const LENGTH_WITH_ABSOLUTE_UNIT = /^\s*(\d+(?:\.\d+)?|\.\d+)\s*(px|in|cm|mm|q|pt|pc)?\s*$/i;
+// CSS absolute units expressed in CSS pixels (96 per inch), the unit an SVG user unit maps to.
+const PIXELS_PER_UNIT = {
+  px: 1,
+  in: 96,
+  cm: 96 / 2.54,
+  mm: 96 / 25.4,
+  q: 96 / 101.6,
+  pt: 96 / 72,
+  pc: 16,
+};
+// A stylesheet is kept only when it cannot reach outside the SVG; CSS escapes are
+// rejected because they can disguise `url(` or `@import` from these checks.
+const UNSAFE_STYLESHEET = /(?:@import\b|-moz-binding\s*:|expression\s*\(|image-set\s*\(|cross-fade\s*\(|\\)/i;
 
 function hasUnsafeUrl(value) {
   return value !== '' && !value.startsWith('#') && !value.startsWith('data:image/');
@@ -19,11 +31,16 @@ function hasUnsafeCssUrl(value) {
     .some((match) => hasUnsafeUrl(match[2].trim()));
 }
 
+function hasUnsafeStylesheet(element) {
+  const css = (element.textContent || '').replace(/\/\*[\s\S]*?\*\//g, '');
+  return UNSAFE_STYLESHEET.test(css) || hasUnsafeCssUrl(css);
+}
+
 function parseLength(value) {
-  const match = String(value || '').match(NUMBER_WITH_OPTIONAL_PX);
+  const match = String(value || '').match(LENGTH_WITH_ABSOLUTE_UNIT);
   if (!match) return null;
-  const parsed = Number(match[1]);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  const parsed = Number(match[1]) * PIXELS_PER_UNIT[(match[2] || 'px').toLowerCase()];
+  return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed * 1000) / 1000 : null;
 }
 
 function parseViewBox(value) {
@@ -49,7 +66,8 @@ export function inspectAndSanitizeSvg(markup) {
 
   let removedItems = 0;
   [...svg.querySelectorAll('*')].forEach((element) => {
-    if (BLOCKED_ELEMENTS.has(element.localName.toLowerCase())) {
+    const localName = element.localName.toLowerCase();
+    if (BLOCKED_ELEMENTS.has(localName) || (localName === 'style' && hasUnsafeStylesheet(element))) {
       element.remove();
       removedItems += 1;
       return;
@@ -87,6 +105,10 @@ export function inspectAndSanitizeSvg(markup) {
 
   if (!svg.getAttribute('xmlns')) svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   if (!svg.getAttribute('viewBox')) svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  // An explicit pixel size gives the image an intrinsic size, which some browsers
+  // require before they will draw an SVG into a canvas.
+  svg.setAttribute('width', String(width));
+  svg.setAttribute('height', String(height));
 
   return {
     markup: new XMLSerializer().serializeToString(svg),

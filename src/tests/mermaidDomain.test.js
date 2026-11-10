@@ -59,6 +59,15 @@ describe('Mermaid converter domain', () => {
     expect(result.svg).toContain('style="fill:url(#d-gradient)"');
   });
 
+  it('sizes the export from the viewBox when Mermaid emits a relative width', () => {
+    // User-journey diagrams come out of Mermaid as width="100%" plus a numeric height.
+    const result = sanitizeMermaidSvg('<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="565" viewBox="0 -25 700 540"></svg>');
+    expect(result).toMatchObject({ width: 700, height: 540 });
+    const root = new DOMParser().parseFromString(result.svg, 'image/svg+xml').documentElement;
+    expect(root.getAttribute('width')).toBe('700');
+    expect(root.getAttribute('height')).toBe('540');
+  });
+
   it('preserves a transparent background without adding a rectangle', () => {
     const result = sanitizeMermaidSvg('<svg xmlns="http://www.w3.org/2000/svg" width="10" height="20"></svg>', { background: 'transparent' });
     expect(result.background).toBe('transparent');

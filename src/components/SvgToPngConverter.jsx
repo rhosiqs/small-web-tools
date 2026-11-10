@@ -102,12 +102,21 @@ export default function SvgToPngConverter() {
       const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = height;
+      // A browser returns no context when the canvas exceeds its own size limit, and
+      // drawImage can throw for an SVG it cannot rasterize; both must reach the user.
       const context = canvas.getContext('2d');
-      if (background === 'white') {
-        context.fillStyle = '#ffffff';
-        context.fillRect(0, 0, width, height);
+      try {
+        if (!context) throw new Error('Canvas context unavailable');
+        if (background === 'white') {
+          context.fillStyle = '#ffffff';
+          context.fillRect(0, 0, width, height);
+        }
+        context.drawImage(image, 0, 0, width, height);
+      } catch {
+        URL.revokeObjectURL(svgUrl);
+        setStatus(t('tool-svg-png.ui.status.createFailed'));
+        return;
       }
-      context.drawImage(image, 0, 0, width, height);
       canvas.toBlob((blob) => {
         URL.revokeObjectURL(svgUrl);
         if (!blob) {

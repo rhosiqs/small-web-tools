@@ -7,6 +7,15 @@ export function escapeWifiString(value) {
     .replace(/"/g, '\\"');
 }
 
+// Escapes text for an XML text node or a double-quoted attribute value.
+export function escapeXml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 export function estimateTextWidth(text, fontSize, weight) {
   const ratio = weight === 'bold' || weight === 'bolder' ? 0.62 : 0.55;
   return text.length * fontSize * ratio;

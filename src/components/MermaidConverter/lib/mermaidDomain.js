@@ -97,10 +97,15 @@ function sanitizeAttributes(document) {
   }
 }
 
+// Only a unitless or px length is an absolute pixel size; `100%` must not be read as 100.
+function parsePixelLength(value) {
+  return /^\s*\d+(?:\.\d+)?\s*(?:px)?\s*$/i.test(value || '') ? Number.parseFloat(value) : Number.NaN;
+}
+
 function resolveDimensions(root) {
   const viewBox = root.getAttribute('viewBox')?.trim().split(/[\s,]+/).map(Number);
-  let width = Number.parseFloat(root.getAttribute('width') || '');
-  let height = Number.parseFloat(root.getAttribute('height') || '');
+  let width = parsePixelLength(root.getAttribute('width'));
+  let height = parsePixelLength(root.getAttribute('height'));
   if ((!Number.isFinite(width) || !Number.isFinite(height)) && viewBox?.length === 4) {
     width = viewBox[2];
     height = viewBox[3];

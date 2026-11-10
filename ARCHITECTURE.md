@@ -498,7 +498,9 @@ Focused coverage is in `documentMetadataDomain.test.js`,
 `e2e/docmeta-strip.spec.js`; DNA/RNA copy formatting coverage is in `dnaCopy.test.js`,
 time-difference coverage is in `timeDomain.test.js`, Roman numeral coverage is
 in `romanDomain.test.js`, Phred conversion coverage is in `phredDomain.test.js`,
-sanitized SVG parsing/export-size coverage is in `svgDomain.test.js`, and URL
+sanitized SVG parsing/export-size coverage is in `svgDomain.test.js`, the
+SVG-to-PNG, QR Code SVG, and barcode export failure regressions are in
+`imageExportFailures.test.jsx`, and URL
 percent-encoding coverage is in `urlDomain.test.js`. The converter-mode, folder-picker,
 Color Sync, and image-stripping guidance regressions are covered by
 `converterClipboard.test.jsx` and `enhancementUi.test.jsx`.
