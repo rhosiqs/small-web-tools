@@ -495,13 +495,20 @@ rules live in their corresponding `src/components/<Tool>/lib/` directories.
 Focused coverage is in `documentMetadataDomain.test.js`,
 `documentMetadataStrip.test.js`, `qrBarcodeDomain.test.js`, and
 `codonDomain.test.js`, with the downloaded-package journey in
-`e2e/docmeta-strip.spec.js`; DNA/RNA copy formatting coverage is in `dnaCopy.test.js`,
+`e2e/docmeta-strip.spec.js`; byte-exact PDF stripping (PDF metadata is
+overwritten in place so offsets and streams stay intact) is covered by
+`documentMetadataPdfStrip.test.js`, rewritten-package compression and MIME type
+by `documentMetadataPackageOutput.test.js`, lossless JPEG stripping by
+`imageMetadataJpegStrip.test.js`, and Media Splitter container choice and queue
+behavior by `mediaSeparatorEngine.test.js` and `mediaSeparatorQueue.test.jsx`;
+DNA/RNA copy formatting coverage is in `dnaCopy.test.js`,
 time-difference coverage is in `timeDomain.test.js`, Roman numeral coverage is
 in `romanDomain.test.js`, Phred conversion coverage is in `phredDomain.test.js`,
 sanitized SVG parsing/export-size coverage is in `svgDomain.test.js`, the
 SVG-to-PNG, QR Code SVG, and barcode export failure regressions are in
 `imageExportFailures.test.jsx`, and URL
-percent-encoding coverage is in `urlDomain.test.js`. The converter-mode, folder-picker,
+percent-encoding coverage is in `urlDomain.test.js`. Wrong-output regressions
+across the text and value converters are in `textConverterAudit.test.jsx`. The converter-mode, folder-picker,
 Color Sync, and image-stripping guidance regressions are covered by
 `converterClipboard.test.jsx` and `enhancementUi.test.jsx`.
 

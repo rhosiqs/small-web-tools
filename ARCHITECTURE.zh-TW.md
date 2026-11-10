@@ -414,11 +414,16 @@ stripDocumentMetadata.js 負責改寫 OOXML 與 OpenDocument 套件。剝離流�
 codon 輸入／篩選／呈現規則位於各自的 src/components/&lt;Tool&gt;/lib/ 目錄。聚焦覆蓋率
 包含 documentMetadataDomain.test.js、documentMetadataStrip.test.js、
 qrBarcodeDomain.test.js 與 codonDomain.test.js，下載檔案的瀏覽器流程則由
-e2e/docmeta-strip.spec.js 覆蓋；
+e2e/docmeta-strip.spec.js 覆蓋；逐位元組的 PDF 剝離（PDF metadata 以原地覆寫處理，
+位移與串流維持不變）由 documentMetadataPdfStrip.test.js 覆蓋，改寫後套件的壓縮方式與
+MIME 類型由 documentMetadataPackageOutput.test.js 覆蓋，無損 JPEG 剝離由
+imageMetadataJpegStrip.test.js 覆蓋，媒體分割器的容器選擇與佇列行為由
+mediaSeparatorEngine.test.js 與 mediaSeparatorQueue.test.jsx 覆蓋；
 DNA/RNA 複製格式位於 dnaCopy.test.js，時間差位於 timeDomain.test.js，羅馬數字位於
 romanDomain.test.js，Phred 轉換位於 phredDomain.test.js，消毒 SVG 解析／匯出大小位於
 svgDomain.test.js，SVG 轉 PNG、QR Code SVG 與條碼匯出失敗的回歸位於
-imageExportFailures.test.jsx，URL 百分比編碼位於 urlDomain.test.js。轉換器模式、資料夾選擇器、
+imageExportFailures.test.jsx，URL 百分比編碼位於 urlDomain.test.js。文字與數值轉換器的錯誤輸出回歸位於
+textConverterAudit.test.jsx。轉換器模式、資料夾選擇器、
 Color Sync 與圖片剝離說明回歸由 converterClipboard.test.jsx 與 enhancementUi.test.jsx 覆蓋。
 
 ## API 與開發中介軟體
