@@ -21,8 +21,12 @@ function swapCase(str) {
     .join('');
 }
 
-function toTitleCase(str) {
-  return str.replace(/\b\p{L}/gu, (char) => char.toUpperCase());
+// A word starts at a letter that does not follow another letter, mark, digit or
+// an intra-word apostrophe. `\b` is ASCII-only, so it split "don't" and "café".
+const WORD_START = /(?<![\p{L}\p{M}\p{N}_]|[\p{L}\p{N}]['’])\p{L}/gu;
+
+export function toTitleCase(str) {
+  return str.replace(WORD_START, (char) => char.toUpperCase());
 }
 
 function toSentenceCase(str, preserveCapitals) {
@@ -39,7 +43,7 @@ function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function capitalizeSpecificTerms(str, specificTerms, specificTermsMode) {
+export function capitalizeSpecificTerms(str, specificTerms, specificTermsMode) {
   const terms = specificTerms
     .split(/,|\n/)
     .map((t) => t.trim())
@@ -58,7 +62,7 @@ function capitalizeSpecificTerms(str, specificTerms, specificTermsMode) {
       if (specificTermsMode === 'first') {
         return lowerMatch.replace(/\p{L}/u, (c) => c.toUpperCase());
       } else {
-        return lowerMatch.replace(/\b\p{L}/gu, (char) => char.toUpperCase());
+        return lowerMatch.replace(WORD_START, (char) => char.toUpperCase());
       }
     });
   }

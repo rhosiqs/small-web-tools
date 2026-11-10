@@ -95,10 +95,11 @@ const codonTable = {
   'CGU': 'Arg', 'AGA': 'Arg', 'AGG': 'Arg',
   // Glycine
   'GGT': 'Gly', 'GGC': 'Gly', 'GGA': 'Gly', 'GGG': 'Gly',
-  'GGU': 'Gly'
+  'GGU': 'Gly',
+  'AGT': 'Ser'
 };
 
-const translateCodon = (codon) => {
+export const translateCodon = (codon) => {
   if (codon.length < 3) return '';
   const upper = codon.toUpperCase();
   if (codonTable[upper]) return codonTable[upper];
@@ -244,7 +245,7 @@ export default function DnaConverter() {
     }
 
     // Validate characters: only A, T, C, G, U, and N are allowed
-    if (/[^ACGUTN]/.test(cleaned)) {
+    if (/[^ACGTURYSWKMBDHVN]/.test(cleaned)) {
       setOutputs({ opposite: '', revcomp: '', reverse: '' });
       setStatusText(t('tool-dna.ui.invalidCharacters'));
       setStatusStyle({});
@@ -347,7 +348,7 @@ export default function DnaConverter() {
       );
     }
 
-    if (/[^ACGUTN]/.test(cleaned)) {
+    if (/[^ACGTURYSWKMBDHVN]/.test(cleaned)) {
       return (
         <div className="p-12 text-center text-text-muted font-medium bg-card border border-border rounded-lg text-red-500 border-red-500/20 bg-red-500/[0.02]">
           {t('tool-dna.ui.invalidCharacters')}
